@@ -1,0 +1,42 @@
+/*********************************************************************************
+*     File Name           :     test_data_point.cc
+*     Created By          :     yuewu
+*     Creation Date       :     [2015-10-29 13:52]
+*     Last Modified       :     [2015-11-12 18:11]
+*     Description         :
+**********************************************************************************/
+
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
+#include <lsol/pario/data_point.h>
+
+using namespace lsol;
+using namespace lsol::pario;
+using namespace std;
+
+int main() {
+    size_t N = 4;
+
+    DataPoint pt;
+
+    for (size_t i = 0; i < N; ++i) {
+        index_t idx = rand() % N + 1;
+        real_t feat = (real_t)(rand() % N);
+        cout << "add new feat: " << idx << ": " << feat << endl;
+        pt.AddNewFeat(idx, feat);
+    }
+    cout << "original data point" << endl;
+    for (size_t i = 0; i < pt.size(); ++i) {
+        cout << pt.indexes()[i] << ": " << pt.features()[i] << endl;
+    }
+
+    cout << "sort" << endl;
+    pt.Sort();
+    for (size_t i = 0; i < pt.size(); ++i) {
+        cout << pt.indexes()[i] << ": " << pt.features()[i] << endl;
+    }
+
+    return 0;
+}
