@@ -29,18 +29,13 @@ DataIter::~DataIter() {
     reader->Join();
   }
 
-  // assert that mini_batch_buf_ is empty
-  if (this->mini_batch_buf_.size() != 0) {
-    fprintf(stderr, "mini-batches are not all consumed!\n");
-  }
   // clear mini_batch_buf_
-  MiniBatch* mb = nullptr;
-  while ((mb = this->mini_batch_buf_.Dequeue()) != nullptr) {
-    DeletePointer(mb);
+  while (this->mini_batch_buf_.size() > 0) {
+    DeletePointer(this->mini_batch_buf_.Dequeue());
   }
   // clear mini_batch_factory_
-  while ((mb = this->mini_batch_factory_.Dequeue()) != nullptr) {
-    DeletePointer(mb);
+  while (this->mini_batch_factory_.size() > 0) {
+    DeletePointer(this->mini_batch_factory_.Dequeue());
   }
 }
 

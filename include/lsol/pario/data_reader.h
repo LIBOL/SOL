@@ -11,80 +11,71 @@
 
 #include <string>
 
-#include "lsol/util/reflector.h"
-#include "lsol/util/error_code.h"
-#include "lsol/pario/file_reader.h"
-#include "lsol/pario/data_point.h"
+#include <lsol/util/reflector.h>
+#include <lsol/util/error_code.h>
+#include <lsol/pario/file_reader.h>
+#include <lsol/pario/data_point.h>
 
 namespace lsol {
 namespace pario {
 
 class LSOL_EXPORTS DataReader {
-public:
-    /// \brief  Create a new data reader according to the name of the reader
-    ///
-    /// \param type Type of data format (svm, csv, etc.)
-    ///
-    /// \return Pointer to the created data reader instance
-    static DataReader* Create(const std::string& type);
+  DeclareReflectorBase(DataReader);
 
-public:
-    /// \brief  Create New instance of data reader protocol
-    /// \return pointer to the base type of new instance
-    typedef DataReader* (*CreateFunction)();
+ public:
+  DataReader();
+  virtual ~DataReader();
 
-    DataReader();
-    virtual ~DataReader();
+ public:
+  /// \brief  Open a new file
+  ///
+  /// \param path Path to the file, '-' when if use stdin
+  /// \param mode open mode, "r" or "rb"
+  ///
+  /// \return Status code,  Status_OK if succeed
+  virtual int Open(const std::string& path, const char* mode = "r");
 
-public:
-    /// \brief  Open a new file
-    ///
-    /// \param path Path to the file, '-' when if use stdin
-    /// \param mode open mode, "r" or "rb"
-    ///
-    /// \return Status code,  Status_OK if succeed
-    virtual int Open(const std::string& path, const char* mode = "r");
+  /// \brief Close the reader
+  inline virtual void Close() { this->file_reader_.Close(); }
 
-    /// \brief Close the reader
-    inline virtual void Close() { this->file_reader_.Close(); }
+  /// \brief  Check the status of the data handler
+  ///
+  /// \return True if everything is ok
+  inline virtual bool Good() {
+    return this->is_good_ && this->file_reader_.Good();
+  }
 
-    /// \brief  Check the status of the data handler
-    ///
-    /// \return True if everything is ok
-    inline virtual bool Good() {
-        return this->is_good_ && this->file_reader_.Good();
-    }
+  /// \brief  Rewind the dataset to the beginning of the file
+  inline virtual void Rewind() { this->file_reader_.Rewind(); }
 
-    /// \brief  Rewind the dataset to the beginning of the file
-    inline virtual void Rewind() { this->file_reader_.Rewind(); }
+ public:
+  /// \brief  Read next data point
+  ///
+  /// \param dst_data Destination data point
+  ///
+  /// \return  Status code, Status_OK if everything ok, Status_EndOfFile if
+  /// read to file end
+  virtual int Next(DataPoint& dst_data) = 0;
 
-public:
-    /// \brief  Read next data point
-    ///
-    /// \param dst_data Destination data point
-    ///
-    /// \return  Status code, Status_OK if everything ok, Status_EndOfFile if
-    /// read to file end
-    virtual int Next(DataPoint& dst_data) = 0;
+ protected:
+  FileReader file_reader_;
+  /// \brief  flag to denote whether any parse error occurs
+  bool is_good_;
+  /// \brief  read buffer
+  char* read_buf_;
+  int read_buf_size_;
+  /// \brief  path to the opened file
+  std::string file_path_;
 
-protected:
-    FileReader file_reader_;
-    /// \brief  flag to denote whether any parse error occurs
-    bool is_good_;
-    /// \brief  read buffer
-    char* read_buf_;
-    int read_buf_size_;
-    /// \brief  path to the opened file
-    std::string file_path_;
-
-public:
-    const std::string& file_path() const { return file_path_; }
+ public:
+  const std::string& file_path() const { return file_path_; }
 };
 
 #define RegisterDataReader(type, name, descr)                            \
-  type* type##_##CreateNewInstance() { return new type(); }                  \
-  ClassInfo __kClassInfo_##type##__(std::string(name) + "_reader", (void*)(type##_##CreateNewInstance), \
-                                  descr);
+  type* type##_##CreateNewInstance() { return new type(); }              \
+  ClassInfo __kClassInfo_##type##__(std::string(name) + "_reader",       \
+                                    (void*)(type##_##CreateNewInstance), \
+                                    descr);
 }  // namespace pario
 }  // namespace lsol
 

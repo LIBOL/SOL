@@ -15,16 +15,18 @@
 /// \brief  declaration of functions
 namespace lsol {
 
-#define DeletePointer(p) \
-  if ((p) != nullptr) {  \
-    delete (p);          \
-    (p) = nullptr;       \
+#define DeletePointer(p)   \
+  auto ptr = p;           \
+  if ((ptr) != nullptr) {  \
+    delete (ptr);          \
+    (ptr) = nullptr;       \
   }
 
-#define DeleteArray(p)  \
-  if ((p) != nullptr) { \
-    delete[](p);        \
-    (p) = nullptr;      \
+#define DeleteArray(p)     \
+  auto ptr = p;           \
+  if ((ptr) != nullptr) {  \
+    delete[](ptr);         \
+    (ptr) = nullptr;       \
   }
 
 /// \brief  Open file wrapper, windows use fopen_s for safety

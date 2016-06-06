@@ -13,23 +13,22 @@ else()
     set(CMAKE_INSTALL_PREFIX ${PREFIX})
 endif()
 
-#include(external)
 include(compiler)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/external/src
+    ${PROJECT_SOURCE_DIR}/external
     )
 
 include(util)
 include(pario)
 
-#include(tools)
+include(tools)
 include(test)
 
 include(summary)
 
-install(TARGETS ${TARGETS}
+install(TARGETS ${TARGET_LIBS}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION bin
     ARCHIVE DESTINATION lib
@@ -37,8 +36,4 @@ install(TARGETS ${TARGETS}
 
 install(DIRECTORY include
     DESTINATION .
-    )
-
-install(DIRECTORY data
-    DESTINATION test
     )

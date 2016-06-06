@@ -5,7 +5,6 @@
 *     Last Modified       :     [2016-02-12 21:23]
 *     Description         :
 **********************************************************************************/
-
 #include "lsol/pario/csv_reader.h"
 
 #include <cstdlib>
@@ -36,7 +35,7 @@ int CSVReader::Next(DataPoint& dst_data) {
   int ret = this->file_reader_.ReadLine(this->read_buf_, this->read_buf_size_);
   if (ret != Status_OK) return ret;
 
-  char* iter = this->read_buf_, * endptr = nullptr;
+  char *iter = this->read_buf_, *endptr = nullptr;
   if (*iter == '\0') {
     fprintf(stderr, "incorrect line\n");
     return Status_Invalid_Format;

@@ -10,11 +10,11 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "lsol/pario/data_iter.h"
-#include "lsol/pario/data_writer.h"
-#include "lsol/util/error_code.h"
+#include <lsol/pario/data_iter.h>
+#include <lsol/pario/data_writer.h>
+#include <lsol/util/error_code.h>
 
-#include "cmdline/cmdline.h"
+#include <cmdline/cmdline.h>
 
 using namespace lsol;
 using namespace lsol::pario;
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
   if (dst_type == "csv") {
     // for csv, get extra info
-    fprintf(stdout, "figuing out feature dimension\n");
+    fprintf(stdout, "figuring out feature dimension\n");
     index_t feat_dim = 0;
     while (true) {
       mb = iter.Next(mb);
@@ -62,6 +62,10 @@ int main(int argc, char** argv) {
       }
     }
     writer->SetExtraInfo((char*)(&feat_dim));
+	if (feat_dim == 0) {
+		fprintf(stderr, "figuring out feature dimension failed\n");
+		return Status_Invalid_Format;
+	}
     ret = iter.AddReader(src_path, src_type);
     if (ret != Status_OK) return ret;
   }

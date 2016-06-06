@@ -9,19 +9,19 @@
 #ifndef LSOL_PARIO_SVM_WRITER_H__
 #define LSOL_PARIO_SVM_WRITER_H__
 
-#include "lsol/pario/data_writer.h"
+#include <lsol/pario/data_writer.h>
 
 namespace lsol {
 namespace pario {
 
 class LSOL_EXPORTS SVMWriter : public DataWriter {
-public:
-    /// \brief  Write a new data into the file
-    ///
-    /// \param data Data to be saved
-    ///
-    /// \return Status code,  Status_OK if succeed
-    virtual int Write(const DataPoint& data);
+ public:
+  /// \brief  Write a new data into the file
+  ///
+  /// \param data Data to be saved
+  ///
+  /// \return Status code,  Status_OK if succeed
+  virtual int Write(const DataPoint& data);
 
 };  // class SVMWriter
 

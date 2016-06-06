@@ -8,13 +8,14 @@ file(GLOB pario_src
 	"${PROJECT_SOURCE_DIR}/src/lsol/pario/*.cc"
 	)
 
-source_group("Header Files\\pario" FILES ${pario_headers})
-source_group("Source Files\\pario" FILES ${pario_src})
+source_group("Header Files" FILES ${pario_headers})
+source_group("Source Files" FILES ${pario_src})
 
-set(src_list ${src_list} ${pario_headers} ${pario_src})
 
-add_library(lsol SHARED ${src_list})
-set_target_properties(lsol PROPERTIES COMPILE_DEFINITIONS  "LSOL_EXPORTS")
-list(APPEND TARGETS lsol
-    )
+add_library(lsol_pario SHARED ${pario_headers} ${pario_src})
+target_link_libraries(lsol_pario lsol_util)
+list(APPEND TARGET_LIBS lsol_pario)
 
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${PROJECT_SOURCE_DIR}/data
+    ${CMAKE_BINARY_DIR}/data)

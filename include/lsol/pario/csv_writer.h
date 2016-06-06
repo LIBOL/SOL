@@ -9,31 +9,31 @@
 #ifndef LSOL_PARIO_CSV_WRITER_H__
 #define LSOL_PARIO_CSV_WRITER_H__
 
-#include "lsol/pario/data_writer.h"
+#include <lsol/pario/data_writer.h>
 
 namespace lsol {
 namespace pario {
 
 class LSOL_EXPORTS CSVWriter : public DataWriter {
-public:
-    /// \brief  Write a new data into the file
-    ///
-    /// \param data Data to be saved
-    ///
-    /// \return Status code,  Status_OK if succeed
-    virtual int Write(const DataPoint& data);
+ public:
+  /// \brief  Write a new data into the file
+  ///
+  /// \param data Data to be saved
+  ///
+  /// \return Status code,  Status_OK if succeed
+  virtual int Write(const DataPoint& data);
 
-    /// \brief  Set extra information for the output format, for example header
-    /// of csv
-    ///
-    /// \param extra_info extra info
-    ///
-    /// \return Status code,  Status_OK if succeed
-    virtual int SetExtraInfo(const char* extra_info);
+  /// \brief  Set extra information for the output format, for example header
+  /// of csv
+  ///
+  /// \param extra_info extra info
+  ///
+  /// \return Status code,  Status_OK if succeed
+  virtual int SetExtraInfo(const char* extra_info);
 
-protected:
-    // dimension of data
-    index_t feat_dim_;
+ protected:
+  // dimension of data
+  index_t feat_dim_;
 
 };  // class CSVWriter
 

@@ -8,11 +8,11 @@
 #ifndef LSOL_PARIO_DATA_READ_TASK_H__
 #define LSOL_PARIO_DATA_READ_TASK_H__
 
-#include "lsol/pario/data_point.h"
-#include "lsol/pario/mini_batch.h"
-#include "lsol/pario/data_reader.h"
-#include "lsol/util/block_queue.h"
-#include "lsol/util/thread_task.h"
+#include <lsol/pario/data_point.h>
+#include <lsol/pario/mini_batch.h>
+#include <lsol/pario/data_reader.h>
+#include <lsol/util/block_queue.h>
+#include <lsol/util/thread_task.h>
 
 namespace lsol {
 namespace pario {

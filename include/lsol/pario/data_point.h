@@ -9,8 +9,8 @@
 #ifndef LSOL_PARIO_DATA_POINT_H__
 #define LSOL_PARIO_DATA_POINT_H__
 
-#include "lsol/util/types.h"
-#include "lsol/pario/array1d.h"
+#include <lsol/util/types.h>
+#include <lsol/pario/array1d.h>
 
 namespace lsol {
 namespace pario {
@@ -58,9 +58,7 @@ class LSOL_EXPORTS DataPoint {
   const Array1d<index_t> &indexes() const { return this->indexes_; }
   Array1d<index_t> &indexes() { return this->indexes_; }
 
-  const Array1d<real_t> &features() const {
-    return this->features_;
-  }
+  const Array1d<real_t> &features() const { return this->features_; }
   Array1d<real_t> &features() { return this->features_; }
 
   const index_t indexes(size_t index) const { return this->indexes_[index]; }

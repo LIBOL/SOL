@@ -8,7 +8,8 @@ file(GLOB util_src
 	"${PROJECT_SOURCE_DIR}/src/lsol/util/*.cc"
 	)
 
-source_group("Header Files\\utils" FILES ${util_headers})
-source_group("Source Files\\utils" FILES ${util_src})
+source_group("Header Files" FILES ${util_headers})
+source_group("Source Files" FILES ${util_src})
 
-set(src_list ${src_list} ${util_headers} ${util_src})
+add_library(lsol_util SHARED ${util_headers} ${util_src})
+list(APPEND TARGET_LIBS lsol_util)

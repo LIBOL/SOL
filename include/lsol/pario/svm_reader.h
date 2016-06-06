@@ -9,20 +9,20 @@
 #ifndef LSOL_PARIO_SVM_READER_H__
 #define LSOL_PARIO_SVM_READER_H__
 
-#include "lsol/pario/data_reader.h"
+#include <lsol/pario/data_reader.h>
 
 namespace lsol {
 namespace pario {
 
 class LSOL_EXPORTS SVMReader : public DataReader {
-public:
-    /// \brief  Read next data point
-    ///
-    /// \param dst_data Destination data point
-    ///
-    /// \return  Status code, Status_OK if everything ok, Status_EndOfFile if
-    /// read to file end
-    virtual int Next(DataPoint& dst_data);
+ public:
+  /// \brief  Read next data point
+  ///
+  /// \param dst_data Destination data point
+  ///
+  /// \return  Status code, Status_OK if everything ok, Status_EndOfFile if
+  /// read to file end
+  virtual int Next(DataPoint& dst_data);
 };  // class SVMReader
 
 }  // namespace pario

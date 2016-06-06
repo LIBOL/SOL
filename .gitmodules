@@ -1,0 +1,3 @@
+[submodule "external/cmdline"]
+	path = external/cmdline
+	url = https://github.com/yuewu001/cmdline.git

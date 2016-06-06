@@ -11,8 +11,8 @@
 
 #include <vector>
 
-#include "lsol/util/types.h"
-#include "lsol/pario/data_point.h"
+#include <lsol/util/types.h>
+#include <lsol/pario/data_point.h>
 
 namespace lsol {
 namespace pario {

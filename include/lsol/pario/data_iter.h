@@ -13,11 +13,11 @@
 #include <vector>
 #include <memory>
 
-#include "lsol/pario/data_point.h"
-#include "lsol/pario/mini_batch.h"
-#include "lsol/pario/data_reader.h"
-#include "lsol/pario/data_read_task.h"
-#include "lsol/util/block_queue.h"
+#include <lsol/pario/data_point.h>
+#include <lsol/pario/mini_batch.h>
+#include <lsol/pario/data_reader.h>
+#include <lsol/pario/data_read_task.h>
+#include <lsol/util/block_queue.h>
 
 namespace lsol {
 namespace pario {

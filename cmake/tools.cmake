@@ -1,25 +1,15 @@
-file(GLOB tools_src_list
-	"${PROJECT_SOURCE_DIR}/tools/*.cpp"
-	"${PROJECT_SOURCE_DIR}/tools/*.cc"
-	)
+set(TOOLS_DIR ${PROJECT_SOURCE_DIR}/tools)
 
-foreach(tool_src ${tools_src_list})
-	get_filename_component(tgt_name ${tool_src} NAME_WE)
-  add_executable(${tgt_name}-bin ${tool_src})
-    target_link_libraries(${tgt_name}-bin ${LIBS} lsol)
-	SET_PROPERTY(TARGET ${tgt_name}-bin PROPERTY FOLDER "tools")
-	list(APPEND tools_targets ${tgt_name}-bin)
+add_executable(converter ${TOOLS_DIR}/converter.cc)
+target_link_libraries(converter lsol_pario lsol_util)
+list(APPEND tools_targets converter)
+
+foreach(tgt_name ${tools_targets})
+SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")
 endforeach()
 
 install(TARGETS ${tools_targets}
-	RUNTIME DESTINATION tools
-	LIBRARY DESTINATION tools
-	ARCHIVE DESTINATION tools
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION bin
+	ARCHIVE DESTINATION lib
 	)
-
-install(TARGETS ${TARGETS}
-    RUNTIME DESTINATION tools
-    LIBRARY DESTINATION tools
-    ARCHIVE DESTINATION tools
-    )
-
