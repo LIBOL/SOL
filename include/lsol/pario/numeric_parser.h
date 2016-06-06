@@ -8,6 +8,8 @@
 #ifndef LSOL_PARIO_NUMERIC_PARSER_H__
 #define LSOL_PARIO_NUMERIC_PARSER_H__
 
+#include <cmath>
+
 namespace lsol {
 namespace pario {
 
