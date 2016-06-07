@@ -30,12 +30,15 @@ DataIter::~DataIter() {
   }
 
   // clear mini_batch_buf_
+  MiniBatch* mb = nullptr;
   while (this->mini_batch_buf_.size() > 0) {
-    DeletePointer(this->mini_batch_buf_.Dequeue());
+    mb = this->mini_batch_buf_.Dequeue();
+    DeletePointer(mb);
   }
   // clear mini_batch_factory_
   while (this->mini_batch_factory_.size() > 0) {
-    DeletePointer(this->mini_batch_factory_.Dequeue());
+    mb = this->mini_batch_factory_.Dequeue();
+    DeletePointer(mb);
   }
 }
 

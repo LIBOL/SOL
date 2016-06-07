@@ -15,19 +15,22 @@
 /// \brief  declaration of functions
 namespace lsol {
 
-#define DeletePointer(p)   \
-  auto ptr = p;           \
-  if ((ptr) != nullptr) {  \
-    delete (ptr);          \
-    (ptr) = nullptr;       \
+#define DeletePointer(p)  \
+  if ((p) != nullptr) { \
+    delete (p);         \
+    (p) = nullptr;      \
   }
 
-#define DeleteArray(p)     \
-  auto ptr = p;           \
-  if ((ptr) != nullptr) {  \
-    delete[](ptr);         \
-    (ptr) = nullptr;       \
+#define DeleteArray(p)    \
+  if ((p) != nullptr) { \
+    delete[](p);        \
+    (p) = nullptr;      \
   }
+
+#define DISABLE_COPY_AND_ASSIGN(classname) \
+ private:                                  \
+  classname(const classname&);             \
+  classname& operator=(const classname&);
 
 /// \brief  Open file wrapper, windows use fopen_s for safety
 ///
