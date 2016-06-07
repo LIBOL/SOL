@@ -41,20 +41,19 @@ int BinaryReader::Next(DataPoint& dst_data) {
       fprintf(stderr, "read coded index length failed!\n");
       return Status_Invalid_Format;
     }
-    this->comp_codes_.Resize(code_len);
+    this->comp_codes_.resize(code_len);
     ret = this->file_reader_.Read(this->comp_codes_.begin(), code_len);
     if (ret != Status_OK) {
       fprintf(stderr, "read coded index failed!\n");
       return Status_Invalid_Format;
     }
-    dst_data.indexes().Resize(feat_num);
+	dst_data.Resize(feat_num);
     decomp_index(this->comp_codes_, dst_data.indexes());
     if (dst_data.indexes().size() != feat_num) {
       fprintf(stderr, "decoded index number is not correct!\n");
       return Status_Invalid_Format;
     }
 
-    dst_data.features().Resize(feat_num);
     ret = this->file_reader_.Read((char*)dst_data.features().begin(),
                                   sizeof(real_t) * feat_num);
     if (ret != Status_OK) {

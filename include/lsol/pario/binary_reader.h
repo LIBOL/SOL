@@ -10,7 +10,7 @@
 #define LSOL_PARIO_BINARY_READER_H__
 
 #include <lsol/pario/data_reader.h>
-#include <lsol/pario/array1d.h>
+#include <lsol/math/vector.h>
 
 namespace lsol {
 namespace pario {
@@ -36,7 +36,7 @@ class LSOL_EXPORTS BinaryReader : public DataReader {
 
  private:
   // compressed codes of indexes
-  Array1d<char> comp_codes_;
+  math::Vector<char> comp_codes_;
 };  // class BinaryReader
 
 }  // namespace pario

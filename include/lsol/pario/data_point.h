@@ -10,7 +10,7 @@
 #define LSOL_PARIO_DATA_POINT_H__
 
 #include <lsol/util/types.h>
-#include <lsol/pario/array1d.h>
+#include <lsol/math/sparse_vector.h>
 
 namespace lsol {
 namespace pario {
@@ -43,6 +43,8 @@ class LSOL_EXPORTS DataPoint {
   /// \param feat value of the feature
   void AddNewFeat(index_t index, real_t feat);
 
+  inline void Reserve(size_t new_size) { this->data_.reserve(new_size); }
+  inline void Resize(size_t new_size) { this->data_.resize(new_size); }
   /// \brief  clear the label, indexes, and features
   void Clear();
 
@@ -55,27 +57,27 @@ class LSOL_EXPORTS DataPoint {
   void Sort();
 
  public:
-  const Array1d<index_t> &indexes() const { return this->indexes_; }
-  Array1d<index_t> &indexes() { return this->indexes_; }
+  inline const math::Vector<index_t>& indexes() const { return this->data_.indexes(); }
+  inline math::Vector<index_t>& indexes() { return this->data_.indexes(); }
 
-  const Array1d<real_t> &features() const { return this->features_; }
-  Array1d<real_t> &features() { return this->features_; }
+  inline const math::Vector<real_t>& features() const { return this->data_.values(); }
+  inline math::Vector<real_t>& features() { return this->data_.values(); }
 
-  const index_t indexes(size_t index) const { return this->indexes_[index]; }
+  inline index_t index(size_t index) const { return this->data_.index(index); }
+  inline index_t& index(size_t index) { return this->data_.index(index); }
 
-  const real_t features(index_t index) const { return this->features_[index]; }
-  real_t &features(index_t index) { return this->features_[index]; }
+  inline real_t feature(index_t index) const { return this->data_.value(index); }
+  inline real_t &feature(index_t index) { return this->data_.value(index); }
 
-  label_t label() const { return this->label_; }
-  void set_label(label_t label) { this->label_ = label; }
+  inline label_t label() const { return this->label_; }
+  inline void set_label(label_t label) { this->label_ = label; }
   index_t dim() const {
-    return this->indexes_.size() > 0 ? this->indexes_.last() : 0;
+	  return this->data_.dim();
   }
-  size_t size() const { return this->indexes_.size(); }
+  inline size_t size() const { return this->data_.size(); }
 
  protected:
-  Array1d<index_t> indexes_;
-  Array1d<real_t> features_;
+	 math::SVector<real_t> data_;
   label_t label_;
 };  // class DataPoint
 

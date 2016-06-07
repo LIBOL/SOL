@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
       DataPoint& dp = (*mb)[i];
       fprintf(stdout, "%d", dp.label());
       for (size_t d = 0; d < dp.size(); ++d) {
-        fprintf(stdout, " %d:%f", dp.indexes(d), dp.features(d));
+        fprintf(stdout, " %d:%f", dp.index(d), dp.feature(d));
       }
       fprintf(stdout, "\n");
     }

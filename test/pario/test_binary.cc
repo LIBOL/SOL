@@ -72,7 +72,7 @@ int test_binary(vector<DataPoint>& dps) {
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
-      if (dps[i].indexes(j) != dps2[i].indexes(j)) {
+      if (dps[i].index(j) != dps2[i].index(j)) {
         fprintf(stderr,
                 "check svm writer failed: index %lu of instance %lu "
                 "not the "
@@ -80,7 +80,7 @@ int test_binary(vector<DataPoint>& dps) {
                 j, i);
         return Status_Error;
       }
-      if (dps[i].features(j) != dps2[i].features(j)) {
+      if (dps[i].feature(j) != dps2[i].feature(j)) {
         fprintf(stderr,
                 "check svm writer failed: feature %lu of instance %lu "
                 "not the "

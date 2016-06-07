@@ -14,15 +14,16 @@
 #include "lsol/pario/compress.h"
 
 using namespace lsol::pario;
+using namespace lsol::math;
 using namespace std;
 
 template <typename T>
 int test() {
   srand(static_cast<unsigned int>(time(0)));
-  Array1d<T> arr;
+  Vector<T> arr;
   int N = 1000;
   for (int i = 0; i < N; ++i) {
-    arr.Push(T(rand()));
+    arr.push_back(T(rand()));
   }
   std::sort(arr.begin(), arr.end());
   cout << "example array: " << endl;
@@ -31,7 +32,7 @@ int test() {
   }
   cout << endl;
 
-  Array1d<char> codes;
+  Vector<char> codes;
   comp_index(arr, codes);
 
   cout << "size of original array :" << sizeof(T) * N << " bytes" << endl;
@@ -40,7 +41,7 @@ int test() {
 
   cout << "check decompress..." << endl;
 
-  Array1d<T> arr2;
+  Vector<T> arr2;
   decomp_index(codes, arr2);
   if (arr.size() != arr2.size()) {
     cerr << "size of decompressed array " << arr2.size() << " not equal to "

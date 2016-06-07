@@ -17,7 +17,7 @@ int SVMWriter::Write(const DataPoint &data) {
     size_t feat_num = data.indexes().size();
     this->file_writer_.Printf("%d", data.label());
     for (size_t i = 0; i < feat_num; ++i) {
-        this->file_writer_.Printf(" %d:%g", data.indexes(i), data.features(i));
+        this->file_writer_.Printf(" %d:%g", data.index(i), data.feature(i));
     }
     this->file_writer_.Printf("\n");
     return Status_OK;

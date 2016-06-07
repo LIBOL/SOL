@@ -26,7 +26,7 @@ int BinaryWriter::Write(const DataPoint& data) {
 
   this->file_writer_.Write((char*)&feat_num, sizeof(feat_num));
   if (feat_num > 0) {
-    this->comp_codes_.Clear();
+    this->comp_codes_.clear();
     comp_index(data.indexes(), this->comp_codes_);
     size_t code_len = this->comp_codes_.size();
     this->file_writer_.Write((char*)&(code_len), sizeof(code_len));

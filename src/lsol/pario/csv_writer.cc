@@ -20,8 +20,8 @@ int CSVWriter::Write(const DataPoint& data) {
   size_t i = 0;
   index_t j = 1;
   for (; i < feat_num && j <= this->feat_dim_; ++j) {
-    if (data.indexes(i) == j) {
-      this->file_writer_.Printf(",%g", data.features(i++));
+    if (data.index(i) == j) {
+      this->file_writer_.Printf(",%g", data.feature(i++));
     } else {
       this->file_writer_.Printf(",0");
     }

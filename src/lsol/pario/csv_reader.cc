@@ -52,8 +52,7 @@ int CSVReader::Next(DataPoint& dst_data) {
   iter = endptr;
 
   // 2. parse features
-  dst_data.indexes().Reserve(this->feat_dim_);
-  dst_data.features().Reserve(this->feat_dim_);
+  dst_data.Reserve(this->feat_dim_);
   index_t index = 0;
   while (*iter != '\0') {
     if (*iter != ',') {

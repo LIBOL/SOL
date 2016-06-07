@@ -78,7 +78,7 @@ class Matrix
     return *this;
   }
 
- private:
+ protected:
   /// \brief init the owned data
   void init() {
     if (this->count_ == nullptr) {

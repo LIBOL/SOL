@@ -10,7 +10,7 @@
 #define LSOL_PARIO_BINARY_READER_H__
 
 #include <lsol/pario/data_writer.h>
-#include <lsol/pario/array1d.h>
+#include <lsol/math/vector.h>
 
 namespace lsol {
 namespace pario {
@@ -35,7 +35,7 @@ class LSOL_EXPORTS BinaryWriter : public DataWriter {
 
  private:
   // compressed codes of indexes
-  Array1d<char> comp_codes_;
+  math::Vector<char> comp_codes_;
 };  // class BinaryWriter
 
 }  // namespace pario

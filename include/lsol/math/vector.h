@@ -50,7 +50,21 @@ class Vector : public Matrix<DType> {
   }
 
  public:
-  inline void resize(size_t newsize) { Matrix<DType>::resize({1, newsize}); }
+  inline void resize(size_t new_size) { 
+    this->init();
+    static size_t max_size = 1 << 30;
+    if (this->capacity() < new_size) {
+      // allocate more memory
+      size_t alloc_size = this->capacity();
+      do {
+        alloc_size += (alloc_size < max_size ? alloc_size : max_size) + 3;
+      } while (alloc_size < new_size);
+
+      this->storage_->resize(alloc_size);
+    }
+    (*this->shape_)[0] = 1;
+    (*this->shape_)[1] = new_size;
+  }
 
   /// \brief  Push a new element to the end of the vector, resize the array
   /// accordingly
@@ -71,12 +85,13 @@ class Vector : public Matrix<DType> {
   }
 
   /// \brief  Resize the array to be of size zero
-  inline void clear(void) { this->resize({0, 0}); }
+  inline void clear(void) { this->resize(0); }
 
  public:
   inline size_t dim() const {
     return this->shape_ == nullptr ? 0 : (*this->shape_)[1];
   }
+  inline size_t size() const { return this->dim(); }
 
   inline DType* begin() { return this->storage_->begin(); }
   inline const DType* begin() const { return this->storage_->begin(); }

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include <lsol/math/shape.h>
-#include <lsol/math/matrix_storage.h>
+#include <lsol/math/vector.h>
 #include <lsol/math/matrix_expression.h>
 
 namespace lsol {
@@ -22,7 +22,7 @@ class SVector
  public:
   /// \brief  constructor
   SVector()
-      : indexes_(nullptr), values_(nullptr), shape_(nullptr), count_(nullptr) {}
+      : indexes_(nullptr), values_(nullptr), count_(nullptr) {}
 
   /// \brief  copy constructor from another array, note the constructed
   /// array will  point to the same memory space
@@ -31,7 +31,6 @@ class SVector
   SVector(const SVector<DType>& src_vec)
       : indexes_(src_vec.indexes_),
         values_(src_vec.values_),
-        shape_(src_vec.shape_),
         count_(src_vec.count_) {
     if (this->count_ != nullptr) ++(*this->count_);
   }
@@ -50,7 +49,6 @@ class SVector
       this->release();
       this->indexes_ = src_vec.indexes_;
       this->values_ = src_vec.values_;
-      this->shape_ = src_vec.shape_;
       this->count_ = src_vec.count_;
       if (this->count_ != nullptr) ++(*this->count_);
     }
@@ -61,9 +59,8 @@ class SVector
   /// \brief init the owned data
   inline void init() {
     if (this->count_ == nullptr) {
-      this->indexes_ = new MatrixStorage<index_t>;
-      this->values_ = new MatrixStorage<DType>;
-      this->shape_ = new Shape<2>;
+      this->indexes_ = new Vector<index_t>;
+      this->values_ = new Vector<DType>;
       this->count_ = new int;
       *(this->count_) = 1;
     }
@@ -75,7 +72,6 @@ class SVector
       if (*this->count_ == 0) {
         DeletePointer(this->indexes_);
         DeletePointer(this->values_);
-        DeletePointer(this->shape_);
         DeletePointer(this->count_);
       }
     }
@@ -88,8 +84,8 @@ class SVector
   ///
   /// \param new_size New number of elements to reserve
   inline void reserve(size_t new_size) {
-    this->indexes_->resize(new_size);
-    this->values_->resize(new_size);
+    this->indexes_->reserve(new_size);
+    this->values_->reserve(new_size);
   }
 
   /// \brief  reshape the array to the given shape, not the capacity is not
@@ -98,19 +94,8 @@ class SVector
   /// \param new_size New size to resize to
   void resize(size_t new_size) {
     this->init();
-    static size_t max_size = 1 << 30;
-
-    if (this->capacity() < new_size) {
-      // allocate more memory
-      size_t alloc_size = this->capacity();
-      do {
-        alloc_size += (alloc_size < max_size ? alloc_size : max_size) + 3;
-      } while (alloc_size < new_size);
-
-      this->indexes_->resize(alloc_size);
-      this->values_->resize(alloc_size);
-    }
-    (*this->shape_)[1] = new_size;
+	this->indexes_->resize(new_size);
+	this->values_->resize(new_size);
   }
 
   /// \brief  Push a new element to the end of the vector, resize the array
@@ -128,37 +113,33 @@ class SVector
   inline void clear() { this->resize(0); }
 
  public:
-  inline size_t capacity() const { return this->indexes_->size(); }
+  inline size_t capacity() const { return this->values_ == nullptr ? 0 : this->values_->size(); }
 
   /// \brief  number of elements
   inline size_t size() const {
-    return this->shape_ == nullptr ? 0 : (*this->shape_)[1];
+	  return this->values_ == nullptr ? 0 : this->values_->size(); 
   }
   inline index_t dim() const {
     size_t sz = this->size();
     return sz == 0 ? 0 : this->index(sz - 1) + 1;
   }
 
-  inline const Shape<2>& shape() const { return *this->shape_; }
+  inline const Shape<2>& shape() const { return this->values_ == nullptr ? Shape<2> : this->values_->shape(); }
 
   inline bool empty() const {
-    return this->shape_ == nullptr || this->size() == 0;
+	  return this->values_->empty();
   }
 
   /// accessing elements
-  inline index_t* indexes() { return this->indexes_->begin(); }
-  inline const index_t* indexes() const { return this->indexes_->begin(); }
-  inline index_t& index(size_t idx) { return this->indexes_->begin()[idx]; }
-  inline const index_t& index(size_t idx) const {
-    return this->indexes_->begin()[idx];
-  }
+  inline Vector<index_t>& indexes() { return *(this->indexes_); }
+  inline const Vector<index_t>& indexes() const { return *(this->indexes_); }
+  inline index_t& index(size_t idx) { return this->indexes()[idx]; }
+  inline const index_t& index(size_t idx) const { return this->indexes()[idx]; }
 
-  inline DType* values() { return this->values_->begin(); }
-  inline const DType* values() const { return this->values_->begin(); }
-  inline DType& value(size_t idx) { return this->values_->begin()[idx]; }
-  inline const DType& value(size_t idx) const {
-    return this->values_->begin()[idx];
-  }
+  inline Vector<DType>& values() { return *(this->values_); }
+  inline const Vector<DType>& values() const { return *(this->values_); }
+  inline DType& value(size_t idx) { return this->values()[idx]; }
+  inline const DType& value(size_t idx) const { return this->values()[idx]; }
 
   inline std::pair<index_t, DType> operator[](size_t idx) const {
     return std::make_pair<index_t, DType>(this->index(idx), this->value(idx));
@@ -169,8 +150,8 @@ class SVector
                                   const SVector<DType2>& svec);
 
  protected:
-  MatrixStorage<index_t>* indexes_;
-  MatrixStorage<DType>* values_;
+  Vector<index_t>* indexes_;
+  Vector<DType>* values_;
   Shape<2>* shape_;
   int* count_;
 };

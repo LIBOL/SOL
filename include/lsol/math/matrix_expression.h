@@ -131,7 +131,7 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kSparse> &dst,
   CType &mat = dst.self();
   const EType &exp_val = exp.self();
   size_t sz = mat.size();
-  DType *pdata = mat.values();
+  DType *pdata = mat.values().data();
   for (size_t idx = 0; idx < sz; ++idx) {
     OP::template map<DType>(*pdata++, exp_val[idx]);
   }

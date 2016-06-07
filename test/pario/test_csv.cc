@@ -45,21 +45,21 @@ int test_csv_reader(const char* path, vector<DataPoint>& dps) {
         assert(ret == Status_OK);
         //"-1,0.1,-0.1	,1.5e-1	,-1.5e1 ,-1.5e-1 \n"
         CHECK_EQ(dp.label(), -1);
-        CHECK_EQ(dp.features(0), 0.1);
-        CHECK_EQ(dp.features(1), -0.1);
-        CHECK_EQ(dp.features(2), 1.5e-1);
-        CHECK_EQ(dp.features(3), -1.5e1);
-        CHECK_EQ(dp.features(4), -1.5e-1);
+        CHECK_EQ(dp.feature(0), 0.1);
+        CHECK_EQ(dp.feature(1), -0.1);
+        CHECK_EQ(dp.feature(2), 1.5e-1);
+        CHECK_EQ(dp.feature(3), -1.5e1);
+        CHECK_EQ(dp.feature(4), -1.5e-1);
         break;
       case 1:
         assert(ret == Status_OK);
         //"1  ,0.1  ,-0.1	,1.5e-1	,-1.5e1 ,-1.5e-1 \n"
         CHECK_EQ(dp.label(), 1);
-        CHECK_EQ(dp.features(0), 0.1);
-        CHECK_EQ(dp.features(1), -0.1);
-        CHECK_EQ(dp.features(2), 1.5e-1);
-        CHECK_EQ(dp.features(3), -1.5e1);
-        CHECK_EQ(dp.features(4), -1.5e-1);
+        CHECK_EQ(dp.feature(0), 0.1);
+        CHECK_EQ(dp.feature(1), -0.1);
+        CHECK_EQ(dp.feature(2), 1.5e-1);
+        CHECK_EQ(dp.feature(3), -1.5e1);
+        CHECK_EQ(dp.feature(4), -1.5e-1);
         break;
       case 2:
         //"1\t,0.1  :-0.1	,1.5e-1	4:-1.5e1 5:-1.5e-1\n"
@@ -69,12 +69,12 @@ int test_csv_reader(const char* path, vector<DataPoint>& dps) {
         assert(ret == Status_OK);
         //"1  ,0.1  ,-0.1	, 1.5e-1	,\t-1.5e1 ,-1.5e-1";
         CHECK_EQ(dp.label(), 1);
-        CHECK_EQ(dp.features(0), 0.1);
-        CHECK_EQ(dp.features(1), -0.1);
-        CHECK_EQ(dp.features(2), 1.5e-1);
-        CHECK_EQ(int(dp.indexes(3)), 4);
-        CHECK_EQ(dp.features(3), -1.5e1);
-        CHECK_EQ(dp.features(4), -1.5e-1);
+        CHECK_EQ(dp.feature(0), 0.1);
+        CHECK_EQ(dp.feature(1), -0.1);
+        CHECK_EQ(dp.feature(2), 1.5e-1);
+        CHECK_EQ(int(dp.index(3)), 4);
+        CHECK_EQ(dp.feature(3), -1.5e1);
+        CHECK_EQ(dp.feature(4), -1.5e-1);
         break;
       case 4:
         assert(ret == Status_EndOfFile);
@@ -140,7 +140,7 @@ int test_csv_writer(vector<DataPoint>& dps) {
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
-      if (dps[i].indexes(j) != dps2[i].indexes(j)) {
+      if (dps[i].index(j) != dps2[i].index(j)) {
         fprintf(stderr,
                 "check csv writer failed: index %lu of instance %lu "
                 "not the "
@@ -148,7 +148,7 @@ int test_csv_writer(vector<DataPoint>& dps) {
                 j, i);
         return Status_Error;
       }
-      if (dps[i].features(j) != dps2[i].features(j)) {
+      if (dps[i].feature(j) != dps2[i].feature(j)) {
         fprintf(stderr,
                 "check csv writer failed: feature %lu of instance %lu "
                 "not the "
@@ -196,7 +196,7 @@ int main() {
     for (const DataPoint& dp : dps) {
       printf("%d", dp.label());
       for (size_t i = 0; i < dp.indexes().size(); ++i) {
-        printf(" %d:%g", dp.indexes(i), dp.features(i));
+        printf(" %d:%g", dp.index(i), dp.feature(i));
       }
       printf("\n");
     }

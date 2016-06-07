@@ -17,14 +17,12 @@ DataPoint::DataPoint() : label_(0) {}
 
 void DataPoint::Clone(DataPoint &dst_pt) const {
     dst_pt.label_ = this->label_;
-    dst_pt.indexes_.Reserve(this->indexes_.size());
-    dst_pt.indexes_.Resize(this->indexes_.size());
-    memcpy(dst_pt.indexes_.begin(), this->indexes_.begin(),
-           this->indexes_.size() * sizeof(index_t));
-    dst_pt.features_.Reserve(this->features_.size());
-    dst_pt.features_.Resize(this->features_.size());
-    memcpy(dst_pt.features_.begin(), this->features_.begin(),
-           this->features_.size() * sizeof(real_t));
+	dst_pt.Reserve(this->size());
+	dst_pt.Resize(this->size());
+    memcpy(dst_pt.indexes().begin(), this->indexes().begin(),
+           this->size() * sizeof(index_t));
+    memcpy(dst_pt.features().begin(), this->features().begin(),
+           this->size() * sizeof(real_t));
 }
 
 DataPoint DataPoint::Clone() const {
@@ -34,18 +32,16 @@ DataPoint DataPoint::Clone() const {
 }
 
 void DataPoint::AddNewFeat(index_t index, real_t feat) {
-    this->indexes_.Push(index);
-    this->features_.Push(feat);
+	this->data_.push_back(index, feat);
 }
 
 void DataPoint::Clear() {
-    this->indexes_.Clear();
-    this->features_.Clear();
+	this->data_.clear();
     this->label_ = 0;
 }
 
 bool DataPoint::IsSorted() const {
-    for (auto iter = this->indexes_.begin() + 1; iter < this->indexes_.end();
+    for (auto iter = this->indexes().begin() + 1; iter < this->indexes().end();
          ++iter) {
         if (*iter <= *(iter - 1)) return false;
     }
@@ -91,8 +87,8 @@ void QuickSort(T1 *a, T2 *b, size_t low, size_t high) {  // from small to great
 
 void DataPoint::Sort() {
     if (this->IsSorted() == false) {
-        QuickSort(this->indexes_.begin(), this->features_.begin(), 0,
-                  this->indexes_.size() - 1);
+        QuickSort(this->indexes().begin(), this->features().begin(), 0,
+                  this->indexes().size() - 1);
     }
 }
 
