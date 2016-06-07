@@ -47,7 +47,7 @@ int BinaryReader::Next(DataPoint& dst_data) {
       fprintf(stderr, "read coded index failed!\n");
       return Status_Invalid_Format;
     }
-	dst_data.Resize(feat_num);
+    dst_data.Resize(feat_num);
     decomp_index(this->comp_codes_, dst_data.indexes());
     if (dst_data.indexes().size() != feat_num) {
       fprintf(stderr, "decoded index number is not correct!\n");

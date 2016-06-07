@@ -75,10 +75,10 @@ ReturnType CreateObject(const std::string& cls_name) {
                                                                    \
  private:
 
-#define RegisterClassReflector(type, name, descr)                            \
-  type* type##_##CreateNewInstance() { return new type(); }                  \
+#define RegisterClassReflector(type, name, descr)                              \
+  type* type##_##CreateNewInstance() { return new type(); }                    \
   ClassInfo __kClassInfo_##type##__(name, (void*)(type##_##CreateNewInstance), \
-                                  descr);
+                                    descr);
 }  // namespace lsol
 
 #endif  // CXX_SELF_CUSTOMIZED_RELFECTOR_H__

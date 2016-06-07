@@ -21,8 +21,7 @@ class SVector
     : public expr::MatrixExp<SVector<DType>, DType, expr::ExprType::kSparse> {
  public:
   /// \brief  constructor
-  SVector()
-      : indexes_(nullptr), values_(nullptr), count_(nullptr) {}
+  SVector() : indexes_(nullptr), values_(nullptr), count_(nullptr) {}
 
   /// \brief  copy constructor from another array, note the constructed
   /// array will  point to the same memory space
@@ -94,8 +93,8 @@ class SVector
   /// \param new_size New size to resize to
   void resize(size_t new_size) {
     this->init();
-	this->indexes_->resize(new_size);
-	this->values_->resize(new_size);
+    this->indexes_->resize(new_size);
+    this->values_->resize(new_size);
   }
 
   /// \brief  Push a new element to the end of the vector, resize the array
@@ -113,22 +112,24 @@ class SVector
   inline void clear() { this->resize(0); }
 
  public:
-  inline size_t capacity() const { return this->values_ == nullptr ? 0 : this->values_->size(); }
+  inline size_t capacity() const {
+    return this->values_ == nullptr ? 0 : this->values_->size();
+  }
 
   /// \brief  number of elements
   inline size_t size() const {
-	  return this->values_ == nullptr ? 0 : this->values_->size(); 
+    return this->values_ == nullptr ? 0 : this->values_->size();
   }
   inline index_t dim() const {
     size_t sz = this->size();
     return sz == 0 ? 0 : this->index(sz - 1) + 1;
   }
 
-  inline const Shape<2>& shape() const { return this->values_ == nullptr ? Shape<2>() : this->values_->shape(); }
-
-  inline bool empty() const {
-	  return this->values_->empty();
+  inline const Shape<2>& shape() const {
+    return this->values_ == nullptr ? Shape<2>() : this->values_->shape();
   }
+
+  inline bool empty() const { return this->values_->empty(); }
 
   /// accessing elements
   inline Vector<index_t>& indexes() { return *(this->indexes_); }

@@ -15,13 +15,13 @@
 /// \brief  declaration of functions
 namespace lsol {
 
-#define DeletePointer(p)  \
-  if ((p) != nullptr) { \
-    delete (p);         \
-    (p) = nullptr;      \
+#define DeletePointer(p) \
+  if ((p) != nullptr) {  \
+    delete (p);          \
+    (p) = nullptr;       \
   }
 
-#define DeleteArray(p)    \
+#define DeleteArray(p)  \
   if ((p) != nullptr) { \
     delete[](p);        \
     (p) = nullptr;      \

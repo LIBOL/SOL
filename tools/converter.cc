@@ -62,10 +62,10 @@ int main(int argc, char** argv) {
       }
     }
     writer->SetExtraInfo((char*)(&feat_dim));
-	if (feat_dim == 0) {
-		fprintf(stderr, "figuring out feature dimension failed\n");
-		return Status_Invalid_Format;
-	}
+    if (feat_dim == 0) {
+      fprintf(stderr, "figuring out feature dimension failed\n");
+      return Status_Invalid_Format;
+    }
     ret = iter.AddReader(src_path, src_type);
     if (ret != Status_OK) return ret;
   }

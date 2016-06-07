@@ -18,8 +18,8 @@ namespace lsol {
 namespace pario {
 
 DataWriter* DataWriter::Create(const std::string& type) {
-    auto create_func = CreateObject<DataWriter>(std::string(type) + "_writer");
-    return create_func == nullptr ? nullptr : create_func();
+  auto create_func = CreateObject<DataWriter>(std::string(type) + "_writer");
+  return create_func == nullptr ? nullptr : create_func();
 }
 
 DataWriter::DataWriter() { this->is_good_ = true; }
@@ -27,12 +27,12 @@ DataWriter::DataWriter() { this->is_good_ = true; }
 DataWriter::~DataWriter() { this->Close(); }
 
 int DataWriter::Open(const string& path, const char* mode) {
-    this->Close();
-    this->file_path_ = path;
-    int ret = this->file_writer_.Open(path.c_str(), mode);
-    this->is_good_ = ret == Status_OK ? true : false;
+  this->Close();
+  this->file_path_ = path;
+  int ret = this->file_writer_.Open(path.c_str(), mode);
+  this->is_good_ = ret == Status_OK ? true : false;
 
-    return ret;
+  return ret;
 }
 
 }  // namespace pario

@@ -21,67 +21,67 @@ namespace pario {
 
 FileWriter::FileWriter() : file_(nullptr) {}
 FileWriter::FileWriter(const char* path, const char* mode) : file_(nullptr) {
-    this->Open(path, mode);
+  this->Open(path, mode);
 }
 
 FileWriter::~FileWriter() { this->Close(); }
 
 int FileWriter::Open(const char* path, const char* mode) {
+  this->Close();
+  // open file
+  if (strcmp(path, "-") == 0) {
+    this->file_ = stdout;
+    path = "stdout";
+  } else {
+    this->file_ = open_file(path, mode);
+  }
+
+  if (this->file_ == nullptr || this->Good() == false) {
     this->Close();
-    // open file
-    if (strcmp(path, "-") == 0) {
-        this->file_ = stdout;
-        path = "stdout";
-    } else {
-        this->file_ = open_file(path, mode);
-    }
+    fprintf(stderr, "Error: open file (%s) failed.\n", path);
+    return Status_IO_Error;
+  }
 
-    if (this->file_ == nullptr || this->Good() == false) {
-        this->Close();
-        fprintf(stderr, "Error: open file (%s) failed.\n", path);
-        return Status_IO_Error;
-    }
-
-    return Status_OK;
+  return Status_OK;
 }
 
 void FileWriter::Close() {
-    if (this->file_ != nullptr && this->file_ != stdout) {
-        fclose(this->file_);
-    }
-    this->file_ = nullptr;
+  if (this->file_ != nullptr && this->file_ != stdout) {
+    fclose(this->file_);
+  }
+  this->file_ = nullptr;
 }
 
 bool FileWriter::Good() {
-    // we do not need to handle eof here, when eof is set, ferror still returns
-    // 0
-    return this->file_ != nullptr && ferror(this->file_) == 0;
+  // we do not need to handle eof here, when eof is set, ferror still returns
+  // 0
+  return this->file_ != nullptr && ferror(this->file_) == 0;
 }
 
 int FileWriter::Write(char* src_buf, size_t length) {
-    size_t write_len = fwrite(src_buf, 1, length, this->file_);
-    if (write_len == length) {
-        return Status_OK;
-    } else {
-        fprintf(stderr,
-                "Error %d: only %lu bytes are written while %lu bytes are "
-                "specified.\n",
-                Status_IO_Error, write_len, length);
-        return Status_IO_Error;
-    }
+  size_t write_len = fwrite(src_buf, 1, length, this->file_);
+  if (write_len == length) {
+    return Status_OK;
+  } else {
+    fprintf(stderr,
+            "Error %d: only %lu bytes are written while %lu bytes are "
+            "specified.\n",
+            Status_IO_Error, write_len, length);
+    return Status_IO_Error;
+  }
 }
 
 int FileWriter::Printf(const char* format, ...) {
-    va_list argptr;
-    va_start(argptr, format);
+  va_list argptr;
+  va_start(argptr, format);
 
-    int ret = Status_OK;
-    if ((ret = vfprintf(this->file_, format, argptr)) < 0) {
-        fprintf(stderr, "vfprintf failed in %s:%d\n", __FILE__, __LINE__);
-        ret = Status_IO_Error;
-    }
-    va_end(argptr);
-    return ret;
+  int ret = Status_OK;
+  if ((ret = vfprintf(this->file_, format, argptr)) < 0) {
+    fprintf(stderr, "vfprintf failed in %s:%d\n", __FILE__, __LINE__);
+    ret = Status_IO_Error;
+  }
+  va_end(argptr);
+  return ret;
 }
 
 }  // namespace pario

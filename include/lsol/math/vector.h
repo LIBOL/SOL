@@ -50,7 +50,7 @@ class Vector : public Matrix<DType> {
   }
 
  public:
-  inline void resize(size_t new_size) { 
+  inline void resize(size_t new_size) {
     this->init();
     static size_t max_size = 1 << 30;
     if (this->capacity() < new_size) {

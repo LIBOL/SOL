@@ -28,7 +28,7 @@ class LSOL_EXPORTS DataPoint {
   /// \brief  Clone the current point to destination point
   ///
   /// \param dst_pt destination point
-  void Clone(DataPoint &dst_pt) const;
+  void Clone(DataPoint& dst_pt) const;
 
   /// \brief  Clone a new point from this
   ///
@@ -57,27 +57,31 @@ class LSOL_EXPORTS DataPoint {
   void Sort();
 
  public:
-  inline const math::Vector<index_t>& indexes() const { return this->data_.indexes(); }
+  inline const math::Vector<index_t>& indexes() const {
+    return this->data_.indexes();
+  }
   inline math::Vector<index_t>& indexes() { return this->data_.indexes(); }
 
-  inline const math::Vector<real_t>& features() const { return this->data_.values(); }
+  inline const math::Vector<real_t>& features() const {
+    return this->data_.values();
+  }
   inline math::Vector<real_t>& features() { return this->data_.values(); }
 
   inline index_t index(size_t index) const { return this->data_.index(index); }
   inline index_t& index(size_t index) { return this->data_.index(index); }
 
-  inline real_t feature(index_t index) const { return this->data_.value(index); }
-  inline real_t &feature(index_t index) { return this->data_.value(index); }
+  inline real_t feature(index_t index) const {
+    return this->data_.value(index);
+  }
+  inline real_t& feature(index_t index) { return this->data_.value(index); }
 
   inline label_t label() const { return this->label_; }
   inline void set_label(label_t label) { this->label_ = label; }
-  index_t dim() const {
-	  return this->data_.dim();
-  }
+  index_t dim() const { return this->data_.dim(); }
   inline size_t size() const { return this->data_.size(); }
 
  protected:
-	 math::SVector<real_t> data_;
+  math::SVector<real_t> data_;
   label_t label_;
 };  // class DataPoint
 
