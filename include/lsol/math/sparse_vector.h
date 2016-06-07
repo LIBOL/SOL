@@ -124,7 +124,7 @@ class SVector
     return sz == 0 ? 0 : this->index(sz - 1) + 1;
   }
 
-  inline const Shape<2>& shape() const { return this->values_ == nullptr ? Shape<2> : this->values_->shape(); }
+  inline const Shape<2>& shape() const { return this->values_ == nullptr ? Shape<2>() : this->values_->shape(); }
 
   inline bool empty() const {
 	  return this->values_->empty();

@@ -199,7 +199,7 @@ struct UnaryMapExp
 template <typename OP, typename EType, typename DType, int exptype>
 inline UnaryMapExp<OP, EType, DType, exptype> MakeExp(
     const Exp<EType, DType, exptype> &src) {
-  return UnaryMapExp<OP, EType, DType>(src.self());
+  return UnaryMapExp<OP, EType, DType, exptype>(src.self());
 }
 
 }  // namespace expr
