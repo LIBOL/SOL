@@ -108,7 +108,32 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
   size_t sz = s.size();
   DType *pdata = mat.data();
   for (size_t idx = 0; idx < sz; ++idx) {
-	  OP::template map<DType>(*pdata++, exp_val[idx]);
+    OP::template map<DType>(*pdata++, exp_val[idx]);
+  }
+}
+
+// dense matrix with sparse matrix operations
+template <typename OP, typename CType, typename DType, typename EType>
+void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
+             const Exp<EType, DType, ExprType::kSparse> &exp) {
+  DType *pdata = dst.self().data();
+  const EType &svec = exp.self();
+  size_t sz = svec.size();
+  for (size_t idx = 0; idx < sz; ++idx) {
+    OP::template map<DType>(pdata[svec.index(idx)], svec.value(idx));
+  }
+}
+
+// sparse matrix operations
+template <typename OP, typename CType, typename DType, typename EType>
+void CalcExp(MatrixExp<CType, DType, ExprType::kSparse> &dst,
+             const Exp<EType, DType, ExprType::kValue> &exp) {
+  CType &mat = dst.self();
+  const EType &exp_val = exp.self();
+  size_t sz = mat.size();
+  DType *pdata = mat.values();
+  for (size_t idx = 0; idx < sz; ++idx) {
+    OP::template map<DType>(*pdata++, exp_val[idx]);
   }
 }
 

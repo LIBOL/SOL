@@ -9,6 +9,7 @@
 
 #include <lsol/math/matrix.h>
 #include <lsol/math/vector.h>
+#include <lsol/math/sparse_vector.h>
 
 using namespace lsol::math;
 using namespace lsol::math::expr;
@@ -81,39 +82,32 @@ int main() {
 
 	cout << "original vector:" << endl << v2 << endl;
 
-	/*
 	cout << "Test sparse vector" << endl;
-	SparseVector<uint32_t, float> sv(3);
+	SVector<float> sv;
 	sv.push_back(0, 1);
 	sv.push_back(1, 2);
-	sv.push_back(2, 3);
+	sv.push_back(3, 3);
 	cout << "push: "<<endl<<sv<<endl;
-	sv.pop_back();
-	cout << "pop: "<<endl<<sv<<endl;
-	cout << "front: " <<sv.front()<<endl;
-	cout << "back: " <<sv.back()<<endl;
+
+	cout << "size: "<<sv.size() << endl;
 	cout << "dimsension: "<<sv.dim() << endl;
 
-	SparseVector<uint32_t, float> sv2 = sv;
+	SVector<float> sv2 = sv;
 	cout << "copy constructor: " << endl << sv2 << endl;
 	sv2 = sv;
 	cout << "assignment: " << endl << sv2 << endl;
-	//sv2 += SparseItem<uint32_t, float>(2.f);
 	sv2 += 2.1f;
 	cout << "plus 2.1: " << endl << sv2 << endl;
-	sv2 = sv2 + 2.f;
-	cout << "plus 2: " << endl << sv2 << endl;
-	sv2 = sv2 /  2.f;
+	sv2 /=  2.f;
 	cout << "div 2: " << endl << sv2 << endl;
-	sv2 = sv2 -  2.f;
+	sv2 -=  2.f;
 	cout << "minux 2: " << endl << sv2 << endl;
-	sv2 = sv2 * 2.f;
+	sv2 *= 2.f;
 	cout << "mul 2: " << endl << sv2 << endl;
 	cout << "v2 : " << endl << v2 << endl;
 	cout << "sv2 : " << endl << sv2 << endl;
 	v2 *= sv2;
 	cout << "v2 * sv2 : " << endl << v2 << endl;
-	cout << "original vector:" << endl << sv2 << endl;
-	*/
+	cout << "original sparse vector:" << endl << sv2 << endl;
 	return 0;
 }

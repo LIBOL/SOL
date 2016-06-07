@@ -50,22 +50,24 @@ class Vector : public Matrix<DType> {
   }
 
  public:
+  inline void resize(size_t newsize) { Matrix<DType>::resize({1, newsize}); }
+
   /// \brief  Push a new element to the end of the vector, resize the array
   /// accordingly
   ///
   /// \param elem Element to be pushed
   inline void push_back(const DType& elem) {
-    this->resize({1, this->size() + 1});
+    this->resize(this->size() + 1);
     this->back() = elem;
   }
 
   /// \brief  Pop out the last element, work like a stack
   inline void pop_back() {
-    size_t size = this->size();
-    if (size == 0) {
+    size_t sz = this->size();
+    if (sz == 0) {
       throw std::runtime_error("pop back failed as vector is empty!");
     }
-    this->resize({1, size - 1});
+    this->resize(sz - 1);
   }
 
   /// \brief  Resize the array to be of size zero

@@ -7,66 +7,22 @@
 #define LSOL_MATH_MATRIX_H__
 
 #include <lsol/math/shape.h>
-#include <lsol/util/util.h>
-
-#include <lsol/math/expression.h>
+#include <lsol/math/matrix_storage.h>
 #include <lsol/math/matrix_expression.h>
 
 namespace lsol {
 namespace math {
 
-/// \brief  storage structure of matrix
-///
-/// \tparam DType Data Element Type
 template <typename DType>
-class MatrixStorage {
- public:
-  MatrixStorage() : begin_(nullptr), size_(0) {}
-
-  ~MatrixStorage() { DeleteArray(this->begin_); }
-
- public:
-  /// \brief  resize the storage
-  ///
-  /// \param new_size Specified size of elements to be allocated
-  void resize(size_t new_size) {
-    if (new_size > this->size_) {
-      DType* new_begin = new DType[new_size];
-      memset(new_begin, 0, sizeof(DType) * new_size);
-      // copy data
-      std::memcpy(new_begin, this->begin_, sizeof(DType) * this->size());
-      DeleteArray(this->begin_);
-      this->begin_ = new_begin;
-      this->size_ = new_size;
-    }
-  }
-
-  DISABLE_COPY_AND_ASSIGN(MatrixStorage);
-
- public:
-  inline const DType* begin() const { return this->begin_; }
-  inline DType* begin() { return this->begin_; }
-
-  inline const DType* end() const { return this->begin_ + this->size_; }
-  inline DType* end() { return this->end_ + this->size_; }
-
-  inline size_t size() const { return this->size_; }
-
- protected:
-  // point to the first element
-  DType* begin_;
-  // capacity of the array
-  size_t size_;
-};
-
-template <typename DType>
-class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDense> {
+class Matrix
+    : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDense> {
  public:
   /// \brief  constructor
   Matrix() : storage_(nullptr), shape_(nullptr), count_(nullptr) {}
 
   /// \brief  constructor
-  Matrix(const Shape<2>& shape) : storage_(nullptr), count_(nullptr) {
+  Matrix(const Shape<2>& shape)
+      : storage_(nullptr), shape_(nullptr), count_(nullptr) {
     this->init();
     this->resize(shape);
   }
@@ -78,7 +34,7 @@ class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDen
   /// \param exp <++>
   template <typename EType, int etype>
   Matrix(const expr::Exp<EType, DType, etype>& exp)
-      : storage_(nullptr), count_(nullptr) {
+      : storage_(nullptr), shape_(nullptr), count_(nullptr) {
     this->init();
     this->assign(exp);
   }
@@ -137,7 +93,6 @@ class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDen
     if (this->count_ != nullptr) {
       --(*this->count_);
       if (*this->count_ == 0) {
-		  auto ptr = this->storage_;
         DeletePointer(this->storage_);
         DeletePointer(this->shape_);
         DeletePointer(this->count_);
@@ -156,7 +111,7 @@ class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDen
   /// \brief  reshape the array to the given shape, not the capacity is not
   /// ensured to be equal to the new size
   ///
-  /// \param new_size New size to resize to
+  /// \param shape new shape of the matrix
   void resize(const Shape<2>& shape) {
     this->init();
     static size_t max_size = 1 << 30;
@@ -182,6 +137,8 @@ class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDen
     return this->shape_ == nullptr ? 0 : this->shape_->size(start_dim, end_dim);
   }
   inline const Shape<2>& shape() const { return *this->shape_; }
+  inline size_t rows() const { return (*this->shape_)[0]; }
+  inline size_t cols() const { return (*this->shape_)[1]; }
 
   inline size_t dim() const { return 2; }
   inline size_t dim(int idx) const { return (*this->shape_)[idx]; }
@@ -204,11 +161,9 @@ class Matrix : public expr::MatrixExp<Matrix<DType>, DType, expr::ExprType::kDen
     return this->data()[x];
   }
 
-  inline DType& operator[](size_t idx) {
-	  return this->storage_->begin()[idx];
-  }
+  inline DType& operator[](size_t idx) { return this->storage_->begin()[idx]; }
   inline const DType& operator[](size_t idx) const {
-	  return this->storage_->begin()[idx];
+    return this->storage_->begin()[idx];
   }
 
   template <typename DType2>
