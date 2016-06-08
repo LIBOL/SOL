@@ -21,6 +21,8 @@
 #include <lsol/util/error_code.h>
 #include <lsol/loss/loss.h>
 #include <lsol/pario/data_point.h>
+#include <lsol/pario/data_iter.h>
+#include <lsol/math/operator.h>
 
 namespace lsol {
 namespace model {
@@ -41,6 +43,22 @@ class LSOL_EXPORTS Model {
   /// \param name name of the parameter
   /// \param value value of the parameter in string
   virtual void SetParameter(const std::string &name, const std::string &value);
+
+ public:
+  /// \brief  Train from a data set
+  //
+  /// \param data_iter data iterator
+  //
+  /// \return training error rate
+  virtual float Train(pario::DataIter &data_iter) = 0;
+
+  /// \brief  Test a dataset
+  ///
+  /// \param data_iter data iterator
+  /// \param os output stream to store the predicted results
+  ///
+  /// \return test error rate
+  float Test(pario::DataIter &data_iter, std::ostream *os);
 
  public:
   /// \brief  initialize the model for training
@@ -71,6 +89,9 @@ class LSOL_EXPORTS Model {
   ///
   /// \return status code 0 if load successfully
   static Model *Load(const std::string &path);
+
+  /// \brief  get model info string
+  std::string model_info() const;
 
  protected:
   /// \brief  serialize model parameters
@@ -110,16 +131,29 @@ class LSOL_EXPORTS Model {
   }
 
  public:
+  /// \brief  load pre-selected features
+  ///
+  /// \param path pre-select file path
+  ///
+  /// \return status code, Status_OK if succeed
+  int LoadPreSelFeatures(const std::string &path);
+
+  /// \brief  filter features not selected
+  ///
+  /// \param x input data instance
+  void FilterFeatures(pario::DataPoint &x);
+
+  /// \brief  preprocess the  data point, like normalization, filtering
+  ///
+  /// \param x input data instance
+  void PreProcess(pario::DataPoint &x);
+
+ public:
   int class_num() const { return this->class_num_; }
   int clf_num() const { return this->clf_num_; }
   const std::string &type() const { return this->type_; }
   std::string name() const { return name_; }
   void set_name(const std::string &name) { this->name_ = name; }
-
-  /**
-   * PrintModelSettings print the info of optimization algorithm
-   */
-  std::string model_info() const;
 
  protected:
   // number of classes
@@ -128,9 +162,15 @@ class LSOL_EXPORTS Model {
   int clf_num_;
   // loss function
   loss::Loss *loss_;
-
   // online,  batch, etc.
   std::string type_;
+  // data normalization type
+  lsol::math::expr::op::OpType norm_type_;
+  // max feature index
+  index_t max_index_;
+  // pre-selected features
+  math::Vector<char> sel_feat_flags_;
+
   std::string name_;
 };
 

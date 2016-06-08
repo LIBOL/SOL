@@ -13,6 +13,5 @@
 
 #include <lsol/pario/data_iter.h>
 #include <lsol/model/model.h>
-#include <lsol/optimizer/optimizer.h>
 
 #endif

@@ -1,4 +1,4 @@
-set(src_dirs loss model model/olm optimizer)
+set(src_dirs loss model model/olm)
 foreach (src_dir ${src_dirs})
     file(GLOB ${src_dir}_headers
         "${PROJECT_SOURCE_DIR}/include/lsol/${src_dir}/*.h"

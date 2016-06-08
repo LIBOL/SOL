@@ -27,22 +27,14 @@ OnlineLinearModel::OnlineLinearModel(int class_num)
 
   for (int i = 0; i < this->clf_num_; ++i) {
     this->weights(i).resize(this->dim_);
+    this->weights(i) = 0;
+    this->gradients_[i] = 0;
   }
 }
 
 OnlineLinearModel::~OnlineLinearModel() {
   DeleteArray(this->weights_);
   DeleteArray(this->gradients_);
-}
-
-void OnlineLinearModel::BeginTrain() {
-  OnlineModel::BeginTrain();
-
-  // reset weight vector
-  for (int i = 0; i < this->clf_num_; ++i) {
-    this->weights(i) = 0;
-    this->gradients_[i] = 0;
-  }
 }
 
 label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
@@ -54,7 +46,7 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
     this->loss_->gradient(gd_label, predict, this->gradients_, this->clf_num_);
     this->Update(x);
   }
-  return label;
+  return label == gd_label ? x.label() : -x.label();
 }
 
 label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
@@ -94,9 +86,7 @@ void OnlineLinearModel::GetModelParam(Json::Value& root) const {
 
 int OnlineLinearModel::SetModelParam(const Json::Value& root) {
   istringstream iss(root["params"].asString());
-  for (int c = 0; c < this->clf_num_; ++c) {
-    iss >> this->weights(c);
-  }
+  for (int c = 0; c < this->clf_num_; ++c) iss >> this->weights(c);
   return Status_OK;
 }
 

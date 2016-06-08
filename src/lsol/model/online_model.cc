@@ -13,11 +13,12 @@
 #include "lsol/util/str_util.h"
 
 using namespace std;
+using namespace lsol::pario;
 
 namespace lsol {
 namespace model {
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type), eta0_(1), dim_(1), aggressive_(false) {
+    : Model(class_num, type), eta0_(10), dim_(1), aggressive_(true) {
   this->set_power_t(0.5);
   this->set_initial_t(0);
 }
@@ -29,13 +30,54 @@ void OnlineModel::SetParameter(const std::string& name,
   } else if (name == "eta") {
     this->eta0_ = stof(value);
     Check(eta0_ >= 0);
-  } else if (name == "initial_t") {
+  } else if (name == "t0") {
     this->set_initial_t(stoi(value));
   } else if (name == "aggressive") {
     this->aggressive_ = value == "true" ? true : false;
   } else {
     Model::SetParameter(name, value);
   }
+}
+
+float OnlineModel::Train(DataIter& data_iter) {
+  fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
+  this->BeginTrain();
+  float err_num(0);
+  size_t data_num = 0;
+  size_t show_step = 1;  // show information every show_step
+  size_t show_count = 2;
+
+  printf("Training Process....\nIterate No.\t\t\tError Rate\t\t\n");
+
+  float* predicts = new float[this->clf_num()];
+  MiniBatch* mb = nullptr;
+  while (1) {
+    mb = data_iter.Next(mb);
+    if (mb == nullptr) break;
+    // data_num += mb->size();
+    for (int i = 0; i < mb->size(); ++i) {
+      DataPoint& x = (*mb)[i];
+      this->PreProcess(x);
+      // predict
+      label_t label = this->Iterate(x, predicts);
+      if (label != x.label()) {
+        // printf("%d\n", data_num + 1);
+        err_num++;
+      }
+      ++data_num;
+
+      if (data_num >= show_count) {
+        printf("%lu\t\t\t\t%.6f\n", data_num,
+               float(double(err_num) / data_num));
+        show_count = (size_t(1) << ++show_step);
+      }
+    }
+  }
+  printf("%lu\t\t\t\t%.6f\n", data_num, float(double(err_num) / data_num));
+  this->EndTrain();
+
+  delete[] predicts;
+  return float(double(err_num) / data_num);
 }
 
 label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
@@ -46,6 +88,7 @@ label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
 }
 
 void OnlineModel::GetModelInfo(Json::Value& root) const {
+  Model::GetModelInfo(root);
   root["online"]["power_t"] = this->power_t_;
   root["online"]["eta"] = this->eta0_;
   root["online"]["t0"] = this->initial_t_;
@@ -54,16 +97,17 @@ void OnlineModel::GetModelInfo(Json::Value& root) const {
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {
+  Model::SetModelInfo(root);
   const Json::Value& online_settings = root["online"];
   if (online_settings.isNull()) {
     fprintf(stderr, "no online info found for online model\n");
     return Status_Invalid_Format;
   }
-  this->set_power_t(online_settings["eta"].asFloat());
+  this->set_power_t(online_settings["power_t"].asFloat());
   this->eta0_ = online_settings["eta"].asFloat();
   this->set_initial_t(online_settings["t0"].asInt());
-  this->cur_iter_num_ = online_settings["t0"].asInt();
-  this->update_dim(online_settings["dim"].asInt());
+  this->cur_iter_num_ = online_settings["t"].asInt();
+  this->update_dim(online_settings["dim"].asInt() - 1);
   return Status_OK;
 }
 

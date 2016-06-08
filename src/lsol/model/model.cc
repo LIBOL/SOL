@@ -8,10 +8,14 @@
 
 #include "lsol/model/model.h"
 
+#include <algorithm>
+
 #include "lsol/util/util.h"
 #include "lsol/util/error_code.h"
 
 using namespace std;
+using namespace lsol::math::expr;
+using namespace lsol::pario;
 
 namespace lsol {
 namespace model {
@@ -25,7 +29,9 @@ Model::Model(int class_num, const std::string& type)
     : class_num_(class_num),
       clf_num_(class_num == 2 ? 1 : class_num),
       loss_(nullptr),
-      type_(type) {
+      type_(type),
+      norm_type_(op::OpType::kNone),
+      max_index_(0) {
   Check(class_num > 1);
 }
 
@@ -41,6 +47,22 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
     DeletePointer(this->loss_);
     this->loss_ = loss::Loss::Create(value);
     Check(this->loss_ != nullptr);
+  } else if (name == "norm") {
+    if (value == "L1") {
+      this->norm_type_ = op::OpType::kL1;
+    } else if (value == "L2") {
+      this->norm_type_ = op::OpType::kL2;
+    } else {
+      ostringstream oss;
+      oss << "unknown norm type " << value;
+      throw invalid_argument(oss.str());
+    }
+  } else if (name == "presel") {
+    if (this->LoadPreSelFeatures(value) != Status_OK) {
+      ostringstream oss;
+      oss << "load pre-selected features failed!";
+      throw invalid_argument(oss.str());
+    }
   } else {
     ostringstream oss;
     oss << "unknown parameter " << name;
@@ -48,7 +70,48 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
+float Model::Test(DataIter& data_iter, std::ostream* os) {
+  fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
+  printf("Test Process....\nIterate No.\t\t\tError Rate\t\t\n");
+
+  size_t err_num = 0;
+  size_t data_num = 0;
+  size_t show_step = 1;  // show information every show_step
+  size_t show_count = 2;
+
+  if (os != nullptr) {
+    (*os) << "predict\tlabel\n";
+  }
+
+  float* predicts = new float[this->clf_num()];
+  MiniBatch* mb = nullptr;
+  while (1) {
+    mb = data_iter.Next(mb);
+    if (mb == nullptr) break;
+    // data_num += mb->size();
+    for (int i = 0; i < mb->size(); ++i) {
+      DataPoint& x = (*mb)[i];
+      this->PreProcess(x);
+      // predict
+      label_t label = this->Predict(x, predicts);
+      if (label != x.label()) err_num++;
+      if (os != nullptr) {
+        (*os) << label << "\t" << x.label() << "\n";
+      }
+      ++data_num;
+      if (data_num >= show_count) {
+        printf("%lu\t\t\t\t%.6f\n", data_num,
+               float(double(err_num) / data_num));
+        show_count = (size_t(1) << ++show_step);
+      }
+    }
+  }
+  delete[] predicts;
+  return float(double(err_num) / data_num);
+}
+
 int Model::Save(const string& path) const {
+  fprintf(stdout, "save model to %s\n", path.c_str());
   ofstream out_file(path.c_str(), ios::out);
   if (!out_file) {
     fprintf(stderr, "open file %s failed\n", path.c_str());
@@ -124,6 +187,78 @@ string Model::model_info() const {
 
   Json::StyledWriter writer;
   return writer.write(root);
+}
+
+void Model::PreProcess(DataPoint& x) {
+  // filter features
+  this->FilterFeatures(x);
+
+  // normalize
+  if (this->norm_type_ != op::OpType::kNone) {
+    real_t norm = 1;
+    switch (this->norm_type_) {
+      case op::OpType::kL1:
+        norm = reduce<op::plus>(L1(x.data()));
+        break;
+      case op::OpType::kL2:
+        norm = reduce<op::plus>(L2(x.data()));
+      default:
+        break;
+    }
+    x.data() /= norm;
+  }
+}
+
+void Model::FilterFeatures(DataPoint& x) {
+  if (this->max_index_ == 0) return;
+  size_t feat_num = x.size();
+  for (size_t i = 0; i < feat_num; ++i) {
+    if (x.index(i) > this->max_index_ ||
+        this->sel_feat_flags_[x.index(i)] == 0) {
+      x.feature(i) = 0;
+    }
+  }
+}
+
+int Model::LoadPreSelFeatures(const string& path) {
+  this->max_index_ = 0;
+  this->sel_feat_flags_.clear();
+
+  ifstream in_file(path.c_str(), ios::in);
+  if (!in_file) {
+    fprintf(stderr, "open file %s failed\n!", path.c_str());
+    return Status_IO_Error;
+  }
+
+  index_t index = 0;
+  string line;
+  vector<index_t> indexes;
+  // load feature indexes
+  while (getline(in_file, line)) {
+    const char* p = line.c_str();
+    while (*p == ' ' || *p == '\t') ++p;
+    // skip comments
+    if (*p == '#') continue;
+
+    index = (index_t)(stoi(line));
+    if (index <= 0) {
+      fprintf(stderr, "parse index %s failed!\n", line.c_str());
+      return Status_Invalid_Format;
+    }
+    indexes.push_back(index);
+  }
+
+  // find the max index
+  this->max_index_ = *(std::max_element)(indexes.begin(), indexes.end());
+  this->sel_feat_flags_.reserve(this->max_index_ + 1);
+  this->sel_feat_flags_.resize(this->max_index_ + 1);
+  this->sel_feat_flags_ = 0;
+
+  for (index_t i : indexes) {
+    this->sel_feat_flags_[i] = 1;
+  }
+
+  return Status_OK;
 }
 
 }  // namespace model

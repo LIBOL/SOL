@@ -27,6 +27,14 @@ class OnlineModel : public Model {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
+  /// \brief  Train from a data set
+  //
+  /// \param data_iter data iterator
+  //
+  /// \return training error rate
+  virtual float Train(pario::DataIter& data_iter);
+
+ public:
   /// \brief  iterate the model with one new instance
   ///
   /// \param x training instance
