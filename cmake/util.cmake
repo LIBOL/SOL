@@ -1,11 +1,13 @@
 file(GLOB util_headers
 	"${PROJECT_SOURCE_DIR}/include/lsol/util/*.h"
 	"${PROJECT_SOURCE_DIR}/include/lsol/util/*.hpp"
+	"${PROJECT_SOURCE_DIR}/external/json/*.h"
 	)
 
 file(GLOB util_src
-	"${PROJECT_SOURCE_DIR}/src/lsol/util/*.cpp"
 	"${PROJECT_SOURCE_DIR}/src/lsol/util/*.cc"
+	"${PROJECT_SOURCE_DIR}/src/lsol/util/*.cpp"
+	"${PROJECT_SOURCE_DIR}/external/json/*.cpp"
 	)
 
 source_group("Header Files" FILES ${util_headers})

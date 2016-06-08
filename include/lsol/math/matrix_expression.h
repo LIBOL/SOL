@@ -112,16 +112,47 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
   }
 }
 
+
+template <typename OP, typename EType1, typename EType2,  typename DType>
+inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs, const Exp<EType2, DType, ExprType::kDense> &rhs) {
+  const EType1 &exp_val1 = lhs.self();
+  const EType2 &exp_val2 = rhs.self();
+  // shape check
+  const Shape<2> s1 = exp_val1.shape();
+  const Shape<2> s2 = exp_val2.shape();
+  if (s1 != s2) {
+    throw std::runtime_error("matrix dot on different shape");
+  }
+  size_t sz = s1.size();
+  DType val = 0;
+  for (size_t idx = 0; idx < sz; ++idx) {
+    val += OP::template map<DType>(exp_val1[idx], exp_val2[idx]);
+  }
+  return val;
+}
+
 // dense matrix with sparse matrix operations
 template <typename OP, typename CType, typename DType, typename EType>
 void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
              const Exp<EType, DType, ExprType::kSparse> &exp) {
   DType *pdata = dst.self().data();
   const EType &svec = exp.self();
-  size_t sz = svec.size();
+  size_t sz = svec.shape().size();
   for (size_t idx = 0; idx < sz; ++idx) {
     OP::template map<DType>(pdata[svec.index(idx)], svec.value(idx));
   }
+}
+
+template <typename OP, typename EType1, typename EType2,  typename DType>
+inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs, const Exp<EType2, DType, ExprType::kSparse> &rhs) {
+  const EType1 &exp_val1 = lhs.self();
+  const EType2 &exp_val2 = rhs.self();
+  size_t sz = exp_val2.shape().size();
+  DType val = 0;
+  for (size_t idx = 0; idx < sz; ++idx) {
+    val += OP::template map<DType>(exp_val1[exp_val2.index(idx)], exp_val2.value(idx));
+  }
+  return val;
 }
 
 // sparse matrix operations

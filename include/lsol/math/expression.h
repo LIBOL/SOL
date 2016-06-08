@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 
+#include <lsol/util/types.h>
 #include <lsol/math/operator.h>
 #include <lsol/math/shape.h>
 
@@ -82,12 +83,14 @@ struct ExpEngine {
 /// \tparam DType data type of the scalar
 template <typename DType>
 struct ScalarExp : public Exp<ScalarExp<DType>, DType, ExprType::kValue> {
-  DType value;
+  DType value_;
   /// \brief  implicit constructor, MUST NOT BE explicit
-  ScalarExp(DType scalar) : value(scalar) {}
+  ScalarExp(DType scalar) : value_(scalar) {}
 
-  inline DType operator()(size_t x, size_t y) const { return value; }
-  inline DType operator[](size_t idx) const { return value; }
+  inline DType operator()(size_t x, size_t y) const { return value_; }
+  inline DType operator[](size_t idx) const { return value_; }
+  inline index_t index(size_t idx) const { return 0; }
+  inline DType value(size_t idx) const { return value_; }
 
   inline Shape<2> shape() const { return Shape<2>(); }
 };
@@ -127,6 +130,14 @@ struct BinaryMapExp
     return OP::map(lhs[idx], rhs[idx]);
   }
 
+  inline index_t index(size_t idx) const { 
+	  return lhs.index(idx) | rhs.index(idx);
+  }
+
+  inline DType value(size_t idx) const { 
+    return OP::map(lhs.value(idx), rhs.value(idx));
+  }
+
   inline Shape<2> shape() const {
     const Shape<2> &shape1 = lhs.shape();
     const Shape<2> &shape2 = rhs.shape();
@@ -143,9 +154,12 @@ struct BinaryMapExp
 /// \brief  make a binary expression
 template <typename OP, typename EType1, typename EType2, typename DType,
           int exptype1, int exptype2>
-inline BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)> MakeExp(
-    const Exp<EType1, DType, exptype1> &lhs,
+inline
+typename std::enable_if<exptype1 != ExprType::kSparse || exptype2 != ExprType::kSparse, BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>>::type
+ MakeExp(const Exp<EType1, DType, exptype1> &lhs,
     const Exp<EType2, DType, exptype2> &rhs) {
+	//static_assert(exptype1 == ExprType::kSparse && exptype2 == ExprType::kSparse,
+	//	"sparse with sparse operation is not suported yet");
   return BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>(
       lhs.self(), rhs.self());
 }
@@ -176,6 +190,30 @@ ArithmeticBinaryMapExpTpl(+, plus);
 ArithmeticBinaryMapExpTpl(-, minus);
 ArithmeticBinaryMapExpTpl(*, mul);
 ArithmeticBinaryMapExpTpl(/, div);
+
+template <typename OP, typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
+inline DType dot(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs);
+
+template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
+inline DType dotplus(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
+	return dot<op::plus>(lhs, rhs);
+}
+
+template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
+inline DType dotminus(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
+	return dot<op::minus>(lhs, rhs);
+}
+
+template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
+inline DType dotmul(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
+	return dot<op::mul>(lhs, rhs);
+}
+
+template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
+inline DType dotdiv(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
+	return dot<op::div>(lhs, rhs);
+}
+
 
 //---------------
 // UnaryMapExp

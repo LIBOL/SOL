@@ -22,6 +22,7 @@ include_directories(
 
 include(util)
 include(pario)
+include(lsol)
 
 include(tools)
 include(test)

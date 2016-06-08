@@ -6,6 +6,8 @@
 #ifndef LSOL_MATH_MATRIX_H__
 #define LSOL_MATH_MATRIX_H__
 
+#include <limits>
+
 #include <lsol/math/shape.h>
 #include <lsol/math/matrix_storage.h>
 #include <lsol/math/matrix_expression.h>
@@ -169,6 +171,9 @@ class Matrix
   template <typename DType2>
   friend std::ostream& operator<<(std::ostream& os, const Matrix<DType2>& mat);
 
+  template <typename DType2>
+  friend std::istream& operator>>(std::istream& is, Matrix<DType2>& mat);
+
  protected:
   MatrixStorage<DType>* storage_;
   Shape<2>* shape_;
@@ -190,6 +195,20 @@ std::ostream& operator<<(std::ostream& os, const Matrix<DType>& mat) {
   }
   return os;
 }
+
+template <typename DType>
+std::istream& operator >> (std::istream& is, Matrix<DType>& mat) {
+	const Shape<2>& s2d = *(mat.shape_);
+	DType* pdata = mat.data();
+	for (size_t i = 0; i < s2d[0]; ++i) {
+		is.ignore(std::numeric_limits<std::streamsize>::max(), '[');
+		for (size_t j = 0; j < s2d[1]; ++j) is >> *pdata++;
+		is.ignore(std::numeric_limits<std::streamsize>::max(), ']');
+		is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	}
+	return is;
+}
+
 
 }  // namespace math
 }  // namespace lsol

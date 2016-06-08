@@ -37,19 +37,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 
 ENDIF()
 
-IF(MSVC)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
-    IF ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-        set (CMAKE_BUILD_TYPE "Debug|Release")
-    ENDIF()
-
-    if (NOT USE_STD_THREAD)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_WIN_THREAD")
-    endif()
-
-ENDIF()
-
 #copied from opencv
 # turns off warnings
 macro(ocv_warnings_disable)
@@ -92,4 +79,19 @@ macro(ocv_warnings_disable)
     endif(NOT ENABLE_NOISY_WARNINGS)
 endmacro()
 
-ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4251) # class 'std::XXX' needs to have dll-interface to be used by clients of YYY
+IF(MSVC)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
+    IF ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+        set (CMAKE_BUILD_TYPE "Debug|Release")
+    ENDIF()
+
+    if (NOT USE_STD_THREAD)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_WIN_THREAD")
+    endif()
+
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4251) # class 'std::XXX' needs to have dll-interface to be used by clients of YYY
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4275) # non dll-interface class 'std::XXX' used as base for dll-interface 
+ENDIF()
+
+

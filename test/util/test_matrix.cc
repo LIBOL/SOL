@@ -106,8 +106,8 @@ int main() {
   cout << "mul 2: " << endl << sv2 << endl;
   cout << "v2 : " << endl << v2 << endl;
   cout << "sv2 : " << endl << sv2 << endl;
-  v2 *= sv2;
-  cout << "v2 * sv2 : " << endl << v2 << endl;
+  v2 *= 0.1f * sv2;
+  cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;
   return 0;
 }

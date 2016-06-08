@@ -11,6 +11,8 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
+#include <sstream>
 
 /// \brief  declaration of functions
 namespace lsol {
@@ -31,6 +33,15 @@ namespace lsol {
  private:                                  \
   classname(const classname&);             \
   classname& operator=(const classname&);
+
+// check if the argument is valid and throw exception otherwise
+#define Check(condition)                                                      \
+  if ((condition) == false) {                                                 \
+    std::ostringstream oss;                                                   \
+    oss << "Check " << #condition << " failed at line " << __LINE__ << " of " \
+        << __FILE__;                                                          \
+    throw std::invalid_argument(oss.str());                                   \
+  }
 
 /// \brief  Open file wrapper, windows use fopen_s for safety
 ///

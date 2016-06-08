@@ -126,7 +126,8 @@ class SVector
   }
 
   inline const Shape<2>& shape() const {
-    return this->values_ == nullptr ? Shape<2>() : this->values_->shape();
+	  static Shape<2> empty_shape;
+    return this->values_ == nullptr ? empty_shape : this->values_->shape();
   }
 
   inline bool empty() const { return this->values_->empty(); }

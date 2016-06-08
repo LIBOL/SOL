@@ -1,5 +1,5 @@
 foreach(target_lib ${TARGET_LIBS})
-    set_target_properties(${target_lib} PROPERTIES COMPILE_DEFINITIONS  "LSOL_EXPORTS")
+    set_target_properties(${target_lib} PROPERTIES COMPILE_DEFINITIONS "LSOL_EXPORTS;JSON_DLL_BUILD")
     list(APPEND TARGETS ${target_lib})
 endforeach()
 

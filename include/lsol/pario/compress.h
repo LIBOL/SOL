@@ -30,9 +30,7 @@ inline void run_len_encode(math::Vector<char>& codes, uint64_t i) {
   codes.push_back((i & 127));
 }
 
-inline const char* run_len_decode(
-    const char* p,
-    uint64_t& i) {  // read an int 7 bits at a time.
+inline const char* run_len_decode(const char* p, uint64_t& i) {  // read an int 7 bits at a time.
   size_t count = 0;
   while (*p & 128) i = i | ((*(p++) & 127) << 7 * count++);
   i = i | (*(p++) << 7 * count);
