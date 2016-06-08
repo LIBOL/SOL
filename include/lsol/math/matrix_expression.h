@@ -112,9 +112,9 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
   }
 }
 
-
-template <typename OP, typename EType1, typename EType2,  typename DType>
-inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs, const Exp<EType2, DType, ExprType::kDense> &rhs) {
+template <typename OP, typename EType1, typename EType2, typename DType>
+inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs,
+                 const Exp<EType2, DType, ExprType::kDense> &rhs) {
   const EType1 &exp_val1 = lhs.self();
   const EType2 &exp_val2 = rhs.self();
   // shape check
@@ -143,14 +143,16 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
   }
 }
 
-template <typename OP, typename EType1, typename EType2,  typename DType>
-inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs, const Exp<EType2, DType, ExprType::kSparse> &rhs) {
+template <typename OP, typename EType1, typename EType2, typename DType>
+inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs,
+                 const Exp<EType2, DType, ExprType::kSparse> &rhs) {
   const EType1 &exp_val1 = lhs.self();
   const EType2 &exp_val2 = rhs.self();
   size_t sz = exp_val2.shape().size();
   DType val = 0;
   for (size_t idx = 0; idx < sz; ++idx) {
-    val += OP::template map<DType>(exp_val1[exp_val2.index(idx)], exp_val2.value(idx));
+    val += OP::template map<DType>(exp_val1[exp_val2.index(idx)],
+                                   exp_val2.value(idx));
   }
   return val;
 }

@@ -16,7 +16,8 @@ using namespace std;
 
 namespace lsol {
 namespace model {
-OnlineModel::OnlineModel(int class_num, const std::string& type) : Model(class_num, type), eta0_(1), dim_(1), aggressive_(false) {
+OnlineModel::OnlineModel(int class_num, const std::string& type)
+    : Model(class_num, type), eta0_(1), dim_(1), aggressive_(false) {
   this->set_power_t(0.5);
   this->set_initial_t(0);
 }
@@ -31,7 +32,7 @@ void OnlineModel::SetParameter(const std::string& name,
   } else if (name == "initial_t") {
     this->set_initial_t(stoi(value));
   } else if (name == "aggressive") {
-	  this->aggressive_ = value == "true" ? true : false;
+    this->aggressive_ = value == "true" ? true : false;
   } else {
     Model::SetParameter(name, value);
   }
@@ -45,25 +46,25 @@ label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
 }
 
 void OnlineModel::GetModelInfo(Json::Value& root) const {
-	root["online"]["power_t"] = this->power_t_;
-	root["online"]["eta"] = this->eta0_;
-	root["online"]["t0"] = this->initial_t_;
-	root["online"]["t"] = this->cur_iter_num_;
-	root["online"]["dim"] = this->dim_;
+  root["online"]["power_t"] = this->power_t_;
+  root["online"]["eta"] = this->eta0_;
+  root["online"]["t0"] = this->initial_t_;
+  root["online"]["t"] = this->cur_iter_num_;
+  root["online"]["dim"] = this->dim_;
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {
-	const Json::Value& online_settings = root["online"];
-	if (online_settings.isNull()) {
-		fprintf(stderr, "no online info found for online model\n");
-		return Status_Invalid_Format;
-	}
-	this->set_power_t(online_settings["eta"].asFloat());
-	this->eta0_ = online_settings["eta"].asFloat();
-	this->set_initial_t(online_settings["t0"].asInt());
-	this->cur_iter_num_ = online_settings["t0"].asInt();
-	this->update_dim(online_settings["dim"].asInt());
-	return Status_OK;
+  const Json::Value& online_settings = root["online"];
+  if (online_settings.isNull()) {
+    fprintf(stderr, "no online info found for online model\n");
+    return Status_Invalid_Format;
+  }
+  this->set_power_t(online_settings["eta"].asFloat());
+  this->eta0_ = online_settings["eta"].asFloat();
+  this->set_initial_t(online_settings["t0"].asInt());
+  this->cur_iter_num_ = online_settings["t0"].asInt();
+  this->update_dim(online_settings["dim"].asInt());
+  return Status_OK;
 }
 
 // calculate power t

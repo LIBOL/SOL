@@ -35,7 +35,7 @@ class LSOL_EXPORTS Model {
   /// \brief  Create a new model
   ///
   /// \param class_num number of classes in the model
-  Model(int class_num, const std::string& type);
+  Model(int class_num, const std::string &type);
 
   virtual ~Model();
 
@@ -73,40 +73,41 @@ class LSOL_EXPORTS Model {
   /// \param path file path of the model
   ///
   /// \return status code 0 if load successfully
-  static Model* Load(const std::string &path);
+  static Model *Load(const std::string &path);
 
  protected:
   /// \brief  serialize model parameters
   ///
   /// \param root root node to save the parameters
-  virtual void GetModelParam(Json::Value& root) const = 0;
+  virtual void GetModelParam(Json::Value &root) const = 0;
 
   /// \brief  load model parameters from stream
   ///
   /// \param root root node of model info
   ///
   /// \return status code, zero if ok
-  virtual int SetModelParam(const Json::Value& root) = 0;
+  virtual int SetModelParam(const Json::Value &root) = 0;
 
   /// \brief  Get Model Information
   ///
   /// \param root root node of saver
   /// info
-  virtual void GetModelInfo(Json::Value& root) const;
+  virtual void GetModelInfo(Json::Value &root) const;
 
   /// \brief  load model from string
   ///
   /// \param root root node of model info
   ///
   /// \return status code, Status_OK if load successfully
-  virtual int SetModelInfo(const Json::Value& root);
+  virtual int SetModelInfo(const Json::Value &root);
 
  protected:
   /// \brief  calibrate labels
   ///
   /// \param x data point
   ///
-  /// \return if binary classfication, return 1 or -1, otherwise return the label as it is 
+  /// \return if binary classfication, return 1 or -1, otherwise return the
+  /// label as it is
   inline label_t CalibrateLabel(label_t label) {
     return this->clf_num_ == 1 ? (label == 1 ? 1 : -1) : label;
   }
@@ -116,7 +117,7 @@ class LSOL_EXPORTS Model {
   int clf_num() const { return this->clf_num_; }
   const std::string &type() const { return this->type_; }
   std::string name() const { return name_; }
-  void set_name(const std::string& name) { this->name_ = name; }
+  void set_name(const std::string &name) { this->name_ = name; }
 
   /**
    * PrintModelSettings print the info of optimization algorithm
@@ -138,9 +139,9 @@ class LSOL_EXPORTS Model {
 
 #define RegisterModel(type, name, descr)            \
   type *type##_##CreateNewInstance(int class_num) { \
-    type* ins =  new type(class_num);                     \
-ins->set_name(name); \
-return ins;\
+    type *ins = new type(class_num);                \
+    ins->set_name(name);                            \
+    return ins;                                     \
   }                                                 \
   ClassInfo __kClassInfo_##type##__(                \
       name, (void *)(type##_##CreateNewInstance), descr);

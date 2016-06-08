@@ -24,7 +24,7 @@ class OnlineModel : public Model {
   ///
   /// \param name name of the parameter
   /// \param value value of the parameter in string
-  virtual void SetParameter(const std::string &name, const std::string &value);
+  virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
   /// \brief  iterate the model with one new instance
@@ -33,7 +33,7 @@ class OnlineModel : public Model {
   /// \param y predicted scores over classes
   ///
   /// \return predicted label
-  virtual label_t Iterate(const pario::DataPoint &x, float* y);
+  virtual label_t Iterate(const pario::DataPoint& x, float* y);
 
  protected:
   /// \brief  Get Model Information
@@ -67,10 +67,12 @@ class OnlineModel : public Model {
   // current iteration number
   int cur_iter_num_;
 
-  // dimension of input feature: can be the same to feature, or with an extra bias
+  // dimension of input feature: can be the same to feature, or with an extra
+  // bias
   index_t dim_;
 
-  //if true, update  if predicted label is correct, useful for logistic regression
+  // if true, update  if predicted label is correct, useful for logistic
+  // regression
   bool aggressive_;
 
   float (*pow_)(int iter, float power_t);

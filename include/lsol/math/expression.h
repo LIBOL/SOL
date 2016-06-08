@@ -130,11 +130,11 @@ struct BinaryMapExp
     return OP::map(lhs[idx], rhs[idx]);
   }
 
-  inline index_t index(size_t idx) const { 
-	  return lhs.index(idx) | rhs.index(idx);
+  inline index_t index(size_t idx) const {
+    return lhs.index(idx) | rhs.index(idx);
   }
 
-  inline DType value(size_t idx) const { 
+  inline DType value(size_t idx) const {
     return OP::map(lhs.value(idx), rhs.value(idx));
   }
 
@@ -154,12 +154,14 @@ struct BinaryMapExp
 /// \brief  make a binary expression
 template <typename OP, typename EType1, typename EType2, typename DType,
           int exptype1, int exptype2>
-inline
-typename std::enable_if<exptype1 != ExprType::kSparse || exptype2 != ExprType::kSparse, BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>>::type
- MakeExp(const Exp<EType1, DType, exptype1> &lhs,
-    const Exp<EType2, DType, exptype2> &rhs) {
-	//static_assert(exptype1 == ExprType::kSparse && exptype2 == ExprType::kSparse,
-	//	"sparse with sparse operation is not suported yet");
+inline typename std::enable_if<
+    exptype1 != ExprType::kSparse || exptype2 != ExprType::kSparse,
+    BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>>::type
+MakeExp(const Exp<EType1, DType, exptype1> &lhs,
+        const Exp<EType2, DType, exptype2> &rhs) {
+  // static_assert(exptype1 == ExprType::kSparse && exptype2 ==
+  // ExprType::kSparse,
+  //	"sparse with sparse operation is not suported yet");
   return BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>(
       lhs.self(), rhs.self());
 }
@@ -191,29 +193,38 @@ ArithmeticBinaryMapExpTpl(-, minus);
 ArithmeticBinaryMapExpTpl(*, mul);
 ArithmeticBinaryMapExpTpl(/, div);
 
-template <typename OP, typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
-inline DType dot(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs);
+template <typename OP, typename EType1, typename EType2, typename DType,
+          int exptype1, int exptype2>
+inline DType dot(const Exp<EType1, DType, exptype1> &lhs,
+                 const Exp<EType2, DType, exptype2> &rhs);
 
-template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
-inline DType dotplus(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
-	return dot<op::plus>(lhs, rhs);
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline DType dotplus(const Exp<EType1, DType, exptype1> &lhs,
+                     const Exp<EType2, DType, exptype2> &rhs) {
+  return dot<op::plus>(lhs, rhs);
 }
 
-template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
-inline DType dotminus(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
-	return dot<op::minus>(lhs, rhs);
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline DType dotminus(const Exp<EType1, DType, exptype1> &lhs,
+                      const Exp<EType2, DType, exptype2> &rhs) {
+  return dot<op::minus>(lhs, rhs);
 }
 
-template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
-inline DType dotmul(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
-	return dot<op::mul>(lhs, rhs);
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline DType dotmul(const Exp<EType1, DType, exptype1> &lhs,
+                    const Exp<EType2, DType, exptype2> &rhs) {
+  return dot<op::mul>(lhs, rhs);
 }
 
-template <typename EType1, typename EType2,  typename DType, int exptype1, int exptype2>
-inline DType dotdiv(const Exp<EType1, DType, exptype1> &lhs, const Exp<EType2, DType, exptype2> &rhs) {
-	return dot<op::div>(lhs, rhs);
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline DType dotdiv(const Exp<EType1, DType, exptype1> &lhs,
+                    const Exp<EType2, DType, exptype2> &rhs) {
+  return dot<op::div>(lhs, rhs);
 }
-
 
 //---------------
 // UnaryMapExp

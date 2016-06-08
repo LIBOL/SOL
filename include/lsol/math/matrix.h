@@ -197,18 +197,17 @@ std::ostream& operator<<(std::ostream& os, const Matrix<DType>& mat) {
 }
 
 template <typename DType>
-std::istream& operator >> (std::istream& is, Matrix<DType>& mat) {
-	const Shape<2>& s2d = *(mat.shape_);
-	DType* pdata = mat.data();
-	for (size_t i = 0; i < s2d[0]; ++i) {
-		is.ignore(std::numeric_limits<std::streamsize>::max(), '[');
-		for (size_t j = 0; j < s2d[1]; ++j) is >> *pdata++;
-		is.ignore(std::numeric_limits<std::streamsize>::max(), ']');
-		is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	}
-	return is;
+std::istream& operator>>(std::istream& is, Matrix<DType>& mat) {
+  const Shape<2>& s2d = *(mat.shape_);
+  DType* pdata = mat.data();
+  for (size_t i = 0; i < s2d[0]; ++i) {
+    is.ignore(std::numeric_limits<std::streamsize>::max(), '[');
+    for (size_t j = 0; j < s2d[1]; ++j) is >> *pdata++;
+    is.ignore(std::numeric_limits<std::streamsize>::max(), ']');
+    is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  }
+  return is;
 }
-
 
 }  // namespace math
 }  // namespace lsol

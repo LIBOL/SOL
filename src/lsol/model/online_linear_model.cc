@@ -19,7 +19,9 @@ namespace lsol {
 namespace model {
 
 OnlineLinearModel::OnlineLinearModel(int class_num)
-    : OnlineModel(class_num, "online_linear"), weights_(nullptr), gradients_(nullptr) {
+    : OnlineModel(class_num, "online_linear"),
+      weights_(nullptr),
+      gradients_(nullptr) {
   this->weights_ = new Vector<real_t>[this->clf_num_];
   this->gradients_ = new real_t[this->clf_num_];
 
@@ -38,8 +40,8 @@ void OnlineLinearModel::BeginTrain() {
 
   // reset weight vector
   for (int i = 0; i < this->clf_num_; ++i) {
-	  this->weights(i) = 0;
-	  this->gradients_[i] = 0;
+    this->weights(i) = 0;
+    this->gradients_[i] = 0;
   }
 }
 
@@ -49,14 +51,13 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
   label_t label = this->Predict(x, predict);
   label_t gd_label = this->CalibrateLabel(x.label());
   if (this->aggressive_ || label != gd_label) {
-	  this->loss_->gradient(gd_label, predict, this->gradients_, this->clf_num_);
-	  this->Update(x);
+    this->loss_->gradient(gd_label, predict, this->gradients_, this->clf_num_);
+    this->Update(x);
   }
   return label;
 }
 
-label_t OnlineLinearModel::Predict(const pario::DataPoint& x,
-                                        float* predicts) {
+label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
   size_t feat_num = x.indexes().size();
   for (int c = 0; c < this->clf_num_; ++c) {
     Vector<real_t>& w = this->weights(c);
@@ -69,7 +70,6 @@ label_t OnlineLinearModel::Predict(const pario::DataPoint& x,
   }
 }
 
-
 void OnlineLinearModel::update_dim(index_t dim) {
   if (dim >= this->dim_) {
     ++dim;  // reserve the 0-th
@@ -77,26 +77,27 @@ void OnlineLinearModel::update_dim(index_t dim) {
       auto& w = this->weights(i);
       w.resize(dim);
       // set the new value to zero
-	  for (real_t* iter = w.begin() + this->dim_; iter != w.end(); ++iter) *iter = 0;
+      for (real_t* iter = w.begin() + this->dim_; iter != w.end(); ++iter)
+        *iter = 0;
     }
-	OnlineModel::update_dim(dim);
+    OnlineModel::update_dim(dim);
   }
 }
 
 void OnlineLinearModel::GetModelParam(Json::Value& root) const {
-	ostringstream oss;
+  ostringstream oss;
   for (int c = 0; c < this->clf_num_; ++c) {
-	  oss << this->weights(c) << "\n";
+    oss << this->weights(c) << "\n";
   }
   root["params"] = oss.str();
 }
 
 int OnlineLinearModel::SetModelParam(const Json::Value& root) {
-	istringstream iss(root["params"].asString());
-	for (int c = 0; c < this->clf_num_; ++c) {
-		iss >> this->weights(c);
-	}
-	return Status_OK;
+  istringstream iss(root["params"].asString());
+  for (int c = 0; c < this->clf_num_; ++c) {
+    iss >> this->weights(c);
+  }
+  return Status_OK;
 }
 
 }  // namespace model

@@ -57,8 +57,8 @@ class LSOL_EXPORTS DataPoint {
   void Sort();
 
  public:
-	 inline const math::SVector<real_t>& data() const { return data_; }
-	 inline math::SVector<real_t>& data() { return data_; }
+  inline const math::SVector<real_t>& data() const { return data_; }
+  inline math::SVector<real_t>& data() { return data_; }
 
   inline const math::Vector<index_t>& indexes() const {
     return this->data_.indexes();

@@ -21,7 +21,11 @@ Model* Model::Create(const std::string& name, int class_num) {
   return create_func == nullptr ? nullptr : create_func(class_num);
 }
 
-Model::Model(int class_num, const std::string& type) : class_num_(class_num), clf_num_(class_num == 2 ? 1 : class_num), loss_(nullptr), type_(type) {
+Model::Model(int class_num, const std::string& type)
+    : class_num_(class_num),
+      clf_num_(class_num == 2 ? 1 : class_num),
+      loss_(nullptr),
+      type_(type) {
   Check(class_num > 1);
 }
 
@@ -36,7 +40,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
   if (name == "loss") {
     DeletePointer(this->loss_);
     this->loss_ = loss::Loss::Create(value);
-	Check(this->loss_ != nullptr);
+    Check(this->loss_ != nullptr);
   } else {
     ostringstream oss;
     oss << "unknown parameter " << name;
@@ -70,8 +74,8 @@ Model* Model::Load(const string& path) {
   Json::Value root;
   Json::Reader reader;
   if (reader.parse(in_file, root) == false) {
-	  fprintf(stderr, "parse model file %s failed\n", path.c_str());
-	  ret = Status_Invalid_Format;
+    fprintf(stderr, "parse model file %s failed\n", path.c_str());
+    ret = Status_Invalid_Format;
   }
   in_file.close();
   if (ret != Status_OK) return model;
@@ -79,46 +83,44 @@ Model* Model::Load(const string& path) {
   int cls_num = root.get("cls_num", "0").asInt();
   model = Model::Create(cls_name, cls_num);
   if (model == nullptr) {
-	  fprintf(stderr, "create model failed: no model named %s\n", cls_name.c_str());
-	  return model;
+    fprintf(stderr, "create model failed: no model named %s\n",
+            cls_name.c_str());
+    return model;
   }
 
   ret = model->SetModelInfo(root);
   if (ret != Status_OK) {
-	  DeletePointer(model);
-  }
-  else {
-	  ret = model->SetModelParam(root);
+    DeletePointer(model);
+  } else {
+    ret = model->SetModelParam(root);
   }
   if (ret != Status_OK) {
-	  DeletePointer(model);
+    DeletePointer(model);
   }
   return model;
 }
 
 void Model::GetModelInfo(Json::Value& root) const {
-	root["model"] = this->name();
-	root["cls_num"] = this->class_num();
-	root["clf_num"] = this->clf_num();
+  root["model"] = this->name();
+  root["cls_num"] = this->class_num();
+  root["clf_num"] = this->clf_num();
 }
 
 int Model::SetModelInfo(const Json::Value& root) {
-	try {
-		Check(root.get("model", "").asString() == this->name());
-		Check(root.get("cls_num", "").asInt() == this->class_num());
-		Check(root.get("clf_num", "").asInt() == this->clf_num());
-	}
-	catch (invalid_argument& err) {
-		fprintf(stderr, "set model info failed: %s\n", err.what());
-		return Status_Invalid_Argument;
-	}
-	return Status_OK;
+  try {
+    Check(root.get("model", "").asString() == this->name());
+    Check(root.get("cls_num", "").asInt() == this->class_num());
+    Check(root.get("clf_num", "").asInt() == this->clf_num());
+  } catch (invalid_argument& err) {
+    fprintf(stderr, "set model info failed: %s\n", err.what());
+    return Status_Invalid_Argument;
+  }
+  return Status_OK;
 }
 
-
 inline string Model::model_info() const {
-	Json::Value root;
-	this->GetModelInfo(root);
+  Json::Value root;
+  this->GetModelInfo(root);
 
   Json::StyledWriter writer;
   return writer.write(root);
