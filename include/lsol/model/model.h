@@ -119,7 +119,7 @@ class LSOL_EXPORTS Model {
   /**
    * PrintModelSettings print the info of optimization algorithm
    */
-  inline std::string model_info() const;
+  std::string model_info() const;
 
  protected:
   // number of classes

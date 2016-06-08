@@ -118,7 +118,7 @@ int Model::SetModelInfo(const Json::Value& root) {
   return Status_OK;
 }
 
-inline string Model::model_info() const {
+string Model::model_info() const {
   Json::Value root;
   this->GetModelInfo(root);
 
