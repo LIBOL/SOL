@@ -15,7 +15,6 @@ namespace lsol {
 namespace model {
 
 void SGD::Update(const pario::DataPoint& x) {
-  size_t feat_num = x.indexes().size();
   for (int c = 0; c < this->clf_num_; ++c) {
     if (this->gradients_[c] == 0) continue;
     math::Vector<real_t>& w = this->weights(c);

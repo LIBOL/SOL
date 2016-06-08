@@ -4,6 +4,11 @@ add_executable(converter ${TOOLS_DIR}/converter.cc)
 target_link_libraries(converter lsol_pario lsol_util)
 list(APPEND tools_targets converter)
 
+add_executable(lsol ${TOOLS_DIR}/lsol.cc)
+target_link_libraries(lsol lsol_core lsol_pario lsol_util)
+list(APPEND tools_targets lsol)
+
+
 foreach(tgt_name ${tools_targets})
 SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")
 endforeach()

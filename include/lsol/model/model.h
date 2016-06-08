@@ -29,9 +29,6 @@ class LSOL_EXPORTS Model {
   DeclareReflectorBase(Model, int class_num);
 
  public:
-  enum class Phase { TRAIN, TEST };
-
- public:
   /// \brief  Create a new model
   ///
   /// \param class_num number of classes in the model
@@ -137,14 +134,15 @@ class LSOL_EXPORTS Model {
   std::string name_;
 };
 
-#define RegisterModel(type, name, descr)            \
-  type *type##_##CreateNewInstance(int class_num) { \
-    type *ins = new type(class_num);                \
-    ins->set_name(name);                            \
-    return ins;                                     \
-  }                                                 \
-  ClassInfo __kClassInfo_##type##__(                \
-      name, (void *)(type##_##CreateNewInstance), descr);
+#define RegisterModel(type, name, descr)                                  \
+  type *type##_##CreateNewInstance(int class_num) {                       \
+    type *ins = new type(class_num);                                      \
+    ins->set_name(name);                                                  \
+    return ins;                                                           \
+  }                                                                       \
+  ClassInfo __kClassInfo_##type##__(std::string(name) + "_model",         \
+                                    (void *)(type##_##CreateNewInstance), \
+                                    descr);
 
 }  // namespace model
 }  // namespace lsol

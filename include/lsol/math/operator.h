@@ -12,6 +12,8 @@ namespace math {
 namespace expr {
 namespace op {
 
+enum class OpType { kNone = 0, kL1 = 1, kL2 = 2 };
+
 //---------------
 // binary operators
 // --------------

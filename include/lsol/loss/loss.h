@@ -62,9 +62,10 @@ class LSOL_EXPORTS Loss {
   Type type_;
 };
 
-#define RegisterLoss(type, name, descr)                                        \
-  type* type##_##CreateNewInstance() { return new type(); }                    \
-  ClassInfo __kClassInfo_##type##__(name, (void*)(type##_##CreateNewInstance), \
+#define RegisterLoss(type, name, descr)                                  \
+  type* type##_##CreateNewInstance() { return new type(); }              \
+  ClassInfo __kClassInfo_##type##__(std::string(name) + "_loss",         \
+                                    (void*)(type##_##CreateNewInstance), \
                                     descr);
 
 }  // namespace loss

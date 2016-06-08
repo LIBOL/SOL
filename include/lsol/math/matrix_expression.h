@@ -92,6 +92,12 @@ void CalcExp(MatrixBase<MatType, DType, kDim> &dst,
 }
 */
 
+// value operations
+template <typename OP, typename EType, typename DType>
+inline DType reduce(const Exp<EType, DType, ExprType::kValue> &exp) {
+  return exp.self().value_;
+}
+
 // dense matrix operations
 template <typename OP, typename CType, typename DType, typename EType,
           int exptype>
@@ -127,6 +133,18 @@ inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs,
   DType val = 0;
   for (size_t idx = 0; idx < sz; ++idx) {
     val += OP::template map<DType>(exp_val1[idx], exp_val2[idx]);
+  }
+  return val;
+}
+
+template <typename OP, typename EType, typename DType>
+inline DType reduce(const Exp<EType, DType, ExprType::kDense> &exp) {
+  const EType &exp_val = exp.self();
+  const Shape<2> s = exp_val.shape();
+  size_t sz = s.size();
+  DType val = 0;
+  for (size_t idx = 0; idx < sz; ++idx) {
+    val = OP::template map<DType>(val, exp_val[idx]);
   }
   return val;
 }
@@ -168,6 +186,19 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kSparse> &dst,
   for (size_t idx = 0; idx < sz; ++idx) {
     OP::template map<DType>(*pdata++, exp_val[idx]);
   }
+}
+
+template <typename OP, typename EType, typename DType>
+inline DType reduce(const Exp<EType, DType, ExprType::kSparse> &exp) {
+  const EType &exp_val = exp.self();
+  // shape check
+  const Shape<2> s = exp_val.shape();
+  size_t sz = s.size();
+  DType val = 0;
+  for (size_t idx = 0; idx < sz; ++idx) {
+    val = OP::template map<DType>(val, exp_val.value(idx));
+  }
+  return val;
 }
 
 }  // namespace expr

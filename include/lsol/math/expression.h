@@ -193,6 +193,7 @@ ArithmeticBinaryMapExpTpl(-, minus);
 ArithmeticBinaryMapExpTpl(*, mul);
 ArithmeticBinaryMapExpTpl(/, div);
 
+/***dot operations***/
 template <typename OP, typename EType1, typename EType2, typename DType,
           int exptype1, int exptype2>
 inline DType dot(const Exp<EType1, DType, exptype1> &lhs,
@@ -226,6 +227,10 @@ inline DType dotdiv(const Exp<EType1, DType, exptype1> &lhs,
   return dot<op::div>(lhs, rhs);
 }
 
+/***reduce operations***/
+template <typename OP, typename EType, typename DType, int exptype>
+inline DType reduce(const Exp<EType, DType, exptype> &exp);
+
 //---------------
 // UnaryMapExp
 // --------------
@@ -239,9 +244,21 @@ template <typename OP, typename EType, typename DType, int exptype>
 struct UnaryMapExp
     : public Exp<UnaryMapExp<OP, EType, DType, exptype>, DType, exptype> {
   /*! \brief source expression */
-  const EType &exp;
+  const EType exp;
   /*! \brief constructor */
   explicit UnaryMapExp(const EType &src) : exp(src) {}
+
+  /// accessing elements
+  inline DType operator()(size_t x, size_t y) const {
+    return OP::map(exp(x, y));
+  }
+  inline DType operator[](size_t idx) const { return OP::map(exp[idx]); }
+
+  inline index_t index(size_t idx) const { return exp.index(idx); }
+
+  inline DType value(size_t idx) const { return OP::map(exp.value(idx)); }
+
+  inline Shape<2> shape() const { return exp.shape(); }
 };
 
 /*! \brief make expression */
@@ -249,6 +266,18 @@ template <typename OP, typename EType, typename DType, int exptype>
 inline UnaryMapExp<OP, EType, DType, exptype> MakeExp(
     const Exp<EType, DType, exptype> &src) {
   return UnaryMapExp<OP, EType, DType, exptype>(src.self());
+}
+
+template <typename EType, typename DType, int exptype>
+inline UnaryMapExp<op::abs, EType, DType, exptype> L1(
+    const Exp<EType, DType, exptype> &src) {
+  return UnaryMapExp<op::abs, EType, DType, exptype>(src.self());
+}
+
+template <typename EType, typename DType, int exptype>
+inline UnaryMapExp<op::square, EType, DType, exptype> L2(
+    const Exp<EType, DType, exptype> &src) {
+  return UnaryMapExp<op::square, EType, DType, exptype>(src.self());
 }
 
 }  // namespace expr
