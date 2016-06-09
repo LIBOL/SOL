@@ -135,14 +135,14 @@ int test_csv_writer(vector<DataPoint>& dps) {
   for (size_t i = 0; i < dps.size(); ++i) {
     if (dps[i].label() != dps2[i].label()) {
       fprintf(stderr,
-              "check csv writer failed: label of instance %lu not the same\n",
+              "check csv writer failed: label of instance %llu not the same\n",
               i);
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
       if (dps[i].index(j) != dps2[i].index(j)) {
         fprintf(stderr,
-                "check csv writer failed: index %lu of instance %lu "
+                "check csv writer failed: index %llu of instance %llu "
                 "not the "
                 "same\n",
                 j, i);
@@ -150,7 +150,7 @@ int test_csv_writer(vector<DataPoint>& dps) {
       }
       if (dps[i].feature(j) != dps2[i].feature(j)) {
         fprintf(stderr,
-                "check csv writer failed: feature %lu of instance %lu "
+                "check csv writer failed: feature %llu of instance %llu "
                 "not the "
                 "same\n",
                 j, i);
@@ -192,7 +192,7 @@ int main() {
   vector<DataPoint> dps;
   int ret = 0;
   if ((ret = test_csv_reader(out_path, dps)) == 0) {
-    printf("%lu features loaded\n", dps.size());
+    printf("%llu features loaded\n", dps.size());
     for (const DataPoint& dp : dps) {
       printf("%d", dp.label());
       for (size_t i = 0; i < dp.indexes().size(); ++i) {

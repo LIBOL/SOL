@@ -102,7 +102,7 @@ class SVector
   ///
   /// \param idx index
   /// \param val value
-  inline void push_back(size_t idx, DType val) {
+  inline void push_back(index_t idx, DType val) {
     size_t sz = this->size();
     this->resize(sz + 1);
     this->index(sz) = idx;

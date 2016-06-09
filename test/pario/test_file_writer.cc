@@ -60,7 +60,7 @@ int main(int argc, char** args) {
   if (writer.Good() == false || reader.Good() == false) {
     status = -1;
   } else {
-    fprintf(stderr, "%lu bytes read and write\n", file_len);
+    fprintf(stderr, "%llu bytes read and write\n", file_len);
   }
 
   delete[] buf;

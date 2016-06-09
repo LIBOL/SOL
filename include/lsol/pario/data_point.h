@@ -73,10 +73,10 @@ class LSOL_EXPORTS DataPoint {
   inline index_t index(size_t index) const { return this->data_.index(index); }
   inline index_t& index(size_t index) { return this->data_.index(index); }
 
-  inline real_t feature(index_t index) const {
+  inline real_t feature(size_t index) const {
     return this->data_.value(index);
   }
-  inline real_t& feature(index_t index) { return this->data_.value(index); }
+  inline real_t& feature(size_t index) { return this->data_.value(index); }
 
   inline label_t label() const { return this->label_; }
   inline void set_label(label_t label) { this->label_ = label; }

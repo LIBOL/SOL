@@ -20,8 +20,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/external
     )
 
-include(util)
-include(pario)
+#include(util)
+#include(pario)
 include(lsol)
 
 include(tools)

@@ -47,7 +47,7 @@ int main(int argc, char** args) {
       file_len += strlen(buf);
     }
     if (reader.Good()) {
-      printf("%lu bytes read\n", file_len);
+      printf("%llu bytes read\n", file_len);
       reader.Rewind();
     }
   }
@@ -58,14 +58,14 @@ int main(int argc, char** args) {
     reader.Rewind();
   }
   if (status == 0) {
-    fprintf(stderr, "test read, file length: %lu\n", file_len);
+    fprintf(stderr, "test read, file length: %llu\n", file_len);
     buf = (char*)realloc(buf, file_len);
     for (int i = 0; i < 10; ++i) {
       fprintf(stderr, "\tread round %d\t", i);
       while (reader.Read(buf, file_len / 2) == Status_OK) {
       }
       if (reader.Good()) {
-        fprintf(stderr, "%lu bytes read\n", file_len);
+        fprintf(stderr, "%llu bytes read\n", file_len);
         reader.Rewind();
       }
     }

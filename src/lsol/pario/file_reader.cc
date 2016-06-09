@@ -84,7 +84,7 @@ int FileReader::Read(char* dst, size_t length) {
     return Status_EndOfFile;
   } else {
     fprintf(stderr,
-            "Error %d: only %lu bytes are read while %lu bytes are "
+            "Error %d: only %llu bytes are read while %llu bytes are "
             "specified.\n",
             Status_IO_Error, read_len, length);
     return Status_IO_Error;
@@ -109,7 +109,7 @@ int FileReader::ReadLine(char*& dst, int& dst_len) {
   while (strrchr(dst, '\n') == nullptr) {
     dst_len *= 2;
     dst = (char*)realloc(dst, dst_len);
-    len = strlen(dst);
+    len = int(strlen(dst));
     if (fgets(dst + len, dst_len - len, this->file_) == nullptr) break;
   }
   return Status_OK;
