@@ -8,6 +8,10 @@ add_executable(lsol ${TOOLS_DIR}/lsol.cc)
 target_link_libraries(lsol lsol_core lsol_pario lsol_util)
 list(APPEND tools_targets lsol)
 
+add_executable(lsol_c ${TOOLS_DIR}/lsol_c.cc)
+target_link_libraries(lsol_c lsol_core lsol_pario lsol_util)
+list(APPEND tools_targets lsol_c)
+
 
 foreach(tgt_name ${tools_targets})
 SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")

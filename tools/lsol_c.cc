@@ -3,21 +3,21 @@
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-03-09 15:17]
 *     Last Modified       :     [2016-03-09 17:36]
-*     Description         :     main entry of lsol
+*     Description         :     lsol using c_api
 **********************************************************************************/
 
 #include <string>
 #include <cstdlib>
 #include <memory>
 
-#include <lsol/lsol.h>
+#include <lsol/c_api.h>
 #include <lsol/util/str_util.h>
+#include <lsol/util/reflector.h>
+#include <lsol/util/error_code.h>
 #include <cmdline/cmdline.h>
 
-using namespace lsol;
-using namespace lsol::pario;
-using namespace lsol::model;
 using namespace std;
+using namespace lsol;
 
 void getparser(int argc, char** argv, cmdline::parser&);
 int train(cmdline::parser& parser);
@@ -48,73 +48,87 @@ int main(int argc, char** argv) {
 }
 
 int train(cmdline::parser& parser) {
-  shared_ptr<Model> model;
+  int ret = Status_OK;
+  void* model = nullptr;
+  void* data_iter = nullptr;
   if (parser.exist("model")) {
-    model.reset(Model::Load(parser.get<string>("model")));
+    model = lsol_RestoreModel(parser.get<string>("model").c_str());
   } else if (parser.get<string>("algo").length()) {
-    model.reset(
-        Model::Create(parser.get<string>("algo"), parser.get<int>("classes")));
+    model = lsol_CreateModel(parser.get<string>("algo").c_str(),
+                             parser.get<int>("classes"));
   } else {
     fprintf(stderr, "either --model or --algo should be specified!\n");
     return Status_Invalid_Argument;
   }
-  if (model == nullptr) return Status_Invalid_Argument;
+  if (model == nullptr) ret = Status_Invalid_Argument;
 
-  try {
+  if (ret == Status_OK) {
     auto& group_options = parser.group_options("model-param");
     for (auto& opt : group_options) {
       if (opt->has_set()) {
-        model->SetParameter(opt->name(), parser.get<string>(opt->name()));
+        if (lsol_SetModelParameter(model, opt->name().c_str(),
+                                   parser.get<string>(opt->name()).c_str()) !=
+            Status_OK) {
+          ret = Status_Invalid_Argument;
+        }
       }
     }
-  } catch (invalid_argument& err) {
-    fprintf(stderr, "%s\n", err.what());
-    return Status_Invalid_Argument;
-  } catch (cmdline::cmdline_error& err) {
-    fprintf(stderr, "%s\n", err.what());
-    return Status_Invalid_Argument;
   }
 
   // load data
-  DataIter iter(parser.get<int>("batchsize"), parser.get<int>("bufsize"));
-  int ret =
-      iter.AddReader(parser.get<string>("input"), parser.get<string>("format"),
-                     parser.get<int>("pass"));
-  if (ret != Status_OK) return ret;
-
-  model->Train(iter);
-
-  // save model
-  if (parser.exist("output")) {
-    model->Save(parser.get<string>("output"));
+  if (ret == Status_OK) {
+    data_iter = lsol_CreateDataIter(parser.get<int>("batchsize"),
+                                    parser.get<int>("bufsize"));
+    ret = lsol_LoadData(data_iter, parser.get<string>("input").c_str(),
+                        parser.get<string>("format").c_str(),
+                        parser.get<int>("pass"));
   }
 
-  return Status_OK;
+  if (ret == Status_OK) {
+    lsol_Train(model, data_iter);
+
+    // save model
+    if (parser.exist("output")) {
+      ret = lsol_SaveModel(model, parser.get<string>("output").c_str());
+    }
+  }
+
+  lsol_ReleaseModel(&model);
+  lsol_ReleaseDataIter(&data_iter);
+  return ret;
 }
 
 int test(cmdline::parser& parser) {
-  shared_ptr<Model> model;
+  int ret = Status_OK;
+  void* model = nullptr;
+  void* data_iter = nullptr;
   if (parser.exist("model")) {
-    model.reset(Model::Load(parser.get<string>("model")));
+    model = lsol_RestoreModel(parser.get<string>("model").c_str());
   } else {
-    fprintf(stderr, "--model should be specified!\n");
+    fprintf(stderr, "either --model or --algo should be specified!\n");
     return Status_Invalid_Argument;
   }
-  if (model == nullptr) return Status_Invalid_Argument;
+  if (model == nullptr) ret = Status_Invalid_Argument;
 
   // load data
-  DataIter iter(parser.get<int>("batchsize"), parser.get<int>("bufsize"));
-  int ret =
-      iter.AddReader(parser.get<string>("input"), parser.get<string>("format"));
-  if (ret != Status_OK) return ret;
-
-  if (parser.exist("output")) {
-    ofstream out_file(parser.get<string>("output").c_str(), ios::out);
-    model->Test(iter, &out_file);
-  } else {
-    model->Test(iter, nullptr);
+  if (ret == Status_OK) {
+    data_iter = lsol_CreateDataIter(parser.get<int>("batchsize"),
+                                    parser.get<int>("bufsize"));
+    ret = lsol_LoadData(data_iter, parser.get<string>("input").c_str(),
+                        parser.get<string>("format").c_str(), 1);
   }
-  return Status_OK;
+  if (ret == Status_OK) {
+    const char* output_path = nullptr;
+    if (parser.exist("output")) {
+      output_path = parser.get<string>("output").c_str();
+    }
+
+    lsol_Test(model, data_iter, output_path);
+  }
+
+  lsol_ReleaseModel(&model);
+  lsol_ReleaseDataIter(&data_iter);
+  return ret;
 }
 
 /// \brief  show classes of a group in a group

@@ -16,6 +16,10 @@ foreach (src_dir ${src_dirs})
 endforeach()
 
 
-add_library(lsol_core SHARED ${lsol_list} ${PROJECT_SOURCE_DIR}/include/lsol/lsol.h)
+add_library(lsol_core SHARED ${lsol_list}
+    ${PROJECT_SOURCE_DIR}/include/lsol/lsol.h
+    ${PROJECT_SOURCE_DIR}/include/lsol/c_api.h
+    ${PROJECT_SOURCE_DIR}/src/lsol/c_api.cc
+    )
 target_link_libraries(lsol_core lsol_pario lsol_util)
 list(APPEND TARGET_LIBS lsol_core)

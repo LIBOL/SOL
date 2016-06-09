@@ -14,9 +14,13 @@
 
 namespace lsol {
 
-#if (defined WIN32 || defined _WIN32 || defined WINCE) && defined LSOL_EXPORTS
+#if (defined WIN32 || defined _WIN32 || defined WINCE)
+#ifdef LSOL_EXPORTS
 #undef LSOL_EXPORTS
 #define LSOL_EXPORTS __declspec(dllexport)
+#else
+#define LSOL_EXPORTS __declspec(dllimport)
+#endif
 #else
 #undef LSOL_EXPORTS
 #define LSOL_EXPORTS
