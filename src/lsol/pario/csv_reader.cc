@@ -53,7 +53,7 @@ int CSVReader::Next(DataPoint& dst_data) {
 
   // 2. parse features
   dst_data.Reserve(this->feat_dim_);
-  index_t index = 0;
+  index_t index = 1;
   while (*iter != '\0') {
     if (*iter != ',') {
       fprintf(stderr, "incorrect input file (%s)!\n", iter);
@@ -70,10 +70,10 @@ int CSVReader::Next(DataPoint& dst_data) {
     }
     iter = endptr;
 
-    ++index;
     if (feat != 0) {
       dst_data.AddNewFeat(index, feat);
     }
+    ++index;
   }
 
   return ret;
@@ -85,8 +85,9 @@ int CSVReader::LoadFeatDim() {
   char* p = this->read_buf_;
   this->feat_dim_ = 0;
   while (*p != '\0') {
-    if (*p++ == ',') ++(this->feat_dim_);
+    if (*p++ == ',') ++this->feat_dim_;
   }
+  ++this->feat_dim_;
   return ret;
 }
 

@@ -1,20 +1,16 @@
 set(TOOLS_DIR ${PROJECT_SOURCE_DIR}/tools)
 
-add_executable(converter ${TOOLS_DIR}/converter.cc)
-target_link_libraries(converter lsol_core)
-list(APPEND tools_targets converter)
+file(GLOB tool_list
+	"${TOOLS_DIR}/*.cpp"
+	"${TOOLS_DIR}/*.cc"
+	)
 
-add_executable(lsol ${TOOLS_DIR}/lsol.cc)
-target_link_libraries(lsol lsol_core)
-list(APPEND tools_targets lsol)
-
-add_executable(lsol_c ${TOOLS_DIR}/lsol_c.cc)
-target_link_libraries(lsol_c lsol_core)
-list(APPEND tools_targets lsol_c)
-
-
-foreach(tgt_name ${tools_targets})
-SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")
+foreach(tool_src ${tool_list})
+	get_filename_component(tgt_name ${tool_src} NAME_WE)
+	add_executable(${tgt_name} ${tool_src})
+    target_link_libraries(${tgt_name} lsol_core)
+    SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")
+	list(APPEND tools_targets ${tgt_name})
 endforeach()
 
 install(TARGETS ${tools_targets}

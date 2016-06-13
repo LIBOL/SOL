@@ -83,7 +83,7 @@ class Model(object):
     #Load libary by searching possible path.
     _LIB = load_lib()
 
-    def __init__(self, model_name, class_num, batch_size = 256, buf_size = 2, **kwargs):
+    def __init__(self, model_name, class_num, batch_size = 256, buf_size = 2, params = []):
         """Create a new model
         Parameters:
             model_name: string
@@ -94,13 +94,13 @@ class Model(object):
                 size of minibatch
             buf_size: int
                 number of minibatches for bufferring
-            kwargs:
+            params: list
                 model parameters
         """
         self.model = c_void_p(Model._LIB.lsol_CreateModel(model_name, class_num))
         if self.model == 0:
             raise  RuntimeError("model name %s is invalid" %(model_name))
-        for k,v in kwargs.iteritems():
+        for k,v in params():
             if Model._LIB.lsol_SetModelParameter(self.model, k, str(v)) != 0:
                 raise RuntimeError("set parameter %s=%s failed" %(k,v))
         self.data_iter = c_void_p(Model._LIB.lsol_CreateDataIter(batch_size, buf_size))
@@ -129,10 +129,13 @@ class Model(object):
         Return:
             training accuracy
         """
-        ret = Model._LIB.lsol_LoadData(self.data_iter, data_path, data_type, pass_num)
-        if ret != 0:
-            print 'load data %s failed' %(data_path)
-            return 0
+        if data_path is string:
+            data_path = [data_path]
+        for dp in data_path:
+            ret = Model._LIB.lsol_LoadData(self.data_iter, dp, data_type, pass_num)
+            if ret != 0:
+                print 'load data %s failed' %(data_path)
+                return 0
         accu = Model._LIB.lsol_Train(self.model, self.data_iter)
         if model_path != None:
             Model._LIB.lsol_SaveModel(self.model, model_path)

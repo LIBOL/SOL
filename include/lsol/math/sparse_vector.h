@@ -83,6 +83,7 @@ class SVector
   ///
   /// \param new_size New number of elements to reserve
   inline void reserve(size_t new_size) {
+    this->init();
     this->indexes_->reserve(new_size);
     this->values_->reserve(new_size);
   }
@@ -154,7 +155,6 @@ class SVector
  protected:
   Vector<index_t>* indexes_;
   Vector<DType>* values_;
-  Shape<2>* shape_;
   int* count_;
 };
 

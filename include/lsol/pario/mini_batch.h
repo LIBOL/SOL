@@ -33,10 +33,10 @@ class LSOL_EXPORTS MiniBatch {
   inline const DataPoint* points() const { return this->points_; }
   inline int size() const { return this->data_num; }
   inline int capacity() const { return this->capacity_; }
-  inline const DataPoint& operator[](int index) const {
+  inline const DataPoint& operator[](size_t index) const {
     return this->points_[index];
   }
-  inline DataPoint& operator[](int index) { return this->points_[index]; }
+  inline DataPoint& operator[](size_t index) { return this->points_[index]; }
 
   int data_num;
 

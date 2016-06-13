@@ -64,7 +64,6 @@ label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
 
 void OnlineLinearModel::update_dim(index_t dim) {
   if (dim >= this->dim_) {
-    ++dim;  // reserve the 0-th
     for (int i = 0; i < this->clf_num_; ++i) {
       auto& w = this->weights(i);
       w.resize(dim);

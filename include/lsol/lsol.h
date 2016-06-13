@@ -11,7 +11,11 @@
 #include <lsol/util/util.h>
 #include <lsol/util/types.h>
 
+#include <lsol/pario/file_reader.h>
+#include <lsol/pario/file_writer.h>
+#include <lsol/pario/data_writer.h>
 #include <lsol/pario/data_iter.h>
+
 #include <lsol/model/model.h>
 
 #endif

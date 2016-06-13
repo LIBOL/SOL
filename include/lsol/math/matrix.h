@@ -82,7 +82,7 @@ class Matrix
 
  protected:
   /// \brief init the owned data
-  void init() {
+  inline void init() {
     if (this->count_ == nullptr) {
       this->storage_ = new MatrixStorage<DType>;
       this->shape_ = new Shape<2>;
@@ -108,7 +108,10 @@ class Matrix
   /// the specified size
   ///
   /// \param new_size New number of elements to reserve
-  inline void reserve(size_t new_size) { this->storage_->resize(new_size); }
+  inline void reserve(size_t new_size) {
+    this->init();
+    this->storage_->resize(new_size);
+  }
 
   /// \brief  reshape the array to the given shape, not the capacity is not
   /// ensured to be equal to the new size

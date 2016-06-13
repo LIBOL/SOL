@@ -19,14 +19,14 @@ int CSVWriter::Write(const DataPoint& data) {
 
   size_t i = 0;
   index_t j = 1;
-  for (; i < feat_num && j <= this->feat_dim_; ++j) {
+  for (; i < feat_num && j < this->feat_dim_; ++j) {
     if (data.index(i) == j) {
       this->file_writer_.Printf(",%g", data.feature(i++));
     } else {
       this->file_writer_.Printf(",0");
     }
   }
-  for (; j <= this->feat_dim_; ++j) this->file_writer_.Printf(",0");
+  for (; j < this->feat_dim_; ++j) this->file_writer_.Printf(",0");
 
   this->file_writer_.Printf("\n");
   return Status_OK;
@@ -39,7 +39,8 @@ int CSVWriter::SetExtraInfo(const char* extra_info) {
   this->feat_dim_ = *((index_t*)(extra_info));
   std::ostringstream oss;
   oss << "class";
-  for (index_t i = 0; i < this->feat_dim_; ++i) {
+  // the index starts from 1
+  for (index_t i = 1; i < this->feat_dim_; ++i) {
     oss << ",v" << i;
   }
   this->file_writer_.Printf("%s\n", oss.str().c_str());

@@ -10,10 +10,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <lsol/pario/data_iter.h>
-#include <lsol/pario/data_writer.h>
-#include <lsol/util/error_code.h>
-
+#include <lsol/lsol.h>
 #include <cmdline/cmdline.h>
 
 using namespace lsol;
@@ -52,7 +49,10 @@ int main(int argc, char** argv) {
     return ret;
   }
   ret = writer->Open(dst_path);
-  if (ret != Status_OK) return ret;
+  if (ret != Status_OK) {
+    delete writer;
+    return ret;
+  }
 
   MiniBatch* mb = nullptr;
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
       mb = iter.Next(mb);
       if (mb == nullptr) break;
 
-      for (int i = 0; i < mb->size(); ++i) {
+      for (size_t i = 0; i < mb->size(); ++i) {
         DataPoint& pt = (*mb)[i];
         if (feat_dim < pt.dim()) feat_dim = pt.dim();
       }
@@ -77,22 +77,22 @@ int main(int argc, char** argv) {
     ret = iter.AddReader(src_path, src_type);
     if (ret != Status_OK) return ret;
   }
-  int data_num = 0;
+  size_t data_num = 0;
   int print_thresh = 1000;
   while (true) {
     mb = iter.Next(mb);
     if (mb == nullptr) break;
     data_num += mb->size();
     if (data_num % 1000 > print_thresh) {
-      fprintf(stdout, "%d examples converted\r", data_num);
+      fprintf(stdout, "%llu examples converted\r", data_num);
       print_thresh += 1000;
     }
 
-    for (int i = 0; i < mb->size(); ++i) {
+    for (size_t i = 0; i < mb->size(); ++i) {
       writer->Write((*mb)[i]);
     }
   }
-  fprintf(stdout, "%d examples converted\n", data_num);
+  fprintf(stdout, "%llu examples converted\n", data_num);
   writer->Close();
   delete writer;
   return ret;

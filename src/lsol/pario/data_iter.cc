@@ -24,17 +24,32 @@ DataIter::DataIter(int batch_size, int batch_num)
 }
 
 DataIter::~DataIter() {
+  MiniBatch* mb = nullptr;
+  // clear mini_batch_factory_
+  while (this->mini_batch_factory_.size() > 0) {
+    mb = this->mini_batch_factory_.Dequeue();
+    DeletePointer(mb);
+  }
+
+  //send exit signal to readers
+  this->mini_batch_factory_.Enqueue(mb);
+
+  // clear mini_batch_buf_
+  while (this->running_readers_ > 0) {
+	  mb = this->mini_batch_buf_.Dequeue();
+	  if (mb == nullptr) {
+		  --this->running_readers_;
+	  }
+	  else {
+		  DeletePointer(mb);
+	  }
+  }
+
   // wait all data readers to exit
   for (shared_ptr<DataReadTask>& reader : this->readers_) {
     reader->Join();
   }
 
-  // clear mini_batch_buf_
-  MiniBatch* mb = nullptr;
-  while (this->mini_batch_buf_.size() > 0) {
-    mb = this->mini_batch_buf_.Dequeue();
-    DeletePointer(mb);
-  }
   // clear mini_batch_factory_
   while (this->mini_batch_factory_.size() > 0) {
     mb = this->mini_batch_factory_.Dequeue();
