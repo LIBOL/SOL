@@ -12,10 +12,10 @@ class DataSet(object):
     config = ConfigParser.ConfigParser()
     config.read(os.path.join(curr_path, 'defaults.cfg'))
     bin_dir = config.get('env', 'BIN_DIR', '.')
-    env_paths = os.environ['path']
+    env_paths = os.environ['PATH']
     env_sep = ';' if sys.platform == 'win32' else ':'
     if bin_dir not in env_paths.split('env_sep'):
-        os.environ['path'] = bin_dir + env_sep + env_paths;
+        os.environ['PATH'] = bin_dir + env_sep + env_paths;
     data_dir = config.get('data', 'DATA_DIR', '.')
     cache_dir = config.get('data', 'CACHE_DIR', 'cache')
 
@@ -103,10 +103,11 @@ class DataSet(object):
     def train_cache_path(self):
         return self.cache_file(self.train_file, self.dtype)
 
-    def train_slice_path(self, slice_id):
-        slice_path =  os.path.join(self.work_dir, self.name + '.cv.slice.%d.bin' %(slice_id))
+    def train_slice_path(self, slice_id, dtype):
+        slice_path =  os.path.join(self.work_dir, self.name + '.split.%d.%s' %(slice_id, dtype))
         if os.path.exists(slice_path) == False:
             raise Exception("slice path %s not found, called split_file already?" %(slice_path))
+        return slice_path
 
     def train_rand_path(self):
         return self.shuffle_file(self.train_file, self.dtype)
@@ -171,4 +172,4 @@ if __name__ == '__main__':
     print a1a.train_cache_path()
     print a1a.train_rand_path()
     a1a.split_file(a1a.train_path(), a1a.dtype, "bin", 4)
-    print a1a.train_slice_path(4)
+    print a1a.train_slice_path(2, 'bin')
