@@ -5,7 +5,7 @@ import sys
 import os
 import numpy as np
 
-import dataset
+from dataset import DataSet
 import search_space 
 from lsol_core import Model
 
@@ -14,7 +14,7 @@ class CV(object):
     """
     __slots__ = ('dataset','fold_num', 'search_space','train_scores', 'val_scores', 'extra_param')
 
-    def __init__(self,  dataset, fold_num, param_str, extra_param = None):
+    def __init__(self,  dataset, fold_num, param_str, extra_param = []):
         """Create a new cross validation instance
         Parameters:
         dataset: dataset
@@ -42,14 +42,14 @@ class CV(object):
         """train and validate on the dataset
         """
         #split the dataset
-        self.dataset.split(self.fold_num)
+        self.dataset.split_file(self.dataset.train_path(), self.dataset.dtype, "bin", self.fold_num)
 
         #cross validation
         for val_fold_id in range(0,self.fold_num):
             print '---------------------------'
             print 'Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
             print '---------------------------'
-            train_accu_list, val_accu_list = self.__train_val_one_fold(test_fold_id)
+            train_accu_list, val_accu_list = self.__train_val_one_fold(model_name, val_fold_id)
             self.train_scores[:, val_fold_id] = train_accu_list
             self.val_scores[:, val_fold_id] = val_accu_list
 
@@ -65,7 +65,7 @@ class CV(object):
     def save_results(self, output_path):
         max_param, max_parma_id = self.get_best_param()
         with open(output_path,'w') as wfh:
-            wfh.write('Best Result: {0}:\t{1}\t{2}\n'.format(str(min_param),
+            wfh.write('Best Result: %s:\t%.4f\t%.4f\n' %(str(max_param),
                 self.train_scores[max_parma_id, self.fold_num],
                 self.val_scores[max_parma_id, self.fold_num]))
 
@@ -73,14 +73,14 @@ class CV(object):
             for y in xrange(self.val_scores.shape[0]):
                 wfh.write('%s:' %(str(self.search_space.get_param(y))))
                 for x in xrange(self.val_scores.shape[1]):
-                    wfh.write('\t%.2f' % (self.val_scores[y,x]))
+                    wfh.write('\t%.4f' % (self.val_scores[y,x]))
                 wfh.write('\n')
 
             wfh.write("Train Accuracies\n")
             for y in xrange(self.train_scores.shape[0]):
                 wfh.write('%s:' %(str(self.search_space.get_param(y))))
                 for x in xrange(self.train_scores.shape[1]):
-                    wfh.write('\t%.2f' % (self.train_scores[y,x]))
+                    wfh.write('\t%.4f' % (self.train_scores[y,x]))
                 wfh.write('\n')
 
         print '\ncross validation result written to %s' %output_path
@@ -105,12 +105,13 @@ class CV(object):
                 params.append(param)
 
             #create model
-            model = Model(model_name, self.dataset.class_num, params)
+            model = Model(model_name, self.dataset.class_num, params = params)
             #train
-            train_accu = model.train(self.dataset.cv_train(val_fold_id), self.dataset.type, self.dataset.pass_num)
-            val_accu = model.test(self.dataset.cv_val(val_fold_id), self.dataset.type)
+            train_paths = [self.dataset.train_slice_path(i, "bin") for i in xrange(self.fold_num) if i != val_fold_id]
+            train_accu = model.train(train_paths, "bin", self.dataset.pass_num)
+            val_accu = model.test(self.dataset.train_slice_path(val_fold_id, "bin"), "bin")
 
-            print 'Fold: %d' %(val_fold_id)
+            print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
             print '\tParameter Setting: %s' %(str(params))
             print '\tTraining Accuracy: %f' %(train_accu)
             print '\tValidation Accuracy: %f' %(val_accu)
@@ -119,5 +120,8 @@ class CV(object):
         return train_accu_list, val_accu_list
 
 if __name__ == '__main__':
-    handler = CV('aut','Ada_RDA','3','-eta 0.5:10:12 -delta 0.5:2:1')
-    handler.run()
+    a1a = DataSet('a1a', train_file = 'a1a', test_file = 'a1a.t')
+    cv = CV(a1a,5,'eta[0.5:10:12]')
+    cv.train_val('sgd');
+    print cv.get_best_param()
+    cv.save_results(os.path.join(cv.dataset.work_dir, 'cv-sgd.txt')) 

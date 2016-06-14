@@ -100,7 +100,7 @@ class Model(object):
         self.model = c_void_p(Model._LIB.lsol_CreateModel(model_name, class_num))
         if self.model == 0:
             raise  RuntimeError("model name %s is invalid" %(model_name))
-        for k,v in params():
+        for k,v in params:
             if Model._LIB.lsol_SetModelParameter(self.model, k, str(v)) != 0:
                 raise RuntimeError("set parameter %s=%s failed" %(k,v))
         self.data_iter = c_void_p(Model._LIB.lsol_CreateDataIter(batch_size, buf_size))
@@ -129,7 +129,7 @@ class Model(object):
         Return:
             training accuracy
         """
-        if data_path is string:
+        if type(data_path) == str:
             data_path = [data_path]
         for dp in data_path:
             ret = Model._LIB.lsol_LoadData(self.data_iter, dp, data_type, pass_num)

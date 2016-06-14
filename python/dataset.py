@@ -19,7 +19,7 @@ class DataSet(object):
     data_dir = config.get('data', 'DATA_DIR', '.')
     cache_dir = config.get('data', 'CACHE_DIR', 'cache')
 
-    def __init__(self, name, dtype = 'svm', train_file = '', test_file = ''):
+    def __init__(self, name, dtype = 'svm', train_file = '', test_file = '', pass_num = 1):
         self.name = name
         self.dtype = dtype
 
@@ -38,6 +38,8 @@ class DataSet(object):
         self.work_dir = os.path.join(self.cache_dir, self.name)
         if os.path.exists(self.work_dir) == False:
             os.makedirs(self.work_dir)
+
+        self.pass_num = pass_num
 
         #prepare the dataset
         self.__analyze_dataset()
@@ -61,7 +63,7 @@ class DataSet(object):
         #if not analyzed before, analyze
         if os.path.exists(info_file) == False :
             exe_path = self.__get_cmd_path('analyze')
-            print 'calculate dimension of %s' %self.train_file
+            print 'analyze dataset of %s' %self.name
             cmd = '{0} -i \"{1}\" -s {2} -o {3} '.format(exe_path, self.train_file, self.dtype, info_file)
             print cmd
             if os.system(cmd) != 0:
