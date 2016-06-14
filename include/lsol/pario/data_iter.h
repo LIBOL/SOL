@@ -57,8 +57,8 @@ class LSOL_EXPORTS DataIter {
   BlockQueue<MiniBatch*> mini_batch_buf_;
   // data reader threads
   std::vector<std::shared_ptr<DataReadTask>> readers_;
-  // number of running readers
-  int running_readers_;
+  // index of running reader
+  int running_reader_idx_;
 };  // class DataIter
 }  // namespace pario
 }  // namespace lsol

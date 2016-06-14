@@ -20,7 +20,9 @@ DataIter::DataIter(int batch_size, int batch_num)
   for (int i = 0; i < batch_num; ++i) {
     this->mini_batch_factory_.Enqueue(new MiniBatch(batch_size));
   }
-  this->running_readers_ = 0;
+  // signal to start next reader
+  this->mini_batch_buf_.Enqueue(nullptr);
+  this->running_reader_idx_ = -1;
 }
 
 DataIter::~DataIter() {
@@ -31,18 +33,21 @@ DataIter::~DataIter() {
     DeletePointer(mb);
   }
 
-  //send exit signal to readers
+  // send exit signal to readers
   this->mini_batch_factory_.Enqueue(mb);
 
   // clear mini_batch_buf_
-  while (this->running_readers_ > 0) {
-	  mb = this->mini_batch_buf_.Dequeue();
-	  if (mb == nullptr) {
-		  --this->running_readers_;
-	  }
-	  else {
-		  DeletePointer(mb);
-	  }
+  int reader_count = static_cast<int>(this->readers_.size());
+  while (this->running_reader_idx_ < reader_count) {
+    mb = this->mini_batch_buf_.Dequeue();
+    if (mb == nullptr) {
+      ++this->running_reader_idx_;
+      if (this->running_reader_idx_ < reader_count) {
+        this->readers_[this->running_reader_idx_]->Start();
+      }
+    } else {
+      DeletePointer(mb);
+    }
   }
 
   // wait all data readers to exit
@@ -63,8 +68,6 @@ int DataIter::AddReader(const std::string& path, const std::string& dtype,
   shared_ptr<DataReadTask> reader(new DataReadTask(
       path, dtype, this->mini_batch_factory_, this->mini_batch_buf_, pass_num));
   if (reader->Good()) {
-    ++this->running_readers_;
-    reader->Start();
     this->readers_.push_back(reader);
   } else {
     ret = Status_Invalid_Argument;
@@ -82,9 +85,16 @@ MiniBatch* DataIter::Next(MiniBatch* prev_batch) {
   do {
     el = this->mini_batch_buf_.Dequeue();
     if (el == nullptr) {
-      --this->running_readers_;
+      if (this->running_reader_idx_ + 1 <
+          static_cast<int>(this->readers_.size())) {
+        ++this->running_reader_idx_;
+        this->readers_[this->running_reader_idx_]->Start();
+      } else {
+        this->mini_batch_buf_.Enqueue(nullptr);
+        break;
+      }
     }
-  } while (el == nullptr && this->running_readers_ > 0);
+  } while (el == nullptr);
   return el;
 }
 
