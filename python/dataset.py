@@ -6,6 +6,7 @@ import os
 import re
 import random
 import ConfigParser
+import logging
 
 class DataSet(object):
     curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
@@ -19,21 +20,17 @@ class DataSet(object):
     data_dir = config.get('data', 'DATA_DIR', '.')
     cache_dir = config.get('data', 'CACHE_DIR', 'cache')
 
-    def __init__(self, name, dtype = 'svm', train_file = '', test_file = '', pass_num = 1):
+    def __init__(self, name, data_path = '', dtype = 'svm', pass_num = 1):
         self.name = name
         self.dtype = dtype
+        self.slice_type = dtype
 
-        if train_file == '':
-            train_file = '{0}{1}{0}_train'.format(name, os.sep)
-        self.train_file = self.get_data_path(train_file)
-        if os.path.exists(self.train_file) == False:
-            raise Exception('file %s not found, DATA_ROOT not set?' %(self.train_file))
-
-        if test_file == '':
-            test_file = '{0}{1}{0}_test'.format(name, os.sep)
-        self.test_file = self.get_data_path(test_file)
-        if os.path.exists(self.test_file) == False:
-            raise Exception('file %s not found, DATA_ROOT not set?' %(self.test_file))
+        if data_path == '':
+            data_path = '{0}{1}{0}_train'.format(name, os.sep)
+        self.data_path = self.get_data_path(data_path)
+        if os.path.exists(self.data_path) == False:
+            raise Exception('file %s not found, DATA_ROOT not set?' %(self.data_path))
+        self.data_name = os.path.splitext(os.path.basename(self.data_path))[0]
 
         self.work_dir = os.path.join(self.cache_dir, self.name)
         if os.path.exists(self.work_dir) == False:
@@ -58,25 +55,24 @@ class DataSet(object):
     def __analyze_dataset(self):
         """analyze the dataset to obtain dim and class number
         """
-        info_file = os.path.join(self.work_dir, self.name + '_info.txt')
-    
+        info_file = os.path.join(self.work_dir,  self.data_name + '_info.txt')
+
         #if not analyzed before, analyze
         if os.path.exists(info_file) == False :
             exe_path = self.__get_cmd_path('analyze')
-            print 'analyze dataset of %s' %self.name
-            cmd = '{0} -i \"{1}\" -s {2} -o {3} '.format(exe_path, self.train_file, self.dtype, info_file)
+            logging.info('analyze dataset of %s' %self.name)
+            cmd = '{0} -i \"{1}\" -s {2} -o {3} '.format(exe_path, self.data_path, self.dtype, info_file)
             print cmd
             if os.system(cmd) != 0:
-                raise Exception('analysis of %s failed' %(self.train_file))
+                raise Exception('analysis of %s failed' %(self.data_path))
 
         #parse data num
         pattern = re.compile(r'data number\s*:\s*(\d+)')
         result_list = pattern.findall(open(info_file,'r').read())
         if len(result_list) != 1:
-            print result_list
-            print 'parse data number failed'
+            logging.error('parse data number failed, result_list is %s' %(str(result_list)))
             sys.exit()
-    
+
         self.data_num = (int)(result_list[0])
 
         #parse dimension
@@ -86,92 +82,75 @@ class DataSet(object):
             print result_list
             print 'parse dimension failed'
             sys.exit()
-    
+
         self.dim = (int)(result_list[0])
 
         #parse class number
         pattern = re.compile(r'class num\s*:\s*(\d+)')
         result_list = pattern.findall(open(info_file,'r').read())
         if len(result_list) != 1:
-            print result_list
-            print 'parse class num failed'
+            logging.error('parse class num failed, result_list is %s' %(str(result_list)))
             sys.exit()
-    
+
         self.class_num = (int)(result_list[0])
 
-    def train_path(self):
-        return self.train_file
 
-    def train_cache_path(self):
-        return self.cache_file(self.train_file, self.dtype)
+    def split_path(self, split_id):
+        path =  os.path.join(self.work_dir, self.data_name + '.split.%d.%s' %(split_id, self.slice_type))
+        if os.path.exists(path) == False:
+            raise Exception("slice path %s not found, called split_file already?" %(path))
+        return path
 
-    def train_slice_path(self, slice_id, dtype):
-        slice_path =  os.path.join(self.work_dir, self.name + '.split.%d.%s' %(slice_id, dtype))
-        if os.path.exists(slice_path) == False:
-            raise Exception("slice path %s not found, called split_file already?" %(slice_path))
-        return slice_path
-
-    def train_rand_path(self):
-        return self.shuffle_file(self.train_file, self.dtype)
-
-    def test_path(self):
-        return self.test_file
-
-    def test_cache_path(self):
-        return self.cache_file(self.test_file, self.dtype)
-
-    def cache_file(self, path, dtype):
-        if dtype == 'bin':
-            return path
+    def cache_path(self):
+        if self.dtype == 'bin':
+            return self.data_path
         else:
-            cache_path = os.path.join(self.work_dir, os.path.splitext(os.path.basename(path))[0] + '.bin')
+            cache_path = os.path.join(self.work_dir, self.data_name + '.bin')
             if os.path.exists(cache_path):
                 return cache_path
             exe_path = self.__get_cmd_path('converter')
-            print 'cache file  %s to %s' %(path, cache_path)
-            cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\" -d bin'.format(exe_path, path, dtype, cache_path)
+            logging.info('cache file  %s to %s' %(self.data_path, cache_path))
+            cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\" -d bin'.format(exe_path, self.data_path, self.dtype, cache_path)
             print cmd
             if os.system(cmd) != 0:
-                raise Exception('convert data %s to %s format failed' %(path, dtype))
+                raise Exception('convert data %s to %s format failed' %(self.data_path, self.dtype))
             return cache_path
 
-    def shuffle_file(self, path, dtype):
-        output_path = os.path.join(self.work_dir, os.path.splitext(os.path.basename(path))[0] + '.shuffle.' + dtype)
+    def rand_path(self, tgt_type = None):
+        tgt_type = self.dtype if tgt_type == None else tgt_type
+        output_path = os.path.join(self.work_dir, self.data_name + '.shuffle.' + tgt_type)
         if os.path.exists(output_path):
             return output_path
         exe_path = self.__get_cmd_path('shuffle')
-        print 'shuffle file  %s to %s' %(path, output_path)
-        cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\"'.format(exe_path, path, dtype, output_path)
+        logging.info('shuffle file  %s to %s' %(self.data_path, output_path))
+        cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\" -d {4}'.format(exe_path, self.data_path, self.dtype, output_path, tgt_type)
         print cmd
         if os.system(cmd) != 0:
-            raise Exception('shuffle data %s failed' %(path))
+            raise Exception('shuffle data %s failed' %(self.data_path))
         return output_path
 
-    def split_file(self, path, stype, dtype, split_num):
+    def split_file(self, split_num, tgt_type = None):
         """Split file into slices
         Parameters:
-        path: string
-            source file path
-        stype: string
-            source file type
-        dtype: string
+        tgt_type: string
             splited file type
         split_num: int
-            number of splits 
+            number of splits
         """
-        output_prefix = os.path.join(self.work_dir, os.path.splitext(os.path.basename(path))[0] + ".split.")
-        if os.path.exists(output_prefix +  '0.' + dtype):
+        self.slice_type = self.dtype if tgt_type == None else tgt_type
+        output_prefix = os.path.join(self.work_dir, self.data_name + ".split.")
+        if os.path.exists(output_prefix +  '0.' + tgt_type):
             return None
         exe_path = self.__get_cmd_path('split')
-        print 'split file  %s to %d slices' %(path, split_num)
-        cmd = '{0} -i \"{1}\" -s {2} -n {3} -o \"{4}\" -d {5} -r'.format(exe_path, path, stype, split_num, output_prefix, dtype)
+        logging.info('split file  %s to %d slices' %(self.data_path, split_num))
+        cmd = '{0} -i \"{1}\" -s {2} -n {3} -o \"{4}\" -d {5} -r'.format(exe_path, self.data_path, self.dtype, split_num, output_prefix, self.slice_type)
         if os.system(cmd) != 0:
-            raise Exception('split data %s failed' %(path))
+            raise Exception('split data %s failed' %(self.data_path))
 
 if __name__ == '__main__':
-    a1a = DataSet('a1a', train_file = 'a1a', test_file = 'a1a.t')
-    print a1a.train_path()
-    print a1a.train_cache_path()
-    print a1a.train_rand_path()
-    a1a.split_file(a1a.train_path(), a1a.dtype, "bin", 4)
-    print a1a.train_slice_path(2, 'bin')
+    a1a = DataSet('a1a', data_path = 'a1a')
+    print a1a.data_path
+    print a1a.cache_path()
+    print a1a.rand_path("bin")
+    a1a.split_file(4, "bin")
+    print a1a.split_path(2)

@@ -62,10 +62,10 @@ class SearchSpace(object):
     def __init__(self, param_str):
         """create a search space with the given parameter string
         Parameters:
-        param_str: string
-            parameter string, with format like 'a[1:2:8];b[2:2:16]'
+        cv_params: list[(name, range)]
+            parameter string, with format like '[('a', '1:2:8'),(b, '2:2:16')]'
         """
-        self.__parse_param_str(param_str)
+        self.__parse_cv_params(param_str)
 
         self.dim = len(self.search_space)
 
@@ -84,31 +84,31 @@ class SearchSpace(object):
             param.append(self.search_space[j][coor])
         return param
 
-    def __parse_param_str(self,param_str):
+    def __parse_cv_params(self,cv_params):
         """parse the search space from parameter string
         Parameters:
-        param_str: string
-            parameter string, with format like 'a[1:2:8];b[2:2:16]'
+        cv_params: list[(name, range)]
+            parameter string, with format like '[('a', '1:2:8'),(b, '2:2:16')]'
         """
         #detect param
         num_pattern     = r'\d*\.?\d+'
-        search_pattern  = r'(?P<param_name>\w+)\[(?P<start_val>{0}):(?P<step_val>{1}):(?P<end_val>{2})\]'\
+        search_pattern  = r'(?P<start_val>{0}):(?P<step_val>{1}):(?P<end_val>{2})'\
                 .format(num_pattern,num_pattern,num_pattern)
 
         self.search_space = []
-        for param in filter(None,param_str.split(';')):
-            search_res  = re.match(search_pattern, param.strip())
+        for param_name, param_range in cv_params:
+            search_res  = re.match(search_pattern, param_range.strip())
             if search_res:
-                self.search_space.append(SearchItem(search_res.group('param_name'),
+                self.search_space.append(SearchItem(param_name,
                         search_res.group('start_val'),
                         search_res.group('step_val'),
                         search_res.group('end_val')))
 
             else:
-                raise ValueError('incorrect input parameter {0}'.format(param))
+                raise ValueError('incorrect input parameter {0}'.format(param_range))
 
 if __name__ == '__main__':
-    param_space = 'a[1:2:16];b[0.5:2:10]'
+    param_space = [('a', '1:2:16'), ('b', '0.5:2:10')]
     ss = SearchSpace(param_space)
     for k in range(0,ss.size):
         cmd = ss.get_param(k)

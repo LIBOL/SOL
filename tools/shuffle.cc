@@ -29,18 +29,21 @@ int main(int argc, char** argv) {
   parser.add<string>("input", 'i', "input data path", true);
   parser.add<string>("input_type", 's', "input data type", true);
   parser.add<string>("output", 'o', "output data path", false, "", "-");
+  parser.add<string>("output_type", 'd', "output data type", false, "", "");
 
   parser.parse_check(argc, argv);
 
   string src_path = parser.get<string>("input");
   string src_type = parser.get<string>("input_type");
   string output_path = parser.get<string>("output");
+  string output_type = parser.get<string>("output_type");
+  if (output_type.length() == 0) output_type = src_type;
 
   DataIter iter;
   int ret = iter.AddReader(src_path, src_type);
   if (ret != Status_OK) return ret;
 
-  DataWriter* writer = DataWriter::Create(src_type);
+  DataWriter* writer = DataWriter::Create(output_type);
   if (writer == nullptr) {
     ret = Status_Invalid_Argument;
     return ret;
