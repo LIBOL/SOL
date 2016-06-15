@@ -103,27 +103,23 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
       cmdline::oneof<string>("", "model", "loss", "reader", "writer"));
 
   // input & output
-  parser.add<string>("input", 'i', "input file", true);
-  parser.add<string>("model", 'm', "path to pre-trained model", false);
-  parser.add<string>("output", 'o', "output model(train) ", false);
-
-  // pario related options
+  parser.add<string>("input", 'i', "input file", true, "io");
   parser.add<string>("format", 'f', "dataset format", false, "io", "svm",
                      cmdline::oneof<string>("csv", "svm", "bin"));
-  parser.add<int>("classes", 'c', "class number", false, "model", 2);
+  parser.add<int>("classes", 'c', "class number", false, "io", 2);
   parser.add<int>("pass", 'p', "number of passes", false, "io", 1);
-  parser.add<string>("dim", 0, "dimension of features", false, "io");
+  parser.add<string>("dim", 'd', "dimension of features", false, "io");
   parser.add<int>("batchsize", 'b', "batch size", false, "io", 256);
   parser.add<int>("bufsize", 0, "number of buffered minibatches", false, "io",
                   2);
 
   // model setting
   parser.add<string>("algo", 'a', "learning algorithm", false, "model");
-
-  // model parameters
+  parser.add<string>("model", 'm', "path to pre-trained model", false, "model");
+  parser.add<string>("output", 'o', "output model(train) ", false, "model");
   parser.add<string>(
       "params", 0, "model parameters, in the format 'param=val;param=val;...'",
-      false, "model-param");
+      false, "model");
 
   parser.add("help", 'h', "print this message");
 

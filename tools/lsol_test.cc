@@ -81,13 +81,13 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
                      "output model(train) or predict results(test)", false);
 
   // pario related options
-  parser.add<string>("format", 'f', "dataset format", false, "io", "svm",
+  parser.add<string>("format", 'f', "dataset format", false, "", "svm",
                      cmdline::oneof<string>("csv", "svm", "bin"));
-  parser.add<int>("batchsize", 'b', "batch size", false, "io", 256);
-  parser.add<int>("bufsize", 0, "number of buffered minibatches", false, "io",
+  parser.add<int>("batchsize", 'b', "batch size", false, "", 256);
+  parser.add<int>("bufsize", 0, "number of buffered minibatches", false, "",
                   2);
 
-  parser.add<string>("filter", 0, "filtered features", false, "model-param");
+  parser.add<string>("filter", 0, "filtered features", false);
   parser.add("help", 'h', "print this message");
 
   bool ok = parser.parse(argc, argv);

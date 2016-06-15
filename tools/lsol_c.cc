@@ -63,13 +63,18 @@ int train(cmdline::parser& parser) {
   if (model == nullptr) ret = Status_Invalid_Argument;
 
   if (ret == Status_OK) {
-    auto& group_options = parser.group_options("model-param");
-    for (auto& opt : group_options) {
-      if (opt->has_set()) {
-        if (lsol_SetModelParameter(model, opt->name().c_str(),
-                                   parser.get<string>(opt->name()).c_str()) !=
+    const string& model_params = parser.get<string>("params");
+    if (model_params.length() > 0) {
+      for (const string& opt : split(model_params, ';')) {
+        const vector<string>& opt_pair = split(opt, '=');
+        if (opt_pair.size() != 2) {
+          fprintf(stderr, "invalid params: %s\n", opt.c_str());
+          return Status_Invalid_Argument;
+        }
+        if ((ret = lsol_SetModelParameter(model, strip(opt_pair[0]).c_str(),
+                                          strip(opt_pair[1]).c_str())) !=
             Status_OK) {
-          ret = Status_Invalid_Argument;
+          break;
         }
       }
     }
@@ -85,7 +90,8 @@ int train(cmdline::parser& parser) {
   }
 
   if (ret == Status_OK) {
-    lsol_Train(model, data_iter);
+    float accu = lsol_Train(model, data_iter);
+    fprintf(stdout, "training accuracy: %.4f\n", accu);
 
     // save model
     if (parser.exist("output")) {
@@ -110,6 +116,11 @@ int test(cmdline::parser& parser) {
   }
   if (model == nullptr) ret = Status_Invalid_Argument;
 
+  if (parser.exist("filter")) {
+    ret = lsol_SetModelParameter(model, "filter",
+                                 parser.get<string>("filter").c_str());
+  }
+
   // load data
   if (ret == Status_OK) {
     data_iter = lsol_CreateDataIter(parser.get<int>("batchsize"),
@@ -123,7 +134,8 @@ int test(cmdline::parser& parser) {
       output_path = parser.get<string>("output").c_str();
     }
 
-    lsol_Test(model, data_iter, output_path);
+    float accu = lsol_Test(model, data_iter, output_path);
+    fprintf(stdout, "test accuracy: %.4f\n", accu);
   }
 
   lsol_ReleaseModel(&model);
@@ -149,53 +161,32 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
       false, "", "",
       cmdline::oneof<string>("", "model", "loss", "reader", "writer"));
 
-  // input & output
-  parser.add<string>("input", 'i', "input file", true);
   parser.add<string>("task", 't', "task(train or test)", false, "", "train",
                      cmdline::oneof<string>("train", "test"));
-  parser.add<string>("model", 'm', "model to preload, required for test",
-                     false);
-  parser.add<string>("output", 'o',
-                     "output model(train) or predict results(test)", false);
-
-  // pario related options
+  // input & output
+  parser.add<string>("input", 'i', "input file", true, "io");
   parser.add<string>("format", 'f', "dataset format", false, "io", "svm",
                      cmdline::oneof<string>("csv", "svm", "bin"));
-  parser.add<string>("dim", 0, "dimension of features", false, "io");
+  parser.add<int>("classes", 'c', "class number", false, "io", 2);
+  parser.add<int>("pass", 'p', "number of passes", false, "io", 1);
+  parser.add<string>("dim", 'd', "dimension of features", false, "io");
   parser.add<int>("batchsize", 'b', "batch size", false, "io", 256);
   parser.add<int>("bufsize", 0, "number of buffered minibatches", false, "io",
                   2);
-  parser.add<int>("pass", 'p', "number of passes", false, "io", 1);
-
-  // loss setting
-  parser.add<string>("loss", 'l', "loss function type", false, "loss", "");
+  parser.add<string>("output", 'o',
+                     "output model(train) or predict results(test)", false,
+                     "io");
 
   // model setting
-  parser.add<int>("classes", 'c', "class number", false, "model", 2);
   parser.add<string>("algo", 'a', "learning algorithm", false, "model");
+  parser.add<string>("model", 'm', "model to preload, required for test", false,
+                     "model");
+  parser.add<string>("filter", 0, "filtered features", false, "model");
+  parser.add<string>(
+      "params", 0, "model parameters, in the format 'param=val;param=val;...'",
+      false, "model");
 
   // model parameters
-  parser.add<string>("eta", 0, "learning rate", false, "model-param");
-  parser.add<string>("power_t", 0, "decaying learning rate", false,
-                     "model-param");
-  parser.add<string>("t0", 0, "initial iteration number", false, "model-param");
-  parser.add<string>("aggressive", 0, "aggressively update", false,
-                     "model-param", "true",
-                     cmdline::oneof<string>("true", "false"));
-  parser.add<string>("lambda", 0, "regularization parameter", false,
-                     "model-param");
-  parser.add<string>("gamma", 0, "gamma parameter", false, "model-param");
-  parser.add<string>("rou", 0, "rou parameter", false, "model-param");
-  parser.add<string>("delta", 0, "delta parameter", false, "model-param");
-
-  parser.add<string>(
-      "K", 'k',
-      "number of k in truncated gradient descent or feature selection", false,
-      "model-param");
-
-  parser.add<string>("filter", 0, "filtered features", false, "model-param");
-  parser.add<string>("norm", 0, "normalization type", false, "model-param",
-                     "none", cmdline::oneof<string>("none", "L1", "L2"));
   parser.add("help", 'h', "print this message");
 
   bool ok = parser.parse(argc, argv);

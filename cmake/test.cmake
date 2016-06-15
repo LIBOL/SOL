@@ -23,13 +23,3 @@ foreach(test_src ${test_pario_list})
 	SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "test/pario")
 	list(APPEND test_targets ${tgt_name})
 endforeach()
-
-install(TARGETS ${test_targets}
-	RUNTIME DESTINATION bin
-	LIBRARY DESTINATION bin
-	ARCHIVE DESTINATION lib
-	)
-
-install(DIRECTORY data
-    DESTINATION bin
-    )
