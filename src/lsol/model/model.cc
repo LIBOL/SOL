@@ -110,6 +110,19 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
   return float(double(err_num) / data_num);
 }
 
+void Model::BeginTrain() {
+  if (this->loss_ == nullptr)
+    throw runtime_error("loss function is not set yet!");
+  if (this->class_num() > 2 && this->loss_->type() != loss::Loss::Type::MC) {
+    throw runtime_error(
+        "binary class loss function is used for multiclass problems!");
+  }
+  if (this->class_num() == 2 && this->loss_->type() == loss::Loss::Type::MC) {
+    throw runtime_error(
+        "multiclass loss function is used for binary class problems!");
+  }
+}
+
 int Model::Save(const string& path) const {
   fprintf(stdout, "save model to %s\n", path.c_str());
   ofstream out_file(path.c_str(), ios::out);
@@ -167,7 +180,7 @@ void Model::GetModelInfo(Json::Value& root) const {
   root["model"] = this->name();
   root["cls_num"] = this->class_num();
   root["clf_num"] = this->clf_num();
-  root["loss"] = this->loss_->name();
+  root["loss"] = this->loss_ == nullptr ? "" : this->loss_->name();
   root["norm"] = int(this->norm_type_);
 }
 
@@ -181,7 +194,8 @@ int Model::SetModelInfo(const Json::Value& root) {
     return Status_Invalid_Argument;
   }
   // loss
-  if (root["loss"].asString() != this->loss_->name()) {
+  if (this->loss_ == nullptr ||
+      root["loss"].asString() != this->loss_->name()) {
     DeletePointer(this->loss_);
     this->loss_ = loss::Loss::Create(root["loss"].asString());
     Check(this->loss_ != nullptr);

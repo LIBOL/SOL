@@ -62,7 +62,7 @@ class LSOL_EXPORTS Model {
 
  public:
   /// \brief  initialize the model for training
-  virtual void BeginTrain() {}
+  virtual void BeginTrain();
 
   /// \brief  finalize the model after training
   virtual void EndTrain() {}

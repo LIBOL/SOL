@@ -21,9 +21,6 @@ class OnlineLinearModel : public OnlineModel {
   virtual ~OnlineLinearModel();
 
  public:
-  /// \brief  finalize the model after training
-  virtual void EndTrain() {}
-
   /// \brief  iterate the model with one new instance
   ///
   /// \param x training instance
