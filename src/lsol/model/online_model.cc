@@ -30,8 +30,10 @@ void OnlineModel::SetParameter(const std::string& name,
   } else if (name == "eta") {
     this->eta0_ = stof(value);
     Check(eta0_ >= 0);
-  } else if (name == "t0") {
+  } else if (name == "t") {
     this->set_initial_t(stoi(value));
+  } else if (name == "dim") {
+    this->update_dim(stoi(value));
   } else if (name == "aggressive") {
     this->aggressive_ = value == "true" ? true : false;
   } else {
@@ -68,12 +70,13 @@ float OnlineModel::Train(DataIter& data_iter) {
 
       if (data_num >= show_count) {
         fprintf(stdout, "%llu\t\t\t\t%.6f\n", data_num,
-               float(double(err_num) / data_num));
+                float(double(err_num) / data_num));
         show_count = (size_t(1) << ++show_step);
       }
     }
   }
-  fprintf(stdout, "%llu\t\t\t\t%.6f\n", data_num, float(double(err_num) / data_num));
+  fprintf(stdout, "%llu\t\t\t\t%.6f\n", data_num,
+          float(double(err_num) / data_num));
   this->EndTrain();
 
   delete[] predicts;
@@ -91,9 +94,9 @@ void OnlineModel::GetModelInfo(Json::Value& root) const {
   Model::GetModelInfo(root);
   root["online"]["power_t"] = this->power_t_;
   root["online"]["eta"] = this->eta0_;
-  root["online"]["t0"] = this->initial_t_;
   root["online"]["t"] = this->cur_iter_num_;
   root["online"]["dim"] = this->dim_;
+  root["online"]["aggressive"] = this->aggressive_ ? "true" : "false";
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {
@@ -103,11 +106,15 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
     fprintf(stderr, "no online info found for online model\n");
     return Status_Invalid_Format;
   }
-  this->set_power_t(online_settings["power_t"].asFloat());
-  this->eta0_ = online_settings["eta"].asFloat();
-  this->set_initial_t(online_settings["t0"].asInt());
-  this->cur_iter_num_ = online_settings["t"].asInt();
-  this->update_dim(online_settings["dim"].asInt() - 1);
+  try {
+    for (Json::Value::const_iterator iter = online_settings.begin();
+         iter != online_settings.end(); ++iter) {
+      this->SetParameter(iter.name(), iter->asString());
+    }
+  } catch (std::invalid_argument& err) {
+    fprintf(stderr, "set model info failed: %s\n", err.what());
+    return Status_Invalid_Argument;
+  }
   return Status_OK;
 }
 

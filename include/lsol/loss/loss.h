@@ -57,13 +57,22 @@ class LSOL_EXPORTS Loss {
   virtual float gradient(label_t label, float* predict, float* gradient,
                          int cls_num = 2) = 0;
 
+ public:
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { this->name_ = name; }
+
  protected:
   /// \brief  indicating it's a binary or multi-class loss
   Type type_;
+  std::string name_;
 };
 
 #define RegisterLoss(type, name, descr)                                  \
-  type* type##_##CreateNewInstance() { return new type(); }              \
+  type* type##_##CreateNewInstance() {                                   \
+    type* ins = new type();                                              \
+    ins->set_name(name);                                                 \
+    return ins;                                                          \
+  }                                                                      \
   ClassInfo __kClassInfo_##type##__(std::string(name) + "_loss",         \
                                     (void*)(type##_##CreateNewInstance), \
                                     descr);

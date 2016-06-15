@@ -8,7 +8,7 @@ file(GLOB tool_list
 foreach(tool_src ${tool_list})
 	get_filename_component(tgt_name ${tool_src} NAME_WE)
 	add_executable(${tgt_name} ${tool_src})
-    target_link_libraries(${tgt_name} lsol_core)
+    target_link_libraries(${tgt_name} lsol)
     SET_PROPERTY(TARGET ${tgt_name} PROPERTY FOLDER "tools")
 	list(APPEND tools_targets ${tgt_name})
 endforeach()

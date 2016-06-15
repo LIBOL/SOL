@@ -21,13 +21,13 @@ file(GLOB json_files
 	)
 list(APPEND lsol_list ${json_files})
 
-add_library(lsol_core SHARED ${lsol_list}
+add_library(lsol SHARED ${lsol_list}
     ${PROJECT_SOURCE_DIR}/include/lsol/lsol.h
     ${PROJECT_SOURCE_DIR}/include/lsol/c_api.h
     ${PROJECT_SOURCE_DIR}/src/lsol/c_api.cc
     )
-target_link_libraries(lsol_core)
-list(APPEND TARGET_LIBS lsol_core)
+target_link_libraries(lsol)
+list(APPEND TARGET_LIBS lsol)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${PROJECT_SOURCE_DIR}/data

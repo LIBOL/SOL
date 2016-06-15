@@ -57,7 +57,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
       oss << "unknown norm type " << value;
       throw invalid_argument(oss.str());
     }
-  } else if (name == "presel") {
+  } else if (name == "filter") {
     if (this->LoadPreSelFeatures(value) != Status_OK) {
       ostringstream oss;
       oss << "load pre-selected features failed!";
@@ -167,6 +167,8 @@ void Model::GetModelInfo(Json::Value& root) const {
   root["model"] = this->name();
   root["cls_num"] = this->class_num();
   root["clf_num"] = this->clf_num();
+  root["loss"] = this->loss_->name();
+  root["norm"] = int(this->norm_type_);
 }
 
 int Model::SetModelInfo(const Json::Value& root) {
@@ -178,6 +180,15 @@ int Model::SetModelInfo(const Json::Value& root) {
     fprintf(stderr, "set model info failed: %s\n", err.what());
     return Status_Invalid_Argument;
   }
+  // loss
+  if (root["loss"].asString() != this->loss_->name()) {
+    DeletePointer(this->loss_);
+    this->loss_ = loss::Loss::Create(root["loss"].asString());
+    Check(this->loss_ != nullptr);
+  }
+  // norm
+  this->norm_type_ = lsol::math::expr::op::OpType(root["norm"].asInt());
+
   return Status_OK;
 }
 
