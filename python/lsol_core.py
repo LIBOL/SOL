@@ -1,9 +1,4 @@
 #! /usr/bin/env python
-#################################################################################
-#     File Name           :     base.py
-#     Created By          :     yuewu
-#     Description         :     ctypes library for lsol
-#################################################################################
 
 import ctypes
 from ctypes import c_char_p, c_int, c_float, c_void_p, byref

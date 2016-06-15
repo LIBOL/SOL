@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-# AUTHOR:   Yue Wu (yuewu@outlook.com)
-# FILE:     demo_util.py
-# ROLE:     shared parts for demo
-# CREATED:  2015-02-08 16:09:41
-# MODIFIED: 2015-02-08 22:24:12
 
 import os
 import sys
