@@ -83,9 +83,11 @@ class Model(object):
     #Load libary by searching possible path.
     _LIB = load_lib()
 
-    def __init__(self, model_name, class_num, batch_size = 256, buf_size = 2, params = []):
+    def __init__(self, model_path = None, model_name = None, class_num = None, batch_size = 256, buf_size = 2, params = []):
         """Create a new model
         Parameters:
+            model_path: string
+                path to model file
             model_name: string
                 name of the model
             class_num: int
@@ -97,12 +99,19 @@ class Model(object):
             params: list
                 model parameters
         """
-        self.model = c_void_p(Model._LIB.lsol_CreateModel(model_name, class_num))
+        if model_path != None:
+            self.model = c_void_p(Model._LIB.lsol_RestoreModel(model_path))
+        elif model_name != None and class_num != None:
+            self.model = c_void_p(Model._LIB.lsol_CreateModel(model_name, class_num))
+            for k,v in params:
+                if Model._LIB.lsol_SetModelParameter(self.model, k, str(v)) != 0:
+                    raise RuntimeError("set parameter %s=%s failed" %(k,v))
+        else:
+            raise RuntimeError("invalid parameters for Model constructor")
+
         if self.model == 0:
-            raise  RuntimeError("model name %s is invalid" %(model_name))
-        for k,v in params:
-            if Model._LIB.lsol_SetModelParameter(self.model, k, str(v)) != 0:
-                raise RuntimeError("set parameter %s=%s failed" %(k,v))
+            raise RuntimeError("invalid parameters for Model constructor")
+
         self.data_iter = c_void_p(Model._LIB.lsol_CreateDataIter(batch_size, buf_size))
 
     def __enter__(self):

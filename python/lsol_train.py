@@ -95,7 +95,7 @@ if __name__ == '__main__':
             for k,v in best_params:
                 model_params.append([k,v])
 
-        with Model(args.algo, dt.class_num, args.batch_size, args.buf_size, model_params) as m:
+        with Model(model_name = args.algo, class_num = dt.class_num, batch_size = args.batch_size, buf_size = args.buf_size, params = model_params) as m:
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("train model...")
