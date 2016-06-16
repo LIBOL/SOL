@@ -61,6 +61,11 @@ inline void delete_file(const char* path, bool is_force = false) {
   }
 }
 
+/// \brief  get current time, in seconds
+///
+/// \return seconds
+inline double get_current_time();
+
 }  // namespace lsol
 
 #if _WIN32

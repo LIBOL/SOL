@@ -73,13 +73,17 @@ int train(cmdline::parser& parser) {
                      parser.get<int>("pass"));
   if (ret != Status_OK) return ret;
 
+  double start_time = lsol::get_current_time();
   float accu = model->Train(iter);
+  double end_time = lsol::get_current_time();
   fprintf(stdout, "training accuracy: %.4f\n", accu);
+  fprintf(stdout, "training time: %.3f seconds\n", end_time - start_time);
 
   // save model
   if (parser.exist("output")) {
     model->Save(parser.get<string>("output"));
   }
+  fprintf(stdout, "save time: %.3f seconds\n", get_current_time() - end_time);
 
   return Status_OK;
 }

@@ -20,7 +20,7 @@ void SGD::Update(const pario::DataPoint& x) {
     math::Vector<real_t>& w = this->weights(c);
     w -= this->eta_ * this->gradients_[c] * x.data();
     // update bias
-    w[0] -= this->eta_ * this->gradients_[c];
+    w[0] -= this->bias_eta_ * this->gradients_[c];
   }
 }
 

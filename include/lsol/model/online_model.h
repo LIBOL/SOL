@@ -67,11 +67,14 @@ class OnlineModel : public Model {
   float power_t_;
   // initial learning rate
   float eta0_;
+  // initial learning rate for bias
+  float bias_eta0_;
   // initial learning step
   int initial_t_;
 
   // learning rate
   float eta_;
+  float bias_eta_;
   // current iteration number
   int cur_iter_num_;
 
