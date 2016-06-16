@@ -7,9 +7,6 @@
 **********************************************************************************/
 
 #include "lsol/model/online_model.h"
-
-#include <cmath>
-
 #include "lsol/util/str_util.h"
 
 using namespace std;
@@ -18,19 +15,13 @@ using namespace lsol::pario;
 namespace lsol {
 namespace model {
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type), eta0_(1), bias_eta0_(0), dim_(1) {
-  this->set_power_t(0.5);
+    : Model(class_num, type), bias_eta0_(0), dim_(1) {
   this->set_initial_t(0);
 }
 
 void OnlineModel::SetParameter(const std::string& name,
                                const std::string& value) {
-  if (name == "power_t") {
-    this->set_power_t(stof(value));
-  } else if (name == "eta") {
-    this->eta0_ = stof(value);
-    Check(eta0_ >= 0);
-  } else if (name == "bias_eta") {
+  if (name == "bias_eta") {
     this->bias_eta0_ = stof(value);
     Check(bias_eta0_ >= 0);
   } else if (name == "t") {
@@ -94,8 +85,6 @@ label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
 
 void OnlineModel::GetModelInfo(Json::Value& root) const {
   Model::GetModelInfo(root);
-  root["online"]["power_t"] = this->power_t_;
-  root["online"]["eta"] = this->eta0_;
   root["online"]["bias_eta"] = this->bias_eta0_;
   root["online"]["t"] = this->cur_iter_num_;
   root["online"]["dim"] = this->dim_;
@@ -118,27 +107,6 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
     return Status_Invalid_Argument;
   }
   return Status_OK;
-}
-
-// calculate power t
-float pow_const(int iter, float power_t) { return 1; }
-float pow_sqrt(int iter, float power_t) { return sqrtf(float(iter)); }
-float pow_linear(int iter, float power_t) { return float(iter); }
-float pow_general(int iter, float power_t) {
-  return powf((float)iter, power_t);
-}
-
-void OnlineModel::set_power_t(float power_t) {
-  Check(power_t >= 0);
-  this->power_t_ = power_t;
-  if (power_t == 0)
-    this->pow_ = pow_const;
-  else if (power_t == 0.5)
-    this->pow_ = pow_sqrt;
-  else if (power_t == 1)
-    this->pow_ = pow_linear;
-  else
-    this->pow_ = pow_general;
 }
 
 void OnlineModel::set_initial_t(int initial_t) {

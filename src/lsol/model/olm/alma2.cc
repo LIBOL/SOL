@@ -35,7 +35,6 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
   if (name == "p") {
     this->p_ = stoi(value);
     this->square_p1_ = std::sqrtf(float(this->p_ - 1));
-    this->eta0_ = this->C_ / this->square_p1_;
   } else if (name == "alpha") {
     this->alpha_ = stof(value);
     this->B_ = 1 / this->alpha_;
@@ -43,13 +42,9 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
     Check(alpha_ <= 1);
   } else if (name == "C") {
     this->C_ = stof(value);
-    this->eta0_ = this->C_ / this->square_p1_;
   } else if (name == "k") {
     this->k_ = stoi(value);
     Check(this->k_ > 0);
-  } else if (name == "power_t") {
-    OnlineLinearModel::SetParameter(name, value);
-    Check(this->power_t_ == 0.5);
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {
@@ -72,15 +67,14 @@ void ALMA2::BeginTrain() {
 }
 
 void ALMA2::Update(const pario::DataPoint& x, const float*, float) {
-  this->eta_ = this->eta0_ / sqrtf(float(this->k_));
-  this->bias_eta_ = this->bias_eta0_ * this->eta_;
+  this->eta_ = this->C_ / (this->square_p1_ * sqrtf(float(this->k_)));
 
   for (int c = 0; c < this->clf_num_; ++c) {
     if (this->gradients_[c] == 0) continue;
     math::Vector<real_t>& w = this->weights(c);
     w -= this->eta_ * this->gradients_[c] * x.data();
     // update bias
-    w[0] -= this->bias_eta_ * this->gradients_[c];
+    w[0] -= this->bias_eta() * this->gradients_[c];
 
     real_t w_norm = sqrt(reduce<op::plus>(L2(w)));
     if (w_norm > 1) w /= w_norm;

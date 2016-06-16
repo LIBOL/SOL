@@ -76,7 +76,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
   } else {
     ostringstream oss;
     oss << "unknown parameter " << name;
-    throw runtime_error(oss.str());
+    throw invalid_argument(oss.str());
   }
 }
 
@@ -166,7 +166,12 @@ Model* Model::Load(const string& path) {
     return model;
   }
 
-  ret = model->SetModelInfo(root);
+  try {
+    ret = model->SetModelInfo(root);
+  } catch (invalid_argument& err) {
+    fprintf(stderr, "set model parameter failed: %s\n", err.what());
+    ret = Status_Invalid_Argument;
+  }
   if (ret != Status_OK) {
     DeletePointer(model);
   } else {

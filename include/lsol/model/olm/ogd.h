@@ -16,11 +16,25 @@ namespace model {
 
 class OGD : public OnlineLinearModel {
  public:
-  OGD(int class_num) : OnlineLinearModel(class_num) {}
+  OGD(int class_num);
+
+  virtual void SetParameter(const std::string& name, const std::string& value);
 
  protected:
   virtual void Update(const pario::DataPoint& x, const float* predict,
                       float loss);
+  virtual void GetModelInfo(Json::Value& root) const;
+
+ protected:
+  void set_power_t(float power_t);
+
+ protected:
+  // power_t of the decreasing coefficient of learning rate
+  float power_t_;
+  // initial learning rate
+  float eta0_;
+
+  float (*pow_)(int iter, float power_t);
 };  // class OGD
 
 }  // namespace model

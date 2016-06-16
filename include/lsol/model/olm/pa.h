@@ -15,8 +15,6 @@ class PA : public OnlineLinearModel {
  public:
   PA(int class_num);
 
-  virtual void SetParameter(const std::string& name, const std::string& value);
-
  protected:
   virtual void Update(const pario::DataPoint& x, const float* predict,
                       float loss);

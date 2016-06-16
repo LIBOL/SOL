@@ -64,7 +64,6 @@ class OnlineModel : public Model {
   virtual int SetModelInfo(const Json::Value& root);
 
  protected:
-  void set_power_t(float power_t);
   void set_initial_t(int initial_t);
   virtual void update_dim(index_t dim) { this->dim_ = dim; }
 
@@ -72,30 +71,24 @@ class OnlineModel : public Model {
   size_t update_num() const { return this->update_num_; }
 
  protected:
-  // power_t of the decreasing coefficient of learning rate
-  float power_t_;
-  // initial learning rate
-  float eta0_;
+  inline float bias_eta() const { return this->bias_eta0_ * this->eta_; }
+
+ protected:
   // initial learning rate for bias
   float bias_eta0_;
   // initial learning step
   int initial_t_;
-
-  // learning rate
-  float eta_;
-  float bias_eta_;
   // current iteration number
   int cur_iter_num_;
 
   // dimension of input feature: can be the same to feature, or with an extra
   // bias
   index_t dim_;
+  // learning rate
+  float eta_;
 
   // number of updates during the training
   size_t update_num_;
-
-  float (*pow_)(int iter, float power_t);
-
 };  // class Online Model
 }  // namespace model
 }  // namespace lsol
