@@ -9,6 +9,7 @@
 
 #include <string>
 #include <map>
+#include <cstdio>
 
 #include <lsol/util/types.h>
 
@@ -62,6 +63,7 @@ ReturnType CreateObject(const std::string& cls_name) {
   if (iter != cls_info_map.end()) {
     return (ReturnType((iter->second)->create_func()));
   }
+  fprintf(stderr, "no class named %s\n", cls_name.c_str());
   return ReturnType(nullptr);
 }
 

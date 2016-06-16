@@ -56,7 +56,8 @@ float OnlineModel::Train(DataIter& data_iter) {
   size_t show_step = 1;  // show information every show_step
   size_t show_count = 2;
 
-  fprintf(stdout, "Training Process....\nIterate No.\t\t\tError Rate\t\t\n");
+  fprintf(stdout,
+          "Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n");
 
   float* predicts = new float[this->clf_num()];
   MiniBatch* mb = nullptr;
@@ -76,14 +77,15 @@ float OnlineModel::Train(DataIter& data_iter) {
       ++data_num;
 
       if (data_num >= show_count) {
-        fprintf(stdout, "%llu\t\t\t\t%.6f\n", data_num,
-                float(double(err_num) / data_num));
+        fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num,
+                float(double(err_num) / data_num), this->update_num());
         show_count = (size_t(1) << ++show_step);
       }
     }
   }
-  fprintf(stdout, "%llu\t\t\t\t%.6f\n", data_num,
-          float(double(err_num) / data_num));
+
+  fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num,
+          float(double(err_num) / data_num), this->update_num());
   this->EndTrain();
   delete[] predicts;
 

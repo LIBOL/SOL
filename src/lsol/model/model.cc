@@ -72,7 +72,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
 
 float Model::Test(DataIter& data_iter, std::ostream* os) {
   fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
-  printf("Test Process....\nIterate No.\t\t\tError Rate\t\t\n");
+  fprintf(stdout, "Test Process....\nIterate No.\t\t\tError Rate\t\t\n");
 
   size_t err_num = 0;
   size_t data_num = 0;
@@ -215,6 +215,8 @@ string Model::model_info() const {
 }
 
 void Model::PreProcess(DataPoint& x) {
+  // calibrate label
+  x.set_label(this->CalibrateLabel(x.label()));
   // filter features
   this->FilterFeatures(x);
 

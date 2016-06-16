@@ -41,12 +41,14 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
   OnlineModel::Iterate(x, predict);
 
   label_t label = this->Predict(x, predict);
-  label_t gd_label = this->CalibrateLabel(x.label());
-  if (this->aggressive_ || label != gd_label) {
-    this->loss_->gradient(gd_label, predict, this->gradients_, this->clf_num_);
-    this->Update(x);
+  if (this->aggressive_ || label != x.label()) {
+    if (this->loss_->gradient(x.label(), predict, this->gradients_,
+                              this->clf_num_) > 0) {
+      ++this->update_num_;
+      this->Update(x);
+    }
   }
-  return label == gd_label ? x.label() : -x.label();
+  return label;
 }
 
 label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {

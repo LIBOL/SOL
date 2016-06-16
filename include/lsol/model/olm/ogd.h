@@ -17,9 +17,12 @@ namespace model {
 class OGD : public OnlineLinearModel {
  public:
   OGD(int class_num) : OnlineLinearModel(class_num) {
-    this->loss_ = loss::Loss::Create("hinge");
+    if (class_num == 2) {
+      this->loss_ = loss::Loss::Create("hinge");
+    } else {
+      this->loss_ = loss::Loss::Create("maxscore-hinge");
+    }
   }
-  virtual ~OGD() {}
 
   /// \brief  update model
   ///

@@ -16,27 +16,34 @@ class LSOL_EXPORTS HingeLoss : public Loss {
   HingeLoss() : Loss(Type::BC) {}
 
  public:
-  /// \brief  calculate loss according to the label and predictions
-  ///
-  /// \param label true label
-  /// \param predict prediction on each class
-  /// \param cls_num number of classes
-  ///
-  /// \return loss of the prediction
-  virtual float loss(label_t label, float* predict, int cls_num = 2);
+  virtual float loss(label_t label, float* predict, int cls_num);
 
-  /// \brief  calculate the gradients according to the label and predictions
-  ///
-  /// \param label true label
-  /// \param predict prediction on each class
-  /// \param gradient resulted gradient on each class (without x)
-  /// \param cls_num number of classes
-  ///
-  /// \return loss of the prediction
   virtual float gradient(label_t label, float* predict, float* gradient,
-                         int cls_num = 2);
+                         int cls_num);
 
 };  // class HingeLoss
+
+class LSOL_EXPORTS MaxScoreHingeLoss : public Loss {
+ public:
+  MaxScoreHingeLoss() : Loss(Type::MC) {}
+
+ public:
+  virtual float loss(label_t label, float* predict, int cls_num);
+
+  virtual float gradient(label_t label, float* predict, float* gradient,
+                         int cls_num);
+};
+
+class LSOL_EXPORTS UniformHingeLoss : public Loss {
+ public:
+  UniformHingeLoss() : Loss(Type::MC) {}
+
+ public:
+  virtual float loss(label_t label, float* predict, int cls_num);
+
+  virtual float gradient(label_t label, float* predict, float* gradient,
+                         int cls_num);
+};
 
 }  // namespace loss
 }  // namespace lsol

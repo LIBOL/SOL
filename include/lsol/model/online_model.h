@@ -27,6 +27,12 @@ class OnlineModel : public Model {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
+  /// \brief  initialize the model for training
+  virtual void BeginTrain() {
+    Model::BeginTrain();
+    this->update_num_ = 0;
+  }
+
   /// \brief  Train from a data set
   //
   /// \param data_iter data iterator
@@ -62,6 +68,9 @@ class OnlineModel : public Model {
   void set_initial_t(int initial_t);
   virtual void update_dim(index_t dim) { this->dim_ = dim; }
 
+ public:
+  size_t update_num() const { return this->update_num_; }
+
  protected:
   // power_t of the decreasing coefficient of learning rate
   float power_t_;
@@ -85,6 +94,9 @@ class OnlineModel : public Model {
   // if true, update  if predicted label is correct, useful for logistic
   // regression
   bool aggressive_;
+
+  // number of updates during the training
+  size_t update_num_;
 
   float (*pow_)(int iter, float power_t);
 
