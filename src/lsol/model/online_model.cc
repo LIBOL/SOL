@@ -95,10 +95,13 @@ float OnlineModel::Train(DataIter& data_iter) {
 label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
   this->update_dim(x.dim());
   ++this->cur_iter_num_;
-  float coeff = 1.f / this->pow_(this->cur_iter_num_, this->power_t_);
-  this->eta_ = this->eta0_ * coeff;
-  this->bias_eta_ = this->bias_eta0_ * coeff;
+  this->CalculateLearningRate();
   return 0;
+}
+
+void OnlineModel::CalculateLearningRate() {
+  this->eta_ = this->eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
+  this->bias_eta_ = this->bias_eta0_ * this->eta_;
 }
 
 void OnlineModel::GetModelInfo(Json::Value& root) const {

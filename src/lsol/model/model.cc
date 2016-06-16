@@ -47,6 +47,16 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
     DeletePointer(this->loss_);
     this->loss_ = loss::Loss::Create(value);
     Check(this->loss_ != nullptr);
+    if (this->clf_num_ == 1 &&
+        ((this->loss_->type() & loss::Loss::Type::BC) == 0)) {
+      throw invalid_argument(
+          "onlye binary loss function can be used with binary problems");
+    } else if (this->clf_num_ != 1 &&
+               ((this->loss_->type() & loss::Loss::Type::MC) == 0)) {
+      throw invalid_argument(
+          "onlye multiclass loss function can be used with multiclass "
+          "problems");
+    }
   } else if (name == "norm") {
     if (value == "L1") {
       this->norm_type_ = op::OpType::kL1;
@@ -196,9 +206,7 @@ int Model::SetModelInfo(const Json::Value& root) {
   // loss
   if (this->loss_ == nullptr ||
       root["loss"].asString() != this->loss_->name()) {
-    DeletePointer(this->loss_);
-    this->loss_ = loss::Loss::Create(root["loss"].asString());
-    Check(this->loss_ != nullptr);
+    this->SetParameter("loss", root["loss"].asString());
   }
   // norm
   this->norm_type_ = lsol::math::expr::op::OpType(root["norm"].asInt());

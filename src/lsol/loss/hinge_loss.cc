@@ -15,7 +15,7 @@ namespace lsol {
 namespace loss {
 
 float HingeLoss::loss(label_t label, float* predict, int cls_num) {
-  return (std::max)(0.0f, 1.f - *predict * label);
+  return (std::max)(0.0f, this->margin_ - *predict * label);
 }
 
 float HingeLoss::gradient(label_t label, float* predict, float* gradient,
@@ -39,7 +39,7 @@ float MaxScoreHingeLoss::loss(label_t label, float* predict, int cls_num) {
       max_predict = predict[i];
     }
   }
-  return (std::max)(0.0f, 1.f - predict[label] + max_predict);
+  return (std::max)(0.0f, this->margin_ - predict[label] + max_predict);
 }
 
 float MaxScoreHingeLoss::gradient(label_t label, float* predict,
@@ -54,7 +54,7 @@ float MaxScoreHingeLoss::gradient(label_t label, float* predict,
       max_label = i;
     }
   }
-  float loss = (std::max)(0.0f, 1.f - predict[label] + max_predict);
+  float loss = (std::max)(0.0f, this->margin_ - predict[label] + max_predict);
 
   if (loss > 0) {
     gradient[max_label] = 1;
@@ -74,7 +74,8 @@ float UniformHingeLoss::loss(label_t label, float* predict, int cls_num) {
       false_num += 1;
     }
   }
-  return (std::max)(0.0f, 1.f - predict[label] + false_predict / false_num);
+  return (std::max)(0.0f,
+                    this->margin_ - predict[label] + false_predict / false_num);
 }
 
 float UniformHingeLoss::gradient(label_t label, float* predict, float* gradient,
@@ -91,7 +92,8 @@ float UniformHingeLoss::gradient(label_t label, float* predict, float* gradient,
     }
   }
   float alpha = 1.f / false_num;
-  float loss = (std::max)(0.0f, 1.f - predict[label] + false_predict * alpha);
+  float loss =
+      (std::max)(0.0f, this->margin_ - predict[label] + false_predict * alpha);
 
   if (loss > 0) {
     for (int i = 0; i < cls_num; ++i) {

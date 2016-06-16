@@ -50,6 +50,10 @@ class OnlineModel : public Model {
   virtual label_t Iterate(const pario::DataPoint& x, float* y);
 
  protected:
+  /// \brief  calculate the learning rate
+  virtual void CalculateLearningRate();
+
+ protected:
   /// \brief  Get Model Information
   ///
   /// \param root root node of saver

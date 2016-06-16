@@ -64,7 +64,7 @@ int FileWriter::Write(char* src_buf, size_t length) {
     return Status_OK;
   } else {
     fprintf(stderr,
-		"Error %d: only %llu bytes are written while %llu bytes are "
+            "Error %d: only %llu bytes are written while %llu bytes are "
             "specified.\n",
             Status_IO_Error, write_len, length);
     return Status_IO_Error;

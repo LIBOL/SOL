@@ -21,20 +21,22 @@ class LSOL_EXPORTS Loss {
   DeclareReflectorBase(Loss);
 
  public:
-  enum class Type {
+  enum Type {
     // loss function for binary classification
-    BC = 0,
+    BC = 1,
     // loss function for binary classification
-    MC = 1,
+    MC = 2,
+    // hinge-based loss function
+    HINGE = 4,
   };
 
   inline static char Sign(float x) { return x >= 0.f ? 1 : -1; }
 
  public:
-  Loss(Type type) : type_(type) {}
+  Loss(int type) : type_(type) {}
   virtual ~Loss() {}
 
-  Type type() const { return this->type_; }
+  int type() const { return this->type_; }
 
  public:
   /// \brief  calculate loss according to the label and predictions
@@ -63,7 +65,7 @@ class LSOL_EXPORTS Loss {
 
  protected:
   /// \brief  indicating it's a binary or multi-class loss
-  Type type_;
+  int type_;
   std::string name_;
 };
 

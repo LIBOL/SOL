@@ -11,9 +11,21 @@
 namespace lsol {
 namespace loss {
 
-class LSOL_EXPORTS HingeLoss : public Loss {
+class LSOL_EXPORTS HingeBase : public Loss {
  public:
-  HingeLoss() : Loss(Type::BC) {}
+  HingeBase(int type) : Loss(type | Type::HINGE), margin_(1.f) {}
+
+ public:
+  float margin() const { return this->margin_; }
+  void set_margin(float val) { this->margin_ = val; }
+
+ protected:
+  float margin_;
+};
+
+class LSOL_EXPORTS HingeLoss : public HingeBase {
+ public:
+  HingeLoss() : HingeBase(Type::BC) {}
 
  public:
   virtual float loss(label_t label, float* predict, int cls_num);
@@ -23,9 +35,9 @@ class LSOL_EXPORTS HingeLoss : public Loss {
 
 };  // class HingeLoss
 
-class LSOL_EXPORTS MaxScoreHingeLoss : public Loss {
+class LSOL_EXPORTS MaxScoreHingeLoss : public HingeBase {
  public:
-  MaxScoreHingeLoss() : Loss(Type::MC) {}
+  MaxScoreHingeLoss() : HingeBase(Type::MC) {}
 
  public:
   virtual float loss(label_t label, float* predict, int cls_num);
@@ -34,9 +46,9 @@ class LSOL_EXPORTS MaxScoreHingeLoss : public Loss {
                          int cls_num);
 };
 
-class LSOL_EXPORTS UniformHingeLoss : public Loss {
+class LSOL_EXPORTS UniformHingeLoss : public HingeBase {
  public:
-  UniformHingeLoss() : Loss(Type::MC) {}
+  UniformHingeLoss() : HingeBase(Type::MC) {}
 
  public:
   virtual float loss(label_t label, float* predict, int cls_num);

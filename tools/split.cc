@@ -85,18 +85,18 @@ int main(int argc, char** argv) {
       break;
     }
     ostringstream output_path;
-	output_path << output_prefix << i << "." << dst_type;
+    output_path << output_prefix << i << "." << dst_type;
     ret = writer->Open(output_path.str());
     if (ret != Status_OK) {
       delete writer;
       break;
     }
-	fprintf(stderr, "write fold %d to %s\n", i, output_path.str().c_str());
+    fprintf(stderr, "write fold %d to %s\n", i, output_path.str().c_str());
     writer->SetExtraInfo((char*)(&feat_dim));
 
     for (; data_idx < end_idx && data_idx < data_num; ++data_idx) {
       writer->Write(*(data_list[data_idx]));
-	  delete data_list[data_idx];
+      delete data_list[data_idx];
     }
     end_idx += data_split_num;
     writer->Close();
