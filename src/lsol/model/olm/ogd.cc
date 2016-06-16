@@ -1,12 +1,12 @@
 /*********************************************************************************
-*     File Name           :     sgd.cc
+*     File Name           :     ogd.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 21:37]
 *     Last Modified       :     [2016-03-09 19:22]
 *     Description         :     Stochastic Gradient Descent
 **********************************************************************************/
 
-#include "lsol/model/olm/sgd.h"
+#include "lsol/model/olm/ogd.h"
 
 using namespace std;
 
@@ -14,7 +14,7 @@ namespace lsol {
 
 namespace model {
 
-void SGD::Update(const pario::DataPoint& x) {
+void OGD::Update(const pario::DataPoint& x) {
   for (int c = 0; c < this->clf_num_; ++c) {
     if (this->gradients_[c] == 0) continue;
     math::Vector<real_t>& w = this->weights(c);
@@ -24,7 +24,7 @@ void SGD::Update(const pario::DataPoint& x) {
   }
 }
 
-RegisterModel(SGD, "sgd", "Stochastic Gradient Descent");
+RegisterModel(OGD, "ogd", "Online Gradient Descent");
 
 }  // namespace model
 }  // namespace lsol

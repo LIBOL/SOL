@@ -10,8 +10,9 @@ foreach (src_dir ${src_dirs})
         "${PROJECT_SOURCE_DIR}/src/lsol/${src_dir}/*.cc"
         )
 
-    source_group("Header Files\\${src_dir}" FILES ${${src_dir}_headers})
-    source_group("Source Files\\${src_dir}" FILES ${${src_dir}_src})
+    STRING(REGEX REPLACE "/" "\\\\" win_src_dir ${src_dir})
+    source_group("Header Files\\${win_src_dir}" FILES ${${src_dir}_headers})
+    source_group("Source Files\\${win_src_dir}" FILES ${${src_dir}_src})
     list(APPEND lsol_list ${${src_dir}_headers} ${${src_dir}_src})
 endforeach()
 
