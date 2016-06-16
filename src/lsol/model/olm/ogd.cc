@@ -14,7 +14,10 @@ namespace lsol {
 
 namespace model {
 
-void OGD::Update(const pario::DataPoint& x) {
+void OGD::Update(const pario::DataPoint& x, const float*, float) {
+  this->eta_ = this->eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
+  this->bias_eta_ = this->bias_eta0_ * this->eta_;
+
   for (int c = 0; c < this->clf_num_; ++c) {
     if (this->gradients_[c] == 0) continue;
     math::Vector<real_t>& w = this->weights(c);

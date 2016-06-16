@@ -19,8 +19,6 @@ ALMA2::ALMA2(int class_num)
   this->C_ = sqrtf(2.f);
   this->SetParameter("p", "2");
   this->SetParameter("alpha", "0.9");
-  // aggressive
-  OnlineLinearModel::SetParameter("aggressive", "true");
   // loss
   if (class_num == 2) {
     this->SetParameter("loss", "hinge");
@@ -52,9 +50,6 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
   } else if (name == "power_t") {
     OnlineLinearModel::SetParameter(name, value);
     Check(this->power_t_ == 0.5);
-  } else if (name == "aggressive") {
-    OnlineLinearModel::SetParameter(name, value);
-    Check(this->aggressive_ == true);
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {
@@ -69,11 +64,6 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-void ALMA2::CalculateLearningRate() {
-  this->eta_ = this->eta0_ / sqrtf(float(this->k_));
-  this->bias_eta_ = this->bias_eta0_ * this->eta_;
-}
-
 void ALMA2::BeginTrain() {
   OnlineLinearModel::BeginTrain();
   float margin = (1.f - this->alpha_) * this->B_ * this->square_p1_ /
@@ -81,7 +71,10 @@ void ALMA2::BeginTrain() {
   this->hinge_base_->set_margin(margin);
 }
 
-void ALMA2::Update(const pario::DataPoint& x) {
+void ALMA2::Update(const pario::DataPoint& x, const float*, float) {
+  this->eta_ = this->eta0_ / sqrtf(float(this->k_));
+  this->bias_eta_ = this->bias_eta0_ * this->eta_;
+
   for (int c = 0; c < this->clf_num_; ++c) {
     if (this->gradients_[c] == 0) continue;
     math::Vector<real_t>& w = this->weights(c);

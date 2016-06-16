@@ -40,7 +40,10 @@ class OnlineLinearModel : public OnlineModel {
   /// \brief  update model
   ///
   /// \param x training instance
-  virtual void Update(const pario::DataPoint& x) = 0;
+  /// \param predict predicted values
+  /// \param loss prediction loss
+  virtual void Update(const pario::DataPoint& x, const float* predict,
+                      float loss) = 0;
 
  protected:
   /// \brief  serialize model parameters

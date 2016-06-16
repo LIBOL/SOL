@@ -123,14 +123,6 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
 void Model::BeginTrain() {
   if (this->loss_ == nullptr)
     throw runtime_error("loss function is not set yet!");
-  if (this->class_num() > 2 && this->loss_->type() != loss::Loss::Type::MC) {
-    throw runtime_error(
-        "binary class loss function is used for multiclass problems!");
-  }
-  if (this->class_num() == 2 && this->loss_->type() == loss::Loss::Type::MC) {
-    throw runtime_error(
-        "multiclass loss function is used for binary class problems!");
-  }
 }
 
 int Model::Save(const string& path) const {

@@ -16,18 +16,11 @@ namespace model {
 
 class OGD : public OnlineLinearModel {
  public:
-  OGD(int class_num) : OnlineLinearModel(class_num) {
-    if (class_num == 2) {
-      this->loss_ = loss::Loss::Create("hinge");
-    } else {
-      this->loss_ = loss::Loss::Create("maxscore-hinge");
-    }
-  }
+  OGD(int class_num) : OnlineLinearModel(class_num) {}
 
-  /// \brief  update model
-  ///
-  /// \param x training instance
-  virtual void Update(const pario::DataPoint& x);
+ protected:
+  virtual void Update(const pario::DataPoint& x, const float* predict,
+                      float loss);
 };  // class OGD
 
 }  // namespace model

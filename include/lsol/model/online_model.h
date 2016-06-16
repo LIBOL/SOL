@@ -50,10 +50,6 @@ class OnlineModel : public Model {
   virtual label_t Iterate(const pario::DataPoint& x, float* y);
 
  protected:
-  /// \brief  calculate the learning rate
-  virtual void CalculateLearningRate();
-
- protected:
   /// \brief  Get Model Information
   ///
   /// \param root root node of saver
@@ -94,10 +90,6 @@ class OnlineModel : public Model {
   // dimension of input feature: can be the same to feature, or with an extra
   // bias
   index_t dim_;
-
-  // if true, update  if predicted label is correct, useful for logistic
-  // regression
-  bool aggressive_;
 
   // number of updates during the training
   size_t update_num_;

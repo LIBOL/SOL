@@ -16,30 +16,15 @@ class ALMA2 : public OnlineLinearModel {
  public:
   ALMA2(int class_num);
 
-  /// \brief  set model parameters, disable some parameters
-  ///
-  /// \param name name of the parameter
-  /// \param value value of the parameter in string
   virtual void SetParameter(const std::string& name, const std::string& value);
 
- protected:
-  /// \brief  calculate the learning rate
-  virtual void CalculateLearningRate();
-
  public:
-  /// \brief  initialize the model for training
   virtual void BeginTrain();
 
-  /// \brief  update model
-  ///
-  /// \param x training instance
-  virtual void Update(const pario::DataPoint& x);
-
  protected:
-  /// \brief  Get Model Information
-  ///
-  /// \param root root node of saver
-  /// info
+  virtual void Update(const pario::DataPoint& x, const float* predict,
+                      float loss);
+
   virtual void GetModelInfo(Json::Value& root) const;
 
  protected:

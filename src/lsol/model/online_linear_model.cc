@@ -30,6 +30,12 @@ OnlineLinearModel::OnlineLinearModel(int class_num)
     this->weights(i) = 0;
     this->gradients_[i] = 0;
   }
+
+  if (class_num == 2) {
+    this->loss_ = loss::Loss::Create("hinge");
+  } else {
+    this->loss_ = loss::Loss::Create("maxscore-hinge");
+  }
 }
 
 OnlineLinearModel::~OnlineLinearModel() {
@@ -41,12 +47,11 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
   OnlineModel::Iterate(x, predict);
 
   label_t label = this->Predict(x, predict);
-  if (this->aggressive_ || label != x.label()) {
-    if (this->loss_->gradient(x.label(), predict, this->gradients_,
-                              this->clf_num_) > 0) {
-      ++this->update_num_;
-      this->Update(x);
-    }
+  float loss = this->loss_->gradient(x.label(), predict, this->gradients_,
+                                     this->clf_num_);
+  if (loss > 0) {
+    ++this->update_num_;
+    this->Update(x, predict, loss);
   }
   return label;
 }

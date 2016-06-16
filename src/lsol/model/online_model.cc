@@ -18,11 +18,7 @@ using namespace lsol::pario;
 namespace lsol {
 namespace model {
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type),
-      eta0_(1),
-      bias_eta0_(0),
-      dim_(1),
-      aggressive_(true) {
+    : Model(class_num, type), eta0_(1), bias_eta0_(0), dim_(1) {
   this->set_power_t(0.5);
   this->set_initial_t(0);
 }
@@ -41,8 +37,6 @@ void OnlineModel::SetParameter(const std::string& name,
     this->set_initial_t(stoi(value));
   } else if (name == "dim") {
     this->update_dim(stoi(value));
-  } else if (name == "aggressive") {
-    this->aggressive_ = value == "true" ? true : false;
   } else {
     Model::SetParameter(name, value);
   }
@@ -95,13 +89,7 @@ float OnlineModel::Train(DataIter& data_iter) {
 label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
   this->update_dim(x.dim());
   ++this->cur_iter_num_;
-  this->CalculateLearningRate();
   return 0;
-}
-
-void OnlineModel::CalculateLearningRate() {
-  this->eta_ = this->eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
-  this->bias_eta_ = this->bias_eta0_ * this->eta_;
 }
 
 void OnlineModel::GetModelInfo(Json::Value& root) const {
@@ -111,7 +99,6 @@ void OnlineModel::GetModelInfo(Json::Value& root) const {
   root["online"]["bias_eta"] = this->bias_eta0_;
   root["online"]["t"] = this->cur_iter_num_;
   root["online"]["dim"] = this->dim_;
-  root["online"]["aggressive"] = this->aggressive_ ? "true" : "false";
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {
