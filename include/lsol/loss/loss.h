@@ -27,7 +27,9 @@ class LSOL_EXPORTS Loss {
     // loss function for binary classification
     MC = 2,
     // hinge-based loss function
-    HINGE = 4,
+    BOOL = 4,
+    // bool-based loss function
+    HINGE = 8,
   };
 
   inline static char Sign(float x) { return x >= 0.f ? 1 : -1; }
@@ -43,20 +45,22 @@ class LSOL_EXPORTS Loss {
   ///
   /// \param label true label
   /// \param predict prediction on each class
+  /// \param predict_label predicted label
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float loss(label_t label, float* predict, int cls_num) = 0;
+  virtual float loss(label_t label, float* predict, label_t predict_label, int cls_num) = 0;
 
   /// \brief  calculate the gradients according to the label and predictions
   ///
   /// \param label true label
   /// \param predict prediction on each class
+  /// \param predict_label predicted label
   /// \param gradient resulted gradient on each class (without x)
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float gradient(label_t label, float* predict, float* gradient,
+  virtual float gradient(label_t label, float* predict, label_t predict_label, float* gradient,
                          int cls_num) = 0;
 
  public:

@@ -47,8 +47,8 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
   OnlineModel::Iterate(x, predict);
 
   label_t label = this->Predict(x, predict);
-  float loss = this->loss_->gradient(x.label(), predict, this->gradients_,
-                                     this->clf_num_);
+  float loss = this->loss_->gradient(x.label(), predict, label,
+                                     this->gradients_, this->clf_num_);
   if (loss > 0) {
     ++this->update_num_;
     this->Update(x, predict, loss);
@@ -57,7 +57,6 @@ label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
 }
 
 label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
-  size_t feat_num = x.indexes().size();
   for (int c = 0; c < this->clf_num_; ++c) {
     Vector<real_t>& w = this->weights(c);
     predicts[c] = expr::dotmul(w, x.data()) + w[0];
@@ -87,11 +86,11 @@ void OnlineLinearModel::GetModelParam(Json::Value& root) const {
   for (int c = 0; c < this->clf_num_; ++c) {
     oss << this->weights(c) << "\n";
   }
-  root["params"] = oss.str();
+  root["weight_vector"] = oss.str();
 }
 
 int OnlineLinearModel::SetModelParam(const Json::Value& root) {
-  istringstream iss(root["params"].asString());
+  istringstream iss(root["weight_vector"].asString());
   for (int c = 0; c < this->clf_num_; ++c) iss >> this->weights(c);
   return Status_OK;
 }
