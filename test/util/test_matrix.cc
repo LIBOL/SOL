@@ -79,6 +79,7 @@ int main() {
   cout << "minux 2: " << endl << v2 << endl;
   v2 = v2 * 2.f;
   cout << "mul 2: " << endl << v2 << endl;
+  cout << "v2 .* v2: " << endl << dotmul(v2, v2) << endl;
 
   cout << "original vector:" << endl << v2 << endl;
 
@@ -106,8 +107,11 @@ int main() {
   cout << "mul 2: " << endl << sv2 << endl;
   cout << "v2 : " << endl << v2 << endl;
   cout << "sv2 : " << endl << sv2 << endl;
+  v2 = v2 * 0.1f * sv2;
+  cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   v2 *= 0.1f * sv2;
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;
+  cout << "v2 .* sv2: " << endl << dotmul(v2, sv2) << endl;
   return 0;
 }

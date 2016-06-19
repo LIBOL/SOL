@@ -23,7 +23,7 @@ const int kValue = 0;
 /// \brief  dense expression
 const int kDense = 1;
 /// \brief  sparse expression
-const int kSparse = 2;
+const int kSparse = 3;
 }
 
 /// \brief  base class for expression templates
@@ -107,20 +107,26 @@ inline ScalarExp<DType> MakeExp(DType val) {
 /// \brief  binary map expression lhs [op] rhs
 ///
 /// \tparam OP operator
+/// \tparam exptype type of resulted expression
 /// \tparam EType1 expression type of lhs
+/// \tparam exptype1 type of expression 1
 /// \tparam EType2 expression type of rhs
+/// \tparam exptype2 type of expression 2
 /// \tparam DType data element type
-template <typename OP, typename EType1, typename EType2, typename DType,
-          int exptype>
+template <typename OP, int exptype, typename EType1, int exptype1,
+          typename EType2, int exptype2, typename DType>
 struct BinaryMapExp
-    : public Exp<BinaryMapExp<OP, EType1, EType2, DType, exptype>, DType,
-                 exptype> {
+    : public Exp<
+          BinaryMapExp<OP, exptype, EType1, exptype1, EType2, exptype2, DType>,
+          DType, exptype> {
   /// \brief  left operand
   const EType1 lhs;
   /// \brief  right operand
   const EType2 rhs;
   /*! \brief constructor */
-  BinaryMapExp(const EType1 &_lhs, const EType2 &_rhs) : lhs(_lhs), rhs(_rhs) {}
+  BinaryMapExp(const Exp<EType1, DType, exptype1> &_lhs,
+               const Exp<EType2, DType, exptype2> &_rhs)
+      : lhs(_lhs.self()), rhs(_rhs.self()) {}
 
   /// accessing elements
   inline DType operator()(size_t x, size_t y) const {
@@ -128,14 +134,6 @@ struct BinaryMapExp
   }
   inline DType operator[](size_t idx) const {
     return OP::map(lhs[idx], rhs[idx]);
-  }
-
-  inline index_t index(size_t idx) const {
-    return lhs.index(idx) | rhs.index(idx);
-  }
-
-  inline DType value(size_t idx) const {
-    return OP::map(lhs.value(idx), rhs.value(idx));
   }
 
   inline Shape<2> shape() const {
@@ -151,19 +149,72 @@ struct BinaryMapExp
   }
 };
 
+template <typename OP, int exptype, typename EType1, typename EType2,
+          int exptype2, typename DType>
+struct BinaryMapExp<OP, exptype, EType1, ExprType::kSparse, EType2, exptype2,
+                    DType>
+    : public Exp<BinaryMapExp<OP, exptype, EType1, ExprType::kSparse, EType2,
+                              exptype2, DType>,
+                 DType, exptype> {
+  /// \brief  left operand
+  const EType1 lhs;
+  /// \brief  right operand
+  const EType2 rhs;
+  /*! \brief constructor */
+  BinaryMapExp(const Exp<EType1, DType, ExprType::kSparse> &_lhs,
+               const Exp<EType2, DType, exptype2> &_rhs)
+      : lhs(_lhs.self()), rhs(_rhs.self()) {}
+
+  /// accessing elements
+  inline index_t index(size_t idx) const { return lhs.index(idx); }
+
+  inline DType value(size_t idx) const {
+    return OP::map(lhs.value(idx), rhs[lhs.index(idx)]);
+  }
+
+  inline Shape<2> shape() const { return lhs.shape(); }
+};
+
+template <typename OP, int exptype, typename EType1, int exptype1,
+          typename EType2, typename DType>
+struct BinaryMapExp<OP, exptype, EType1, exptype1, EType2, ExprType::kSparse,
+                    DType>
+    : public Exp<BinaryMapExp<OP, exptype, EType1, exptype1, EType2,
+                              ExprType::kSparse, DType>,
+                 DType, exptype> {
+  /// \brief  left operand
+  const EType1 lhs;
+  /// \brief  right operand
+  const EType2 rhs;
+  /*! \brief constructor */
+  BinaryMapExp(const Exp<EType1, DType, exptype1> &_lhs,
+               const Exp<EType2, DType, ExprType::kSparse> &_rhs)
+      : lhs(_lhs.self()), rhs(_rhs.self()) {}
+
+  /// accessing elements
+  inline index_t index(size_t idx) const { return rhs.index(idx); }
+
+  inline DType value(size_t idx) const {
+    return OP::map(lhs[rhs.index(idx)], rhs.value(idx));
+  }
+
+  inline Shape<2> shape() const { return rhs.shape(); }
+};
+
 /// \brief  make a binary expression
 template <typename OP, typename EType1, typename EType2, typename DType,
           int exptype1, int exptype2>
 inline typename std::enable_if<
     exptype1 != ExprType::kSparse || exptype2 != ExprType::kSparse,
-    BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>>::type
+    BinaryMapExp<OP, (exptype1 | exptype2), EType1, exptype1, EType2, exptype2,
+                 DType>>::type
 MakeExp(const Exp<EType1, DType, exptype1> &lhs,
         const Exp<EType2, DType, exptype2> &rhs) {
   // static_assert(exptype1 == ExprType::kSparse && exptype2 ==
   // ExprType::kSparse,
   //	"sparse with sparse operation is not suported yet");
-  return BinaryMapExp<OP, EType1, EType2, DType, (exptype1 | exptype2)>(
-      lhs.self(), rhs.self());
+  return BinaryMapExp<OP, (exptype1 | exptype2), EType1, exptype1, EType2,
+                      exptype2, DType>(lhs.self(), rhs.self());
 }
 
 /// arithmetic operator expressions
