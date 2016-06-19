@@ -11,6 +11,8 @@
 #include <map>
 #include <sstream>
 #include <stdexcept>
+#include <cstdio>
+#include <cstdlib>
 
 using namespace std;
 
@@ -27,9 +29,8 @@ void ClassFactory::Register(ClassInfo* class_info) {
   if (cls_info_map.find(class_info->name()) == cls_info_map.end()) {
     cls_info_map[class_info->name()] = class_info;
   } else {
-    ostringstream err_msg;
-    err_msg << class_info->name() << " already exists!";
-    throw runtime_error(err_msg.str());
+    fprintf(stderr, "%s already exists!\n", class_info->name().c_str());
+    exit(1);
   }
 }
 
