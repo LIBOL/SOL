@@ -12,9 +12,6 @@
 namespace lsol {
 namespace math {
 
-template <typename IType, typename DType>
-struct SparseItem;
-
 namespace expr {
 
 //---------------

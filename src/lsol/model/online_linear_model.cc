@@ -26,9 +26,9 @@ OnlineLinearModel::OnlineLinearModel(int class_num)
   this->gradients_ = new real_t[this->clf_num_];
 
   for (int i = 0; i < this->clf_num_; ++i) {
-    this->weights(i).resize(this->dim_);
-    this->weights(i) = 0;
-    this->gradients_[i] = 0;
+    w(i).resize(this->dim_);
+    w(i) = 0;
+    g(i) = 0;
   }
 
   if (class_num == 2) {
@@ -43,23 +43,24 @@ OnlineLinearModel::~OnlineLinearModel() {
   DeleteArray(this->gradients_);
 }
 
-label_t OnlineLinearModel::Iterate(const DataPoint& x, float* predict) {
-  OnlineModel::Iterate(x, predict);
+label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
+  OnlineModel::Iterate(dp, predicts);
 
-  label_t label = this->Predict(x, predict);
-  float loss = this->loss_->gradient(x.label(), predict, label,
+  label_t label = this->Predict(dp, predicts);
+  float loss = this->loss_->gradient(dp.label(), predicts, label,
                                      this->gradients_, this->clf_num_);
   if (loss > 0) {
     ++this->update_num_;
-    this->Update(x, predict, loss);
+    this->Update(dp, predicts, loss);
   }
   return label;
 }
 
-label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
+label_t OnlineLinearModel::Predict(const pario::DataPoint& dp,
+                                   float* predicts) {
+  const auto& x = dp.data();
   for (int c = 0; c < this->clf_num_; ++c) {
-    Vector<real_t>& w = this->weights(c);
-    predicts[c] = expr::dotmul(w, x.data()) + w[0];
+    predicts[c] = expr::dotmul(w(c), x) + w(c)[0];
   }
   if (this->clf_num_ == 1) {
     return loss::Loss::Sign(*predicts);
@@ -71,10 +72,9 @@ label_t OnlineLinearModel::Predict(const pario::DataPoint& x, float* predicts) {
 void OnlineLinearModel::update_dim(index_t dim) {
   if (dim >= this->dim_) {
     for (int i = 0; i < this->clf_num_; ++i) {
-      auto& w = this->weights(i);
-      w.resize(dim);
+      w(i).resize(dim);
       // set the new value to zero
-      for (real_t* iter = w.begin() + this->dim_; iter != w.end(); ++iter)
+      for (real_t* iter = w(i).begin() + this->dim_; iter != w(i).end(); ++iter)
         *iter = 0;
     }
     OnlineModel::update_dim(dim);
@@ -84,14 +84,14 @@ void OnlineLinearModel::update_dim(index_t dim) {
 void OnlineLinearModel::GetModelParam(Json::Value& root) const {
   ostringstream oss;
   for (int c = 0; c < this->clf_num_; ++c) {
-    oss << this->weights(c) << "\n";
+    oss << w(c) << "\n";
   }
   root["weight_vector"] = oss.str();
 }
 
 int OnlineLinearModel::SetModelParam(const Json::Value& root) {
   istringstream iss(root["weight_vector"].asString());
-  for (int c = 0; c < this->clf_num_; ++c) iss >> this->weights(c);
+  for (int c = 0; c < this->clf_num_; ++c) iss >> w(c);
   return Status_OK;
 }
 

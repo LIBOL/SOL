@@ -23,26 +23,27 @@ class OnlineLinearModel : public OnlineModel {
  public:
   /// \brief  iterate the model with one new instance
   ///
-  /// \param x training instance
-  /// \param predict predicted scores on each class
+  /// \param dp training instance
+  /// \param predicts predicted scores over classes
   ///
-  /// \return predicted class label
-  virtual label_t Iterate(const pario::DataPoint& x, float* predict);
+  /// \return predicted label
+  virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
+
   /// \brief  predict the label of data
   ///
-  /// \param x input data
+  /// \param dp input data
   /// \param predicts predicted scores on the data
   ///
   /// \return predicted class label
-  virtual label_t Predict(const pario::DataPoint& x, float* predicts);
+  virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
 
  protected:
   /// \brief  update model
   ///
-  /// \param x training instance
+  /// \param dp training instance
   /// \param predict predicted values
   /// \param loss prediction loss
-  virtual void Update(const pario::DataPoint& x, const float* predict,
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss) = 0;
 
  protected:
@@ -59,13 +60,16 @@ class OnlineLinearModel : public OnlineModel {
   virtual int SetModelParam(const Json::Value& root);
 
  public:
-  const math::Vector<real_t>& weights(int cls_id) const {
+  const math::Vector<real_t>& w(int cls_id) const {
     return this->weights_[cls_id];
   }
-  math::Vector<real_t>& weights(int cls_id) { return this->weights_[cls_id]; }
+  math::Vector<real_t>& w(int cls_id) { return this->weights_[cls_id]; }
+
+  real_t g(int cls_id) const { return this->gradients_[cls_id]; }
+  real_t& g(int cls_id) { return this->gradients_[cls_id]; }
   virtual void update_dim(index_t dim);
 
- protected:
+ private:
   // the first element is zero
   math::Vector<real_t>* weights_;
   // gradients for each class

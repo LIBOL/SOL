@@ -17,15 +17,15 @@ namespace model {
 PA::PA(int class_num) : OnlineLinearModel(class_num) {
   this->eta_coeff_ = class_num == 2 ? 1.f : 2.f;
 }
-void PA::Update(const pario::DataPoint& x, const float*, float loss) {
-  this->eta_ = loss / (this->eta_coeff_ * reduce<op::plus>(L2(x.data())));
+void PA::Update(const pario::DataPoint& dp, const float*, float loss) {
+  const auto& x = dp.data();
+  this->eta_ = loss / (this->eta_coeff_ * reduce<op::plus>(L2(x)));
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= eta_ * g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
   }
 }
 
@@ -39,16 +39,16 @@ void PAI::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-void PAI::Update(const pario::DataPoint& x, const float*, float loss) {
-  this->eta_ = (std::min)(
-      this->C_, loss / (this->eta_coeff_ * reduce<op::plus>(L2(x.data()))));
+void PAI::Update(const pario::DataPoint& dp, const float*, float loss) {
+  const auto& x = dp.data();
+  this->eta_ =
+      (std::min)(this->C_, loss / (this->eta_coeff_ * reduce<op::plus>(L2(x))));
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= eta_ * g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
   }
 }
 void PAI::GetModelInfo(Json::Value& root) const {
@@ -66,15 +66,15 @@ void PAII::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-void PAII::Update(const pario::DataPoint& x, const float*, float loss) {
-  this->eta_ = loss / (this->eta_coeff_ * reduce<op::plus>(L2(x.data())) +
-                       0.5f / this->C_);
+void PAII::Update(const pario::DataPoint& dp, const float*, float loss) {
+  const auto& x = dp.data();
+  this->eta_ =
+      loss / (this->eta_coeff_ * reduce<op::plus>(L2(x)) + 0.5f / this->C_);
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= eta_ * g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
   }
 }
 

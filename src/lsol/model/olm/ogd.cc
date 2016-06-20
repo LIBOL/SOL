@@ -27,15 +27,15 @@ void OGD::SetParameter(const std::string& name, const std::string& value) {
     OnlineLinearModel::SetParameter(name, value);
   }
 }
-void OGD::Update(const pario::DataPoint& x, const float*, float) {
+void OGD::Update(const pario::DataPoint& dp, const float*, float) {
+  const auto& x = dp.data();
   this->eta_ = this->eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= this->eta_ * g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
   }
 }
 

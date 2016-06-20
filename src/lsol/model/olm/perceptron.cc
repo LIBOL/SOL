@@ -34,15 +34,15 @@ void Perceptron::SetParameter(const std::string& name,
   }
 }
 
-void Perceptron::Update(const pario::DataPoint& x, const float*, float) {
+void Perceptron::Update(const pario::DataPoint& dp, const float*, float) {
+  const auto& x = dp.data();
   this->eta_ = 1.f;
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
   }
 }
 

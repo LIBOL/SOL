@@ -66,18 +66,18 @@ void ALMA2::BeginTrain() {
   this->hinge_base_->set_margin(margin);
 }
 
-void ALMA2::Update(const pario::DataPoint& x, const float*, float) {
+void ALMA2::Update(const pario::DataPoint& dp, const float*, float) {
+  const auto& x = dp.data();
   this->eta_ = this->C_ / (this->square_p1_ * sqrtf(float(this->k_)));
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= eta_ * g(c) * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c];
+    w(c)[0] -= bias_eta() * g(c);
 
-    real_t w_norm = sqrt(reduce<op::plus>(L2(w)));
-    if (w_norm > 1) w /= w_norm;
+    real_t w_norm = sqrt(reduce<op::plus>(L2(w(c))));
+    if (w_norm > 1) w(c) /= w_norm;
   }
   ++this->k_;
   float margin = (1.f - this->alpha_) * this->B_ * this->square_p1_ /

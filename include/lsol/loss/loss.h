@@ -49,7 +49,8 @@ class LSOL_EXPORTS Loss {
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float loss(label_t label, float* predict, label_t predict_label, int cls_num) = 0;
+  virtual float loss(label_t label, float* predict, label_t predict_label,
+                     int cls_num) = 0;
 
   /// \brief  calculate the gradients according to the label and predictions
   ///
@@ -60,8 +61,8 @@ class LSOL_EXPORTS Loss {
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float gradient(label_t label, float* predict, label_t predict_label, float* gradient,
-                         int cls_num) = 0;
+  virtual float gradient(label_t label, float* predict, label_t predict_label,
+                         float* gradient, int cls_num) = 0;
 
  public:
   const std::string& name() const { return name_; }

@@ -69,11 +69,11 @@ class LSOL_EXPORTS Model {
 
   /// \brief  predict the label of data
   ///
-  /// \param x input data
+  /// \param dp input data
   /// \param predicts predicted scores on the data
   ///
   /// \return predicted class label
-  virtual label_t Predict(const pario::DataPoint &x, float *predicts) = 0;
+  virtual label_t Predict(const pario::DataPoint &dp, float *predicts) = 0;
 
  public:
   /// \brief  Save model to file

@@ -19,7 +19,7 @@ class AROW : public OnlineLinearModel {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  protected:
-  virtual void Update(const pario::DataPoint& x, const float* predict,
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss);
   virtual void update_dim(index_t dim);
 
@@ -29,7 +29,7 @@ class AROW : public OnlineLinearModel {
 
  protected:
   float r_;
-  math::Vector<real_t> Sigma_;
+  math::Vector<real_t>* Sigmas_;
 
 };  // class AROW
 

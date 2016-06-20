@@ -22,7 +22,7 @@ class ALMA2 : public OnlineLinearModel {
   virtual void BeginTrain();
 
  protected:
-  virtual void Update(const pario::DataPoint& x, const float* predict,
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss);
 
   virtual void GetModelInfo(Json::Value& root) const;

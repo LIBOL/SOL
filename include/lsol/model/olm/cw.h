@@ -19,10 +19,10 @@ class CW : public OnlineLinearModel {
 
   virtual void SetParameter(const std::string& name, const std::string& value);
 
-  virtual label_t Predict(const pario::DataPoint& x, float* predicts);
+  virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
 
  protected:
-  virtual void Update(const pario::DataPoint& x, const float* predict,
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss);
   virtual void update_dim(index_t dim);
 

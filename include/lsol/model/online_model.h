@@ -43,11 +43,11 @@ class OnlineModel : public Model {
  public:
   /// \brief  iterate the model with one new instance
   ///
-  /// \param x training instance
-  /// \param y predicted scores over classes
+  /// \param dp training instance
+  /// \param predicts predicted scores over classes
   ///
   /// \return predicted label
-  virtual label_t Iterate(const pario::DataPoint& x, float* y);
+  virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
 
  protected:
   /// \brief  Get Model Information

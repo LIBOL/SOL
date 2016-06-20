@@ -21,7 +21,7 @@ class OGD : public OnlineLinearModel {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  protected:
-  virtual void Update(const pario::DataPoint& x, const float* predict,
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss);
   virtual void GetModelInfo(Json::Value& root) const;
 

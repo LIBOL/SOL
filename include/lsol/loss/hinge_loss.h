@@ -28,10 +28,11 @@ class LSOL_EXPORTS HingeLoss : public HingeBase {
   HingeLoss() : HingeBase(Type::BC) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label, int cls_num);
+  virtual float loss(label_t label, float* predict, label_t predict_label,
+                     int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label, float* gradient,
-                         int cls_num);
+  virtual float gradient(label_t label, float* predict, label_t predict_label,
+                         float* gradient, int cls_num);
 
 };  // class HingeLoss
 
@@ -40,10 +41,11 @@ class LSOL_EXPORTS MaxScoreHingeLoss : public HingeBase {
   MaxScoreHingeLoss() : HingeBase(Type::MC) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label, int cls_num);
+  virtual float loss(label_t label, float* predict, label_t predict_label,
+                     int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label, float* gradient,
-                         int cls_num);
+  virtual float gradient(label_t label, float* predict, label_t predict_label,
+                         float* gradient, int cls_num);
 };
 
 class LSOL_EXPORTS UniformHingeLoss : public HingeBase {
@@ -51,10 +53,11 @@ class LSOL_EXPORTS UniformHingeLoss : public HingeBase {
   UniformHingeLoss() : HingeBase(Type::MC) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label, int cls_num);
+  virtual float loss(label_t label, float* predict, label_t predict_label,
+                     int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label, float* gradient,
-                         int cls_num);
+  virtual float gradient(label_t label, float* predict, label_t predict_label,
+                         float* gradient, int cls_num);
 };
 
 }  // namespace loss

@@ -45,16 +45,18 @@ void ECCW::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-label_t ECCW::Predict(const pario::DataPoint& x, float* predicts) {
-  label_t predict_label = OnlineLinearModel::Predict(x, predicts);
-  this->vi_ = expr::dotmul(this->Sigma_, L2(x.data()));
-  if (this->bias_eta0_ != 0) this->vi_ += this->Sigma_[0];
+label_t ECCW::Predict(const pario::DataPoint& dp, float* predicts) {
+  const auto& x = dp.data();
+  label_t predict_label = OnlineLinearModel::Predict(dp, predicts);
+  vi_ = expr::dotmul(this->Sigma_, L2(x));
+  if (bias_eta0_ != 0) vi_ += Sigma_[0];
 
-  this->hinge_base_->set_margin(this->phi_ * this->vi_);
+  this->hinge_base_->set_margin(phi_ * vi_);
   return predict_label;
 }
 
-void ECCW::Update(const pario::DataPoint& x, const float*, float loss) {
+void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
+  const auto& x = dp.data();
   float mi = phi_ * vi_ - loss;
   float tmp = mi * phi_ * phi_;
   float alpha_i =
@@ -68,14 +70,13 @@ void ECCW::Update(const pario::DataPoint& x, const float*, float loss) {
 
   this->eta_ = alpha_i;
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * this->Sigma_ * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= eta_ * g(c) * this->Sigma_ * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c] * this->Sigma_[0];
+    w(c)[0] -= bias_eta() * g(c) * this->Sigma_[0];
   }
   tmp = alpha_i * phi_ * sqrtf(ui);
-  this->Sigma_ /= (1.f + tmp * this->Sigma_ * L2(x.data()));
+  this->Sigma_ /= (1.f + tmp * this->Sigma_ * L2(x));
   this->Sigma_[0] /= (1.f + tmp * this->Sigma_[0]);
 }
 

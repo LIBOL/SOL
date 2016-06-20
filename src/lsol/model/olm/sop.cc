@@ -49,26 +49,27 @@ void SOP::BeginTrain() {
   this->X_ = this->a_;
 }
 
-label_t SOP::Predict(const pario::DataPoint& x, float* predicts) {
-  this->S_ = this->X_;
-  this->S_ += L2(x.data());
+label_t SOP::Predict(const pario::DataPoint& dp, float* predicts) {
+  const auto& x = dp.data();
+  S_ = X_;
+  S_ += L2(x);
   for (int c = 0; c < this->clf_num_; ++c) {
-    this->weights(c) = this->v_[c] / this->S_;
+    w(c) = v_[c] / S_;
   }
-  return OnlineLinearModel::Predict(x, predicts);
+  return OnlineLinearModel::Predict(dp, predicts);
 }
 
-void SOP::Update(const pario::DataPoint& x, const float*, float) {
+void SOP::Update(const pario::DataPoint& dp, const float*, float) {
+  const auto& x = dp.data();
   this->eta_ = 1.f;
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& v = this->v_[c];
-    v -= this->gradients_[c] * x.data();
+    if (g(c) == 0) continue;
+    v_[c] -= g(c) * x;
     // update bias
-    v[0] -= this->bias_eta() * this->gradients_[c];
+    v_[c][0] -= bias_eta() * g(c);
   }
-  this->X_ = this->S_;
+  X_ = S_;
 }
 
 void SOP::update_dim(index_t dim) {

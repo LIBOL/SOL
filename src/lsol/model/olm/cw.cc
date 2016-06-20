@@ -45,16 +45,18 @@ void CW::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-label_t CW::Predict(const pario::DataPoint& x, float* predicts) {
-  label_t predict_label = OnlineLinearModel::Predict(x, predicts);
-  this->Vi_ = expr::dotmul(this->Sigma_, L2(x.data()));
+label_t CW::Predict(const pario::DataPoint& dp, float* predicts) {
+  const auto& x = dp.data();
+  label_t predict_label = OnlineLinearModel::Predict(dp, predicts);
+  this->Vi_ = expr::dotmul(this->Sigma_, L2(x));
   if (this->bias_eta0_ != 0) this->Vi_ += this->Sigma_[0];
 
   this->hinge_base_->set_margin(this->phi_ * this->Vi_);
   return predict_label;
 }
 
-void CW::Update(const pario::DataPoint& x, const float*, float loss) {
+void CW::Update(const pario::DataPoint& dp, const float*, float loss) {
+  const auto& x = dp.data();
   float Mi = phi_ * Vi_ - loss;
   float tmp = (1 + 2 * phi_ * Mi);
   float alpha_i =
@@ -63,14 +65,13 @@ void CW::Update(const pario::DataPoint& x, const float*, float loss) {
 
   this->eta_ = alpha_i;
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (this->gradients_[c] == 0) continue;
-    math::Vector<real_t>& w = this->weights(c);
-    w -= this->eta_ * this->gradients_[c] * this->Sigma_ * x.data();
+    if (g(c) == 0) continue;
+    w(c) -= this->eta_ * g(c) * this->Sigma_ * x;
     // update bias
-    w[0] -= this->bias_eta() * this->gradients_[c] * this->Sigma_[0];
+    w(c)[0] -= bias_eta() * g(c) * this->Sigma_[0];
   }
   tmp = 2 * alpha_i * phi_;
-  this->Sigma_ /= (1.f + tmp * this->Sigma_ * L2(x.data()));
+  this->Sigma_ /= (1.f + tmp * this->Sigma_ * L2(x));
   this->Sigma_[0] /= (1.f + tmp * this->Sigma_[0]);
 }
 
