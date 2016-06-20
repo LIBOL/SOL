@@ -5,6 +5,7 @@
 **********************************************************************************/
 
 #include "lsol/model/olm/cw.h"
+#include <cmath>
 
 using namespace std;
 using namespace lsol;

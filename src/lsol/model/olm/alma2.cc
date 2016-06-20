@@ -6,6 +6,7 @@
 **********************************************************************************/
 
 #include "lsol/model/olm/alma2.h"
+#include <cmath>
 
 using namespace std;
 using namespace lsol::math::expr;
@@ -34,7 +35,7 @@ ALMA2::ALMA2(int class_num)
 void ALMA2::SetParameter(const std::string& name, const std::string& value) {
   if (name == "p") {
     this->p_ = stoi(value);
-    this->square_p1_ = std::sqrtf(float(this->p_ - 1));
+    this->square_p1_ = sqrtf(float(this->p_ - 1));
   } else if (name == "alpha") {
     this->alpha_ = stof(value);
     this->B_ = 1 / this->alpha_;

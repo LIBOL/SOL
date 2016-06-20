@@ -5,6 +5,7 @@
 **********************************************************************************/
 
 #include "lsol/model/olm/eccw.h"
+#include <cmath>
 
 using namespace std;
 using namespace lsol;
@@ -60,7 +61,7 @@ void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
   float mi = phi_ * vi_ - loss;
   float tmp = mi * phi_ * phi_;
   float alpha_i =
-      (-mi * psi_ + sqrt(tmp * tmp * 0.25f + vi_ * phi_ * phi_ * xi_)) /
+      (-mi * psi_ + sqrtf(tmp * tmp * 0.25f + vi_ * phi_ * phi_ * xi_)) /
       (vi_ * xi_);
   float ui =
       0.5f * (-alpha_i * vi_ * phi_ +
