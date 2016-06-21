@@ -12,28 +12,25 @@ using namespace lsol;
 namespace lsol {
 
 namespace model {
-SOP::SOP(int class_num) : OnlineLinearModel(class_num), a_(1.f), v_(nullptr) {
+SOP::SOP(int class_num) : OnlineLinearModel(class_num), a_(1.f) {
   this->S_.resize(this->dim_);
   this->X_.resize(this->dim_);
+  this->X_ = this->a_;
 
-  this->v_ = new math::Vector<real_t>[this->clf_num_];
-  for (int i = 0; i < this->clf_num_; ++i) {
-    this->v_[i].resize(this->dim_);
-    this->v_[i] = 0;
-  }
+  this->v_.resize(this->dim_);
+  this->v_ = 0;
   // loss
   if (class_num == 2) {
     this->SetParameter("loss", "bool");
   } else {
-    this->SetParameter("loss", "maxscore-bool");
+    throw invalid_argument("SOP does not support multiclass classification!");
   }
 }
-
-SOP::~SOP() { DeleteArray(this->v_); }
 
 void SOP::SetParameter(const std::string& name, const std::string& value) {
   if (name == "a") {
     this->a_ = stof(value);
+    this->X_ = this->a_;
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::BOOL) == 0) {
@@ -44,18 +41,11 @@ void SOP::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-void SOP::BeginTrain() {
-  OnlineLinearModel::BeginTrain();
-  this->X_ = this->a_;
-}
-
 label_t SOP::Predict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
   S_ = X_;
   S_ += L2(x);
-  for (int c = 0; c < this->clf_num_; ++c) {
-    w(c) = v_[c] / S_;
-  }
+  w(0) = v_ / S_;
   return OnlineLinearModel::Predict(dp, predicts);
 }
 
@@ -63,34 +53,21 @@ void SOP::Update(const pario::DataPoint& dp, const float*, float) {
   const auto& x = dp.data();
   this->eta_ = 1.f;
 
-  for (int c = 0; c < this->clf_num_; ++c) {
-    if (g(c) == 0) continue;
-    v_[c] -= g(c) * x;
-    // update bias
-    v_[c][0] -= bias_eta() * g(c);
-  }
+  v_ -= g(0) * x;
+  v_[0] -= bias_eta() * g(0);
   X_ = S_;
 }
 
 void SOP::update_dim(index_t dim) {
   if (dim >= this->dim_) {
     this->S_.resize(dim);
-    for (real_t* iter = this->S_.begin() + this->dim_; iter != this->S_.end();
-         ++iter)
-      *iter = this->a_;
 
     this->X_.resize(dim);
-    for (real_t* iter = this->X_.begin() + this->dim_; iter != this->X_.end();
-         ++iter)
-      *iter = this->a_;
+    float a = this->a_;
+    this->X_.slice_op([a](real_t& val) { val = a; }, this->dim_);
 
-    for (int i = 0; i < this->clf_num_; ++i) {
-      this->v_[i].resize(dim);
-      // set the new value to zero
-      for (real_t* iter = this->v_[i].begin() + this->dim_;
-           iter != this->v_[i].end(); ++iter)
-        *iter = 0;
-    }
+    this->v_.resize(dim);
+    this->v_.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
     OnlineLinearModel::update_dim(dim);
   }
 }
@@ -105,23 +82,21 @@ void SOP::GetModelParam(Json::Value& root) const {
 
   ostringstream oss_X;
   oss_X << this->X_ << "\n";
-  root["diag_covariance"] = oss_X.str();
+  root["covariance"] = oss_X.str();
 
   ostringstream oss_v;
-  for (int c = 0; c < this->clf_num_; ++c) {
-    oss_v << this->v_[c] << "\n";
-  }
+  oss_v << this->v_ << "\n";
   root["v"] = oss_v.str();
 }
 
 int SOP::SetModelParam(const Json::Value& root) {
   OnlineLinearModel::SetModelParam(root);
 
-  istringstream iss_X(root["diag_covariance"].asString());
+  istringstream iss_X(root["covariance"].asString());
   iss_X >> this->X_;
 
   istringstream iss_v(root["v"].asString());
-  for (int c = 0; c < this->clf_num_; ++c) iss_v >> this->v_[c];
+  iss_v >> this->v_;
   return Status_OK;
 }
 

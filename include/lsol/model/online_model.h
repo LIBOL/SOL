@@ -27,12 +27,6 @@ class OnlineModel : public Model {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
-  /// \brief  initialize the model for training
-  virtual void BeginTrain() {
-    Model::BeginTrain();
-    this->update_num_ = 0;
-  }
-
   /// \brief  Train from a data set
   //
   /// \param data_iter data iterator
@@ -67,9 +61,6 @@ class OnlineModel : public Model {
   void set_initial_t(int initial_t);
   virtual void update_dim(index_t dim) { this->dim_ = dim; }
 
- public:
-  size_t update_num() const { return this->update_num_; }
-
  protected:
   inline float bias_eta() const { return this->bias_eta0_ * this->eta_; }
 
@@ -87,8 +78,8 @@ class OnlineModel : public Model {
   // learning rate
   float eta_;
 
-  // number of updates during the training
-  size_t update_num_;
+  // whether only update when predicted lables are different
+  bool lazy_update_;
 };  // class Online Model
 }  // namespace model
 }  // namespace lsol

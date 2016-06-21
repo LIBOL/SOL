@@ -29,7 +29,7 @@ void OGD::SetParameter(const std::string& name, const std::string& value) {
 }
 void OGD::Update(const pario::DataPoint& dp, const float*, float) {
   const auto& x = dp.data();
-  this->eta_ = this->eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
+  eta_ = eta0_ / this->pow_(this->cur_iter_num_, this->power_t_);
 
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;

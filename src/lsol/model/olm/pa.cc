@@ -19,7 +19,7 @@ PA::PA(int class_num) : OnlineLinearModel(class_num) {
 }
 void PA::Update(const pario::DataPoint& dp, const float*, float loss) {
   const auto& x = dp.data();
-  this->eta_ = loss / (this->eta_coeff_ * reduce<op::plus>(L2(x)));
+  this->eta_ = loss / (this->eta_coeff_ * Norm2(x));
 
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
@@ -41,8 +41,7 @@ void PAI::SetParameter(const std::string& name, const std::string& value) {
 
 void PAI::Update(const pario::DataPoint& dp, const float*, float loss) {
   const auto& x = dp.data();
-  this->eta_ =
-      (std::min)(this->C_, loss / (this->eta_coeff_ * reduce<op::plus>(L2(x))));
+  this->eta_ = (std::min)(this->C_, loss / (eta_coeff_ * Norm2(x)));
 
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
@@ -68,8 +67,7 @@ void PAII::SetParameter(const std::string& name, const std::string& value) {
 
 void PAII::Update(const pario::DataPoint& dp, const float*, float loss) {
   const auto& x = dp.data();
-  this->eta_ =
-      loss / (this->eta_coeff_ * reduce<op::plus>(L2(x)) + 0.5f / this->C_);
+  this->eta_ = loss / (eta_coeff_ * Norm2(x) + 0.5f / C_);
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
     w(c) -= eta_ * g(c) * x;

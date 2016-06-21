@@ -15,6 +15,7 @@ namespace model {
 class AROW : public OnlineLinearModel {
  public:
   AROW(int class_num);
+  virtual ~AROW();
 
   virtual void SetParameter(const std::string& name, const std::string& value);
 

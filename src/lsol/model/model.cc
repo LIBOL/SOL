@@ -22,7 +22,14 @@ namespace model {
 
 Model* Model::Create(const std::string& name, int class_num) {
   auto create_func = CreateObject<Model>(std::string(name) + "_model");
-  return create_func == nullptr ? nullptr : create_func(class_num);
+  Model* ins = nullptr;
+  try {
+    if (create_func != nullptr) ins = create_func(class_num);
+  } catch (invalid_argument& err) {
+    fprintf(stderr, "%s\n", err.what());
+    ins = nullptr;
+  }
+  return ins;
 }
 
 Model::Model(int class_num, const std::string& type)
@@ -123,6 +130,7 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
 void Model::BeginTrain() {
   if (this->loss_ == nullptr)
     throw runtime_error("loss function is not set yet!");
+  this->update_num_ = 0;
 }
 
 int Model::Save(const string& path) const {

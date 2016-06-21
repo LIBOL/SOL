@@ -17,6 +17,7 @@ namespace model {
 OnlineModel::OnlineModel(int class_num, const std::string& type)
     : Model(class_num, type), bias_eta0_(0), dim_(1) {
   this->set_initial_t(0);
+  this->lazy_update_ = false;
 }
 
 void OnlineModel::SetParameter(const std::string& name,
@@ -28,6 +29,8 @@ void OnlineModel::SetParameter(const std::string& name,
     this->set_initial_t(stoi(value));
   } else if (name == "dim") {
     this->update_dim(stoi(value));
+  } else if (name == "lazy_update") {
+    this->lazy_update_ = value == "true" ? true : false;
   } else {
     Model::SetParameter(name, value);
   }
@@ -88,6 +91,7 @@ void OnlineModel::GetModelInfo(Json::Value& root) const {
   root["online"]["bias_eta"] = this->bias_eta0_;
   root["online"]["t"] = this->cur_iter_num_;
   root["online"]["dim"] = this->dim_;
+  root["online"]["lazy_update"] = this->lazy_update_ ? "true" : "false";
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {

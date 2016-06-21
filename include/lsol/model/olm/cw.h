@@ -16,10 +16,11 @@ namespace model {
 class CW : public OnlineLinearModel {
  public:
   CW(int class_num);
+  virtual ~CW();
 
   virtual void SetParameter(const std::string& name, const std::string& value);
 
-  virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
+  virtual void BeginTrain();
 
  protected:
   virtual void Update(const pario::DataPoint& dp, const float* predict,
@@ -38,7 +39,7 @@ class CW : public OnlineLinearModel {
   float phi_;
   // x'Sigma x
   float Vi_;
-  math::Vector<real_t> Sigma_;
+  math::Vector<real_t>* Sigmas_;
 
 };  // class CW
 

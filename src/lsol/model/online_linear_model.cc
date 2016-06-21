@@ -47,9 +47,14 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
   OnlineModel::Iterate(dp, predicts);
 
   label_t label = this->Predict(dp, predicts);
-  float loss = this->loss_->gradient(dp.label(), predicts, label,
-                                     this->gradients_, this->clf_num_);
-  if (loss > 0) {
+  float loss = this->loss_->gradient(dp, predicts, label, this->gradients_,
+                                     this->clf_num_);
+  if (this->lazy_update_) {
+    if (label != dp.label()) {
+      ++this->update_num_;
+      this->Update(dp, predicts, loss);
+    }
+  } else if (loss > 0) {
     ++this->update_num_;
     this->Update(dp, predicts, loss);
   }
@@ -74,8 +79,7 @@ void OnlineLinearModel::update_dim(index_t dim) {
     for (int i = 0; i < this->clf_num_; ++i) {
       w(i).resize(dim);
       // set the new value to zero
-      for (real_t* iter = w(i).begin() + this->dim_; iter != w(i).end(); ++iter)
-        *iter = 0;
+      w(i).slice_op([](real_t& val) { val = 0; }, this->dim_);
     }
     OnlineModel::update_dim(dim);
   }

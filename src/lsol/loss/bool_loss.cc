@@ -11,13 +11,14 @@
 namespace lsol {
 namespace loss {
 
-float BoolLoss::loss(label_t label, float* predict, label_t predict_label,
-                     int cls_num) {
-  return predict_label == label ? 0.f : 1.f;
+float BoolLoss::loss(const pario::DataPoint& dp, float* predict,
+                     label_t predict_label, int cls_num) {
+  return predict_label == dp.label() ? 0.f : 1.f;
 }
 
-float BoolLoss::gradient(label_t label, float* predict, label_t predict_label,
-                         float* gradient, int cls_num) {
+float BoolLoss::gradient(const pario::DataPoint& dp, float* predict,
+                         label_t predict_label, float* gradient, int cls_num) {
+  label_t label = dp.label();
   float loss = predict_label == label ? 0.f : 1.f;
   if (loss > 0) {
     *gradient = (float)(-label);
@@ -29,14 +30,15 @@ float BoolLoss::gradient(label_t label, float* predict, label_t predict_label,
 
 RegisterLoss(BoolLoss, "bool", "Bool Loss");
 
-float MaxScoreBoolLoss::loss(label_t label, float* predict,
+float MaxScoreBoolLoss::loss(const pario::DataPoint& dp, float* predict,
                              label_t predict_label, int cls_num) {
-  return predict_label == label ? 0.f : 1.f;
+  return predict_label == dp.label() ? 0.f : 1.f;
 }
 
-float MaxScoreBoolLoss::gradient(label_t label, float* predict,
+float MaxScoreBoolLoss::gradient(const pario::DataPoint& dp, float* predict,
                                  label_t predict_label, float* gradient,
                                  int cls_num) {
+  label_t label = dp.label();
   float loss = predict_label == label ? 0.f : 1.f;
 
   if (loss > 0) {
@@ -51,14 +53,15 @@ float MaxScoreBoolLoss::gradient(label_t label, float* predict,
 
 RegisterLoss(MaxScoreBoolLoss, "maxscore-bool", "Max-Score Bool Loss");
 
-float UniformBoolLoss::loss(label_t label, float* predict,
+float UniformBoolLoss::loss(const pario::DataPoint& dp, float* predict,
                             label_t predict_label, int cls_num) {
-  return predict_label == label ? 0.f : 1.f;
+  return predict_label == dp.label() ? 0.f : 1.f;
 }
 
-float UniformBoolLoss::gradient(label_t label, float* predict,
+float UniformBoolLoss::gradient(const pario::DataPoint& dp, float* predict,
                                 label_t predict_label, float* gradient,
                                 int cls_num) {
+  label_t label = dp.label();
   float loss = predict_label == label ? 0.f : 1.f;
 
   if (loss > 0) {

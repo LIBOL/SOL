@@ -62,14 +62,13 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
 
 void ALMA2::BeginTrain() {
   OnlineLinearModel::BeginTrain();
-  float margin = (1.f - this->alpha_) * this->B_ * this->square_p1_ /
-                 sqrtf(float(this->k_));
+  float margin = (1.f - alpha_) * B_ * square_p1_ / sqrtf(float(k_));
   this->hinge_base_->set_margin(margin);
 }
 
 void ALMA2::Update(const pario::DataPoint& dp, const float*, float) {
   const auto& x = dp.data();
-  this->eta_ = this->C_ / (this->square_p1_ * sqrtf(float(this->k_)));
+  this->eta_ = C_ / (square_p1_ * sqrtf(float(k_)));
 
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
@@ -77,12 +76,11 @@ void ALMA2::Update(const pario::DataPoint& dp, const float*, float) {
     // update bias
     w(c)[0] -= bias_eta() * g(c);
 
-    real_t w_norm = sqrt(reduce<op::plus>(L2(w(c))));
+    real_t w_norm = sqrt(Norm2(w(c)));
     if (w_norm > 1) w(c) /= w_norm;
   }
-  ++this->k_;
-  float margin = (1.f - this->alpha_) * this->B_ * this->square_p1_ /
-                 sqrtf(float(this->k_));
+  ++k_;
+  float margin = (1.f - alpha_) * B_ * square_p1_ / sqrtf(float(k_));
   this->hinge_base_->set_margin(margin);
 }
 

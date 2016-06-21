@@ -154,6 +154,7 @@ class LSOL_EXPORTS Model {
   const std::string &type() const { return this->type_; }
   std::string name() const { return name_; }
   void set_name(const std::string &name) { this->name_ = name; }
+  size_t update_num() const { return this->update_num_; }
 
  protected:
   // number of classes
@@ -170,6 +171,9 @@ class LSOL_EXPORTS Model {
   index_t max_index_;
   // pre-selected features
   math::Vector<char> sel_feat_flags_;
+
+  // number of updates during the training
+  size_t update_num_;
 
   std::string name_;
 };

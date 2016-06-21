@@ -90,7 +90,7 @@ void CalcExp(MatrixBase<MatType, DType, kDim> &dst,
 */
 
 // value operations
-template <typename OP, typename EType, typename DType>
+template <typename OP, typename EType, typename DType, int exptype>
 inline DType reduce(const Exp<EType, DType, ExprType::kValue> &exp) {
   return exp.self().value_;
 }
@@ -196,6 +196,16 @@ inline DType reduce(const Exp<EType, DType, ExprType::kSparse> &exp) {
     val = OP::template map<DType>(val, exp_val.value(idx));
   }
   return val;
+}
+
+template <typename EType, typename DType, int exptype>
+DType Norm1(const Exp<EType, DType, exptype> &src) {
+  return reduce<op::plus>(L1(src.self()));
+}
+
+template <typename EType, typename DType, int exptype>
+DType Norm2(const Exp<EType, DType, exptype> &src) {
+  return reduce<op::plus>(L2(src.self()));
 }
 
 }  // namespace expr

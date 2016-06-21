@@ -15,11 +15,8 @@ namespace model {
 class SOP : public OnlineLinearModel {
  public:
   SOP(int class_num);
-  virtual ~SOP();
 
   virtual void SetParameter(const std::string& name, const std::string& value);
-
-  virtual void BeginTrain();
 
   virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
 
@@ -34,7 +31,7 @@ class SOP : public OnlineLinearModel {
 
  protected:
   float a_;
-  math::Vector<real_t>* v_;
+  math::Vector<real_t> v_;
   math::Vector<real_t> S_;
   math::Vector<real_t> X_;
 

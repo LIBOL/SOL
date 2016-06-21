@@ -16,11 +16,11 @@ class LSOL_EXPORTS BoolLoss : public Loss {
   BoolLoss() : Loss(Type::BC | Type::BOOL) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label,
-                     int cls_num);
+  virtual float loss(const pario::DataPoint& dp, float* predict,
+                     label_t predict_label, int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label,
-                         float* gradient, int cls_num);
+  virtual float gradient(const pario::DataPoint& dp, float* predict,
+                         label_t predict_label, float* gradient, int cls_num);
 
 };  // class BoolLoss
 
@@ -29,11 +29,11 @@ class LSOL_EXPORTS MaxScoreBoolLoss : public Loss {
   MaxScoreBoolLoss() : Loss(Type::MC | Type::BOOL) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label,
-                     int cls_num);
+  virtual float loss(const pario::DataPoint& dp, float* predict,
+                     label_t predict_label, int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label,
-                         float* gradient, int cls_num);
+  virtual float gradient(const pario::DataPoint& dp, float* predict,
+                         label_t predict_label, float* gradient, int cls_num);
 };
 
 class LSOL_EXPORTS UniformBoolLoss : public Loss {
@@ -41,11 +41,11 @@ class LSOL_EXPORTS UniformBoolLoss : public Loss {
   UniformBoolLoss() : Loss(Type::MC | Type::BOOL) {}
 
  public:
-  virtual float loss(label_t label, float* predict, label_t predict_label,
-                     int cls_num);
+  virtual float loss(const pario::DataPoint& dp, float* predict,
+                     label_t predict_label, int cls_num);
 
-  virtual float gradient(label_t label, float* predict, label_t predict_label,
-                         float* gradient, int cls_num);
+  virtual float gradient(const pario::DataPoint& dp, float* predict,
+                         label_t predict_label, float* gradient, int cls_num);
 };
 
 }  // namespace loss

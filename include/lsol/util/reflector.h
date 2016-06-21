@@ -12,6 +12,7 @@
 #include <cstdio>
 
 #include <lsol/util/types.h>
+#include <lsol/util/str_util.h>
 
 namespace lsol {
 
@@ -59,7 +60,8 @@ template <typename ClsType,
           typename ReturnType = typename ClsType::CreateFunction>
 ReturnType CreateObject(const std::string& cls_name) {
   auto cls_info_map = ClassFactory::ClassInfoMap();
-  auto iter = cls_info_map.find(cls_name);
+  const std::string& cls_name2 = lower(cls_name);
+  auto iter = cls_info_map.find(cls_name2);
   if (iter != cls_info_map.end()) {
     return (ReturnType((iter->second)->create_func()));
   }

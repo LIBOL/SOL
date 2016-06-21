@@ -13,6 +13,7 @@
 
 #include <lsol/util/types.h>
 #include <lsol/util/reflector.h>
+#include <lsol/pario/data_point.h>
 
 namespace lsol {
 namespace loss {
@@ -43,25 +44,25 @@ class LSOL_EXPORTS Loss {
  public:
   /// \brief  calculate loss according to the label and predictions
   ///
-  /// \param label true label
+  /// \param dp data instance
   /// \param predict prediction on each class
   /// \param predict_label predicted label
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float loss(label_t label, float* predict, label_t predict_label,
+  virtual float loss(const pario::DataPoint& dp, float* predict, label_t predict_label,
                      int cls_num) = 0;
 
   /// \brief  calculate the gradients according to the label and predictions
   ///
-  /// \param label true label
+  /// \param dp data instance
   /// \param predict prediction on each class
   /// \param predict_label predicted label
   /// \param gradient resulted gradient on each class (without x)
   /// \param cls_num number of classes
   ///
   /// \return loss of the prediction
-  virtual float gradient(label_t label, float* predict, label_t predict_label,
+  virtual float gradient(const pario::DataPoint& dp, float* predict, label_t predict_label,
                          float* gradient, int cls_num) = 0;
 
  public:

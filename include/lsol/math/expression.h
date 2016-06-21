@@ -278,10 +278,6 @@ inline DType dotdiv(const Exp<EType1, DType, exptype1> &lhs,
   return dot<op::div>(lhs, rhs);
 }
 
-/***reduce operations***/
-template <typename OP, typename EType, typename DType, int exptype>
-inline DType reduce(const Exp<EType, DType, exptype> &exp);
-
 //---------------
 // UnaryMapExp
 // --------------

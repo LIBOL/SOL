@@ -15,10 +15,11 @@ namespace model {
 class ECCW : public OnlineLinearModel {
  public:
   ECCW(int class_num);
+  virtual ~ECCW();
 
   virtual void SetParameter(const std::string& name, const std::string& value);
 
-  virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
+  virtual void BeginTrain();
 
  protected:
   virtual void Update(const pario::DataPoint& dp, const float* predict,
@@ -43,7 +44,7 @@ class ECCW : public OnlineLinearModel {
   float vi_;
   float psi_;
   float xi_;
-  math::Vector<real_t> Sigma_;
+  math::Vector<real_t>* Sigmas_;
 
 };  // class ECCW
 }  // namespace model

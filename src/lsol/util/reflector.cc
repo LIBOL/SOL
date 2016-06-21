@@ -26,8 +26,9 @@ ClassInfo::ClassInfo(const std::string& name, void* func,
 
 void ClassFactory::Register(ClassInfo* class_info) {
   ClsInfoMapType& cls_info_map = ClassInfoMap();
-  if (cls_info_map.find(class_info->name()) == cls_info_map.end()) {
-    cls_info_map[class_info->name()] = class_info;
+  const string& cls_name = lower(class_info->name());
+  if (cls_info_map.find(cls_name) == cls_info_map.end()) {
+    cls_info_map[cls_name] = class_info;
   } else {
     fprintf(stderr, "%s already exists!\n", class_info->name().c_str());
     exit(1);

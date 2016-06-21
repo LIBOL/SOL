@@ -15,10 +15,15 @@ namespace lsol {
 
 namespace model {
 ECCW::ECCW(int class_num)
-    : OnlineLinearModel(class_num), hinge_base_(nullptr), a_(1.f) {
-  this->Sigma_.resize(this->dim_);
-
-  this->Sigma_ = this->a_;
+    : OnlineLinearModel(class_num),
+      hinge_base_(nullptr),
+      a_(1.f),
+      Sigmas_(nullptr) {
+  this->Sigmas_ = new math::Vector<real_t>[this->clf_num_];
+  for (int i = 0; i < this->clf_num_; ++i) {
+    this->Sigmas_[i].resize(this->dim_);
+    this->Sigmas_[i] = this->a_;
+  }
   this->set_phi(0.5244f);
 
   // loss
@@ -29,10 +34,14 @@ ECCW::ECCW(int class_num)
   }
 }
 
+ECCW::~ECCW() { DeleteArray(this->Sigmas_); }
+
 void ECCW::SetParameter(const std::string& name, const std::string& value) {
   if (name == "a") {
     this->a_ = stof(value);
-    this->Sigma_ = this->a_;
+    for (int i = 0; i < this->clf_num_; ++i) {
+      this->Sigmas_[i] = this->a_;
+    }
   } else if (name == "phi") {
     this->set_phi(stof(value));
   } else if (name == "loss") {
@@ -46,14 +55,27 @@ void ECCW::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-label_t ECCW::Predict(const pario::DataPoint& dp, float* predicts) {
-  const auto& x = dp.data();
-  label_t predict_label = OnlineLinearModel::Predict(dp, predicts);
-  vi_ = expr::dotmul(this->Sigma_, L2(x));
-  if (bias_eta0_ != 0) vi_ += Sigma_[0];
+void ECCW::BeginTrain() {
+  OnlineLinearModel::BeginTrain();
+  math::Vector<real_t>* sigmas = this->Sigmas_;
+  float* vt = &this->vi_;
+  float bias_eta = this->bias_eta();
+  float phi = this->phi_;
 
-  this->hinge_base_->set_margin(phi_ * vi_);
-  return predict_label;
+  this->hinge_base_->set_margin([sigmas, vt, bias_eta, phi](
+      const pario::DataPoint& dp, float* predict, label_t predict_label,
+      float* gradient, int cls_num) {
+    const auto& x = dp.data();
+    *vt = 0.f;
+    //(\delta \psi)(x,i) = -g(i) * x
+    for (int c = 0; c < cls_num; ++c) {
+      if (gradient[c] == 0) continue;
+      float gc2 = gradient[c] * gradient[c];
+      *vt += expr::dotmul(sigmas[c], L2(x)) * gc2;
+      if (bias_eta != 0) *vt += sigmas[c][0] * gc2;
+    }
+    return phi * *vt;
+  });
 }
 
 void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
@@ -70,23 +92,26 @@ void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
   float beta_i = alpha_i * phi_ / (sqrtf(ui) + vi_ * alpha_i * phi_);
 
   this->eta_ = alpha_i;
+  tmp = alpha_i * phi_ * sqrtf(ui);
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
-    w(c) -= eta_ * g(c) * this->Sigma_ * x;
+    w(c) -= eta_ * g(c) * Sigmas_[c] * x;
     // update bias
-    w(c)[0] -= bias_eta() * g(c) * this->Sigma_[0];
+    w(c)[0] -= bias_eta() * g(c) * Sigmas_[c][0];
+    // update sigma
+    Sigmas_[c] /= (1.f + tmp * Sigmas_[c] * L2(x));
+    Sigmas_[c][0] /= (1.f + tmp * Sigmas_[c][0]);
   }
-  tmp = alpha_i * phi_ * sqrtf(ui);
-  this->Sigma_ /= (1.f + tmp * this->Sigma_ * L2(x));
-  this->Sigma_[0] /= (1.f + tmp * this->Sigma_[0]);
 }
 
 void ECCW::update_dim(index_t dim) {
   if (dim >= this->dim_) {
-    this->Sigma_.resize(dim);
-    for (real_t* iter = this->Sigma_.begin() + this->dim_;
-         iter != this->Sigma_.end(); ++iter)
-      *iter = this->a_;
+    float a = this->a_;
+    for (int c = 0; c < this->clf_num_; ++c) {
+      math::Vector<real_t>& Sigma = this->Sigmas_[c];
+      Sigma.resize(dim);
+      Sigma.slice_op([a](real_t& val) { val = a; }, this->dim_);
+    }
 
     OnlineLinearModel::update_dim(dim);
   }
@@ -106,16 +131,25 @@ void ECCW::GetModelInfo(Json::Value& root) const {
 void ECCW::GetModelParam(Json::Value& root) const {
   OnlineLinearModel::GetModelParam(root);
 
-  ostringstream oss_Sigma;
-  oss_Sigma << this->Sigma_ << "\n";
-  root["Sigma"] = oss_Sigma.str();
+  for (int c = 0; c < this->clf_num_; ++c) {
+    ostringstream oss_name;
+    oss_name << "Sigma[" << c << "]";
+    ostringstream oss_value;
+    oss_value << this->Sigmas_[c] << "\n";
+    root[oss_name.str()] = oss_value.str();
+  }
 }
 
 int ECCW::SetModelParam(const Json::Value& root) {
   OnlineLinearModel::SetModelParam(root);
 
-  istringstream iss_Sigma(root["Sigma"].asString());
-  iss_Sigma >> this->Sigma_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    ostringstream oss_name;
+    oss_name << "Sigma[" << c << "]";
+    istringstream iss_value(root[oss_name.str()].asString());
+    iss_value >> this->Sigmas_[c];
+  }
+
   return Status_OK;
 }
 

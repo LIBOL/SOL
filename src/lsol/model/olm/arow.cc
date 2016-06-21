@@ -16,11 +16,11 @@ namespace lsol {
 namespace model {
 AROW::AROW(int class_num)
     : OnlineLinearModel(class_num), r_(1.f), Sigmas_(nullptr) {
-  this->Sigmas_ = new math::Vector<real_t>(this->clf_num_);
+  this->Sigmas_ = new math::Vector<real_t>[this->clf_num_];
 
   for (int i = 0; i < this->clf_num_; ++i) {
     this->Sigmas_[i].resize(this->dim_);
-    this->Sigmas_[i] = this->r_;
+    this->Sigmas_[i] = 1.f;
   }
 
   // loss
@@ -31,12 +31,11 @@ AROW::AROW(int class_num)
   }
 }
 
+AROW::~AROW() { DeleteArray(this->Sigmas_); }
+
 void AROW::SetParameter(const std::string& name, const std::string& value) {
   if (name == "r") {
     this->r_ = stof(value);
-    for (int i = 0; i < this->clf_num_; ++i) {
-      this->Sigmas_[i] = this->r_;
-    }
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {
@@ -50,9 +49,12 @@ void AROW::SetParameter(const std::string& name, const std::string& value) {
 void AROW::Update(const pario::DataPoint& dp, const float*, float loss) {
   const auto& x = dp.data();
   float beta_t = 0.f;
+  //(\delta \psi)(x,i) = -g(i) * x
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
-    beta_t += expr::dotmul(this->Sigmas_[c], L2(x)) * g(c) * g(c);
+    float gc2 = g(c) * g(c);
+    beta_t += expr::dotmul(this->Sigmas_[c], L2(x)) * gc2;
+    if (this->bias_eta0_ != 0) beta_t += this->Sigmas_[c][0] * gc2;
   }
   beta_t = 1.f / (beta_t + r_);
   float alpha_t = loss * beta_t;
@@ -77,9 +79,7 @@ void AROW::update_dim(index_t dim) {
     for (int c = 0; c < this->clf_num_; ++c) {
       math::Vector<real_t>& Sigma = this->Sigmas_[c];
       Sigma.resize(dim);
-      for (real_t* iter = Sigma.begin() + this->dim_; iter != Sigma.end();
-           ++iter)
-        *iter = this->r_;
+      Sigma.slice_op([](real_t& val) { val = 1.f; }, this->dim_);
     }
 
     OnlineLinearModel::update_dim(dim);

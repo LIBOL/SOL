@@ -7,6 +7,7 @@
 #define LSOL_MATH_VECTOR_H__
 
 #include <lsol/math/matrix.h>
+#include <functional>
 
 namespace lsol {
 namespace math {
@@ -86,6 +87,13 @@ class Vector : public Matrix<DType> {
 
   /// \brief  Resize the array to be of size zero
   inline void clear(void) { this->resize(0); }
+
+  inline void slice_op(const std::function<void(DType&)>& op, size_t start = 0,
+                       size_t end = -1) {
+    DType* start_iter = this->begin() + start;
+    DType* end_iter = end == -1 ? this->end() : this->begin() + end;
+    for (DType* iter = start_iter; iter != end_iter; ++iter) op(*iter);
+  }
 
  public:
   inline size_t dim() const {
