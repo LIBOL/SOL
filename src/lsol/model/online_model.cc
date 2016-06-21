@@ -15,7 +15,7 @@ using namespace lsol::pario;
 namespace lsol {
 namespace model {
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type), bias_eta0_(0), dim_(1) {
+    : Model(class_num, type), bias_eta0_(0), dim_(1), eta_(1.f) {
   this->set_initial_t(0);
   this->lazy_update_ = false;
 }

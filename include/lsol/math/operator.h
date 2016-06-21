@@ -111,6 +111,13 @@ struct square {
   }
 };
 
+struct sqrt {
+  template <typename DType>
+  inline static DType map(const DType& a) {
+    return sqrtf(a);
+  }
+};
+
 }  // namespace op
 }  // namespace expr
 }  // namespace math

@@ -316,6 +316,12 @@ inline UnaryMapExp<OP, EType, DType, exptype> MakeExp(
 }
 
 template <typename EType, typename DType, int exptype>
+inline UnaryMapExp<op::sqrt, EType, DType, exptype> Sqrt(
+    const Exp<EType, DType, exptype> &src) {
+  return UnaryMapExp<op::sqrt, EType, DType, exptype>(src.self());
+}
+
+template <typename EType, typename DType, int exptype>
 inline UnaryMapExp<op::abs, EType, DType, exptype> L1(
     const Exp<EType, DType, exptype> &src) {
   return UnaryMapExp<op::abs, EType, DType, exptype>(src.self());
