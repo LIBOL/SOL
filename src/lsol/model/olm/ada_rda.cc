@@ -13,6 +13,7 @@
 using namespace std;
 using namespace lsol;
 using namespace lsol::math;
+using namespace lsol::math::expr;
 
 namespace lsol {
 
@@ -60,7 +61,7 @@ void AdaRDA::Update(const pario::DataPoint& dp, const float*, float loss) {
     ut_[c] += g(c) * x;
     ut_[c][0] += g(c);
 
-    w(c) = -eta_ * ut_[c] / H_[c];
+    w(c) = -eta_ * ut_[c].slice(x) / H_[c];
     // update bias
     w(c)[0] *= bias_eta0_;
   }
@@ -127,24 +128,30 @@ int AdaRDA::SetModelParam(const Json::Value& root) {
 
 RegisterModel(AdaRDA, "ada-rda", "Adaptive Subgradient RDA");
 
-void AdaRDA_L1::Update(const pario::DataPoint& dp, const float* predicts,
-                       float loss) {
+AdaRDA_L1::AdaRDA_L1(int class_num) : AdaRDA(class_num) {
+  this->regularizer_ = &l1_;
+}
+
+label_t AdaRDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
-  float trunc_thresh = 0.f * cur_iter_num_;
+  float trunc_thresh = l1_.lambda() * cur_iter_num_;
   for (int c = 0; c < this->clf_num_; ++c) {
-    if (g(c) == 0) continue;
+    // trucate weights
+    w(c) = -eta_ * expr::truncate(ut_[c].slice(x), trunc_thresh) / H_[c];
+    // truncate bias
+    w(c)[0] = -bias_eta() * expr::truncate(ut_[c][0], trunc_thresh) / H_[c][0];
+  }
 
-    H_[c] = Sqrt(L2(H_[c] - delta_) + L2(g(c) * x)) + delta_;
-    H_[c][0] =
-        sqrtf((H_[c][0] - delta_) * (H_[c][0] - delta_) + g(c) * g(c)) + delta_;
+  return OnlineLinearModel::TrainPredict(dp, predicts);
+}
 
-    ut_[c] += g(c) * x;
-    ut_[c][0] += g(c);
-
-    w(c) = -eta_ * truncate(ut_[c], trunc_thresh) / H_[c];
-    // update bias
+void AdaRDA_L1::EndTrain() {
+  float trunc_thresh = l1_.lambda() * cur_iter_num_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    w(c) = -eta_ * expr::truncate(ut_[c], trunc_thresh) / H_[c];
     w(c)[0] *= bias_eta0_;
   }
+  AdaRDA::EndTrain();
 }
 
 RegisterModel(AdaRDA_L1, "ada-rda-l1",

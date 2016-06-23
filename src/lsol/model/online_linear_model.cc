@@ -50,7 +50,7 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
     ;
   }
 
-  label_t label = this->Predict(dp, predicts);
+  label_t label = this->TrainPredict(dp, predicts);
   float loss = this->loss_->gradient(dp, predicts, label, this->gradients_,
                                      this->clf_num_);
   if (this->lazy_update_) {
@@ -67,6 +67,19 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
     this->online_regularizer()->EndIterate(dp, this->cur_iter_num_);
   }
   return label;
+}
+
+label_t OnlineLinearModel::TrainPredict(const pario::DataPoint& dp,
+                                        float* predicts) {
+  const auto& x = dp.data();
+  for (int c = 0; c < this->clf_num_; ++c) {
+    predicts[c] = expr::dotmul(w(c), x) + w(c)[0];
+  }
+  if (this->clf_num_ == 1) {
+    return loss::Loss::Sign(*predicts);
+  } else {
+    return label_t(max_element(predicts, predicts + this->clf_num_) - predicts);
+  }
 }
 
 label_t OnlineLinearModel::Predict(const pario::DataPoint& dp,

@@ -38,15 +38,14 @@ class AdaFOBOS : public OnlineLinearModel {
 class AdaFOBOS_L1 : public AdaFOBOS {
  public:
   AdaFOBOS_L1(int class_num);
-  virtual ~AdaFOBOS_L1();
-
-  virtual void Update(const pario::DataPoint& dp, const float* predict,
-                      float loss);
 
   virtual void EndTrain();
 
  protected:
-  OnlineL1Regularizer l1_;
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
+
+ protected:
+  LazyOnlineL1Regularizer l1_;
 };
 
 }  // namespace model

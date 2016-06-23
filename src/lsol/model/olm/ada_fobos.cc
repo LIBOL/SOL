@@ -103,11 +103,7 @@ AdaFOBOS_L1::AdaFOBOS_L1(int class_num) : AdaFOBOS(class_num) {
   this->regularizer_ = &l1_;
 }
 
-AdaFOBOS_L1::~AdaFOBOS_L1() {}
-
-void AdaFOBOS_L1::Update(const pario::DataPoint& dp, const float* predicts,
-                         float loss) {
-  // perform lazy-upate here
+label_t AdaFOBOS_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
   const auto& lambda =
       l1_.lambda() * (float(cur_iter_num_) - l1_.last_update_time());
@@ -117,7 +113,8 @@ void AdaFOBOS_L1::Update(const pario::DataPoint& dp, const float* predicts,
     // truncate bias
     w(c)[0] = expr::truncate(w(c)[0], bias_eta() * lambda[0] / H_[c][0]);
   }
-  AdaFOBOS::Update(dp, predicts, loss);
+
+  return OnlineLinearModel::TrainPredict(dp, predicts);
 }
 
 void AdaFOBOS_L1::EndTrain() {

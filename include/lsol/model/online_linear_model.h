@@ -45,6 +45,8 @@ class OnlineLinearModel : public OnlineModel {
                       float loss) = 0;
   virtual void update_dim(index_t dim);
 
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
+
  public:
   virtual float model_sparsity() const;
 

@@ -77,7 +77,8 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
       throw invalid_argument(oss.str());
     }
   } else {
-    if (this->regularizer_->SetParameter(name, value) != Status_OK) {
+    if (this->regularizer_ == nullptr ||
+        this->regularizer_->SetParameter(name, value) != Status_OK) {
       ostringstream oss;
       oss << "unknown parameter " << name;
       throw invalid_argument(oss.str());

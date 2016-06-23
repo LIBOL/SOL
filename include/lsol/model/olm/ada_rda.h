@@ -39,10 +39,15 @@ class AdaRDA : public OnlineLinearModel {
 /// \brief  AdaRDA with l1 regularization
 class AdaRDA_L1 : public AdaRDA {
  public:
-  using AdaRDA::AdaRDA;
+  AdaRDA_L1(int class_num);
 
-  virtual void Update(const pario::DataPoint& dp, const float* predict,
-                      float loss);
+  virtual void EndTrain();
+
+ protected:
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
+
+ protected:
+  OnlineL1Regularizer l1_;
 };
 
 }  // namespace model

@@ -41,12 +41,12 @@ void SOP::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
-label_t SOP::Predict(const pario::DataPoint& dp, float* predicts) {
+label_t SOP::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
   S_ = X_;
   S_ += L2(x);
   w(0) = v_ / S_;
-  return OnlineLinearModel::Predict(dp, predicts);
+  return OnlineLinearModel::TrainPredict(dp, predicts);
 }
 
 void SOP::Update(const pario::DataPoint& dp, const float*, float) {

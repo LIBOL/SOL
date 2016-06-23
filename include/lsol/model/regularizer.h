@@ -56,10 +56,20 @@ class LSOL_EXPORTS OnlineL1Regularizer : public OnlineRegularizer {
 
   virtual int SetParameter(const std::string &name, const std::string &value);
 
+  virtual void FinalizeRegularization(math::Vector<real_t> &w);
+
+ protected:
+  real_t sparse_thresh_;
+};
+
+class LSOL_EXPORTS LazyOnlineL1Regularizer : public OnlineL1Regularizer {
+ public:
+  LazyOnlineL1Regularizer();
+
+  virtual int SetParameter(const std::string &name, const std::string &value);
+
   virtual void BeginIterate(const pario::DataPoint &dp);
   virtual void EndIterate(const pario::DataPoint &dp, int cur_iter_num);
-
-  virtual void FinalizeRegularization(math::Vector<real_t> &w);
 
  public:
   inline const math::Vector<real_t> &last_update_time() const {
@@ -68,7 +78,6 @@ class LSOL_EXPORTS OnlineL1Regularizer : public OnlineRegularizer {
   void set_initial_t(real_t t0) { this->initial_t_ = t0; }
 
  protected:
-  real_t sparse_thresh_;
   real_t initial_t_;
   // record the last update time of each dimension
   math::Vector<real_t> last_update_time_;
