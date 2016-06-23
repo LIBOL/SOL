@@ -110,7 +110,7 @@ void AdaFOBOS_L1::Update(const pario::DataPoint& dp, const float* predicts,
   // perform lazy-upate here
   const auto& x = dp.data();
   const auto& lambda =
-      l1_.lambda() * (l1_.cur_iter_num() - l1_.last_update_time());
+      l1_.lambda() * (float(cur_iter_num_) - l1_.last_update_time());
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
     w(c) = expr::truncate(w(c).slice(x), eta_ * lambda / H_[c]);
@@ -122,7 +122,7 @@ void AdaFOBOS_L1::Update(const pario::DataPoint& dp, const float* predicts,
 
 void AdaFOBOS_L1::EndTrain() {
   const auto& lambda =
-      l1_.lambda() * (l1_.cur_iter_num() - l1_.last_update_time());
+      l1_.lambda() * (float(cur_iter_num_) - l1_.last_update_time());
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
     w(c) = expr::truncate(w(c), eta_ * lambda / H_[c]);

@@ -64,7 +64,7 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
   }
 
   if (this->regularizer_ != nullptr) {
-    this->online_regularizer()->EndIterate(dp);
+    this->online_regularizer()->EndIterate(dp, this->cur_iter_num_);
   }
   return label;
 }

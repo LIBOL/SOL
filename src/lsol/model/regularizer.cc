@@ -29,8 +29,7 @@ void Regularizer::GetRegularizerInfo(Json::Value &root) const {
   root["regularizer"]["lambda"] = this->lambda_;
 }
 
-OnlineL1Regularizer::OnlineL1Regularizer()
-    : sparse_thresh_(1e-5f), cur_iter_num_(0) {
+OnlineL1Regularizer::OnlineL1Regularizer() : sparse_thresh_(1e-5f) {
   this->last_update_time_.resize(1);
   this->last_update_time_ = 0;
 }
@@ -39,6 +38,8 @@ int OnlineL1Regularizer::SetParameter(const std::string &name,
                                       const std::string &value) {
   if (name == "sparse_thresh") {
     this->sparse_thresh_ = stof(value);
+  } else if (name == "t0") {
+    this->initial_t_ = stof(value);
   } else {
     return OnlineRegularizer::SetParameter(name, value);
   }
@@ -46,20 +47,21 @@ int OnlineL1Regularizer::SetParameter(const std::string &name,
 }
 
 void OnlineL1Regularizer::BeginIterate(const pario::DataPoint &dp) {
-  ++this->cur_iter_num_;
   // update dim
   size_t d = this->last_update_time_.dim();
   if (dp.dim() > d) {
     this->last_update_time_.resize(dp.dim());
-    this->last_update_time_.slice_op([](float &val) { val = 0; }, d);
+    real_t t0 = this->initial_t_;
+    this->last_update_time_.slice_op([t0](float &val) { val = t0; }, d);
   }
 }
 
-void OnlineL1Regularizer::EndIterate(const pario::DataPoint &dp) {
+void OnlineL1Regularizer::EndIterate(const pario::DataPoint &dp,
+                                     int cur_iter_num) {
   // update last update time
   const auto &x = dp.data();
   auto &last_update_time = this->last_update_time_;
-  real_t time_stamp = this->cur_iter_num_;
+  real_t time_stamp = cur_iter_num;
   x.indexes().slice_op([&last_update_time, time_stamp](const index_t &idx) {
     last_update_time[idx] = time_stamp;
   });

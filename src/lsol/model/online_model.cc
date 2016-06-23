@@ -27,6 +27,9 @@ void OnlineModel::SetParameter(const std::string& name,
     Check(bias_eta0_ >= 0);
   } else if (name == "t") {
     this->set_initial_t(stoi(value));
+    if (this->regularizer_ != nullptr) {
+      this->regularizer_->SetParameter("t0", value);
+    }
   } else if (name == "dim") {
     this->update_dim(stoi(value));
   } else if (name == "lazy_update") {
