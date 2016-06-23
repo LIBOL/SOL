@@ -113,7 +113,7 @@ void AdaFOBOS_L1::Update(const pario::DataPoint& dp, const float* predicts,
       l1_.lambda() * (l1_.cur_iter_num() - l1_.last_update_time());
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
-    w(c) = expr::truncate(expr::slice(w(c), x), eta_ * lambda / H_[c]);
+    w(c) = expr::truncate(w(c).slice(x), eta_ * lambda / H_[c]);
     // truncate bias
     w(c)[0] = expr::truncate(w(c)[0], bias_eta() * lambda[0] / H_[c][0]);
   }

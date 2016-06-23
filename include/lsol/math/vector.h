@@ -121,6 +121,12 @@ class Vector : public Matrix<DType> {
 
   inline const DType& back() const { return *(this->end() - 1); }
   inline DType& back() { return *(this->end() - 1); }
+
+  template <typename EType>
+  inline auto slice(
+      const expr::Exp<EType, DType, expr::ExprType::kSparse>& indexes) {
+    return expr::MakeExp<expr::op::left>(*this, indexes);
+  }
 };
 
 }  // namespace math
