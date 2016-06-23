@@ -38,16 +38,12 @@ Model::Model(int class_num, const std::string& type)
       loss_(nullptr),
       type_(type),
       norm_type_(op::OpType::kNone),
+      regularizer_(nullptr),
       max_index_(0) {
   Check(class_num > 1);
 }
 
-Model::~Model() {
-  if (this->loss_ != nullptr) {
-    delete this->loss_;
-    this->loss_ = nullptr;
-  }
-}
+Model::~Model() { DeletePointer(this->loss_); }
 
 void Model::SetParameter(const std::string& name, const std::string& value) {
   if (name == "loss") {
@@ -81,9 +77,11 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
       throw invalid_argument(oss.str());
     }
   } else {
-    ostringstream oss;
-    oss << "unknown parameter " << name;
-    throw invalid_argument(oss.str());
+    if (this->regularizer_->SetParameter(name, value) != Status_OK) {
+      ostringstream oss;
+      oss << "unknown parameter " << name;
+      throw invalid_argument(oss.str());
+    }
   }
 }
 
@@ -197,6 +195,11 @@ void Model::GetModelInfo(Json::Value& root) const {
   root["clf_num"] = this->clf_num();
   root["loss"] = this->loss_ == nullptr ? "" : this->loss_->name();
   root["norm"] = int(this->norm_type_);
+
+  // regularizer
+  if (this->regularizer_ != nullptr) {
+    this->regularizer_->GetRegularizerInfo(root);
+  }
 }
 
 int Model::SetModelInfo(const Json::Value& root) {
@@ -215,6 +218,20 @@ int Model::SetModelInfo(const Json::Value& root) {
   }
   // norm
   this->norm_type_ = lsol::math::expr::op::OpType(root["norm"].asInt());
+
+  // regularizer
+  const Json::Value& relu_settings = root["regularizer"];
+  if (!(relu_settings.isNull()) && this->regularizer_ != nullptr) {
+    for (Json::Value::const_iterator iter = relu_settings.begin();
+         iter != relu_settings.end(); ++iter) {
+      if (this->regularizer_->SetParameter(iter.name(), iter->asString()) !=
+          Status_OK) {
+        fprintf(stderr, "unrecognized regularizer option: %s\n",
+                iter.name().c_str());
+        return Status_Invalid_Argument;
+      }
+    }
+  }
 
   return Status_OK;
 }

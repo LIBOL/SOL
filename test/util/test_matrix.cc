@@ -49,6 +49,8 @@ int main() {
   cout << "minux 2: " << endl << m2 << endl;
   m2 = m2 * 2.f;
   cout << "mul 2: " << endl << m2 << endl;
+  m2 = truncate(m2, 0.1f);
+  cout << "trucnate 0.1: " << endl << m2 << endl;
 
   cout << "original matrix:" << endl << m << endl;
 
@@ -113,5 +115,6 @@ int main() {
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;
   cout << "v2 .* sv2: " << endl << dotmul(v2, sv2) << endl;
+
   return 0;
 }

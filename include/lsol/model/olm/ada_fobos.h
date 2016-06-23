@@ -34,6 +34,21 @@ class AdaFOBOS : public OnlineLinearModel {
 
 };  // class AdaFOBOS
 
+/// \brief  AdaFOBOS with l1 regularization
+class AdaFOBOS_L1 : public AdaFOBOS {
+ public:
+  AdaFOBOS_L1(int class_num);
+  virtual ~AdaFOBOS_L1();
+
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
+                      float loss);
+
+  virtual void EndTrain();
+
+ protected:
+  OnlineL1Regularizer l1_;
+};
+
 }  // namespace model
 }  // namespace lsol
 #endif

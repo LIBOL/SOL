@@ -120,9 +120,9 @@ struct BinaryMapExp
           BinaryMapExp<OP, exptype, EType1, exptype1, EType2, exptype2, DType>,
           DType, exptype> {
   /// \brief  left operand
-  const EType1 lhs;
+  const EType1 &lhs;
   /// \brief  right operand
-  const EType2 rhs;
+  const EType2 &rhs;
   /*! \brief constructor */
   BinaryMapExp(const Exp<EType1, DType, exptype1> &_lhs,
                const Exp<EType2, DType, exptype2> &_rhs)
@@ -157,9 +157,9 @@ struct BinaryMapExp<OP, exptype, EType1, ExprType::kSparse, EType2, exptype2,
                               exptype2, DType>,
                  DType, exptype> {
   /// \brief  left operand
-  const EType1 lhs;
+  const EType1 &lhs;
   /// \brief  right operand
-  const EType2 rhs;
+  const EType2 &rhs;
   /*! \brief constructor */
   BinaryMapExp(const Exp<EType1, DType, ExprType::kSparse> &_lhs,
                const Exp<EType2, DType, exptype2> &_rhs)
@@ -183,9 +183,9 @@ struct BinaryMapExp<OP, exptype, EType1, exptype1, EType2, ExprType::kSparse,
                               ExprType::kSparse, DType>,
                  DType, exptype> {
   /// \brief  left operand
-  const EType1 lhs;
+  const EType1 &lhs;
   /// \brief  right operand
-  const EType2 rhs;
+  const EType2 &rhs;
   /*! \brief constructor */
   BinaryMapExp(const Exp<EType1, DType, exptype1> &_lhs,
                const Exp<EType2, DType, ExprType::kSparse> &_rhs)
@@ -218,31 +218,113 @@ MakeExp(const Exp<EType1, DType, exptype1> &lhs,
 }
 
 /// arithmetic operator expressions
-#define ArithmeticBinaryMapExpTpl(opx, opr)                                  \
-  template <typename EType1, typename EType2, typename DType, int exptype1,  \
-            int exptype2>                                                    \
-  inline auto operator opx(const Exp<EType1, DType, exptype1> &lhs,          \
-                           const Exp<EType2, DType, exptype2> &rhs)          \
-      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                               \
-    return MakeExp<op::opr>(lhs, rhs);                                       \
-  }                                                                          \
-                                                                             \
-  template <typename EType, typename DType, int exptype>                     \
-  inline auto operator opx(const Exp<EType, DType, exptype> &lhs, DType rhs) \
-      ->decltype(lhs opx MakeExp<DType>(rhs)) {                              \
-    return lhs opx MakeExp<DType>(rhs);                                      \
-  }                                                                          \
-                                                                             \
-  template <typename EType, typename DType, int exptype>                     \
-  inline auto operator opx(DType lhs, const Exp<EType, DType, exptype> &rhs) \
-      ->decltype(MakeExp<DType>(lhs) opx rhs) {                              \
-    return MakeExp<DType>(lhs) opx rhs;                                      \
+#define ArithmeticBinaryMapExpTpl(opx, opr)                                 \
+  template <typename EType1, typename EType2, typename DType, int exptype1, \
+            int exptype2>                                                   \
+  inline auto operator opx(const Exp<EType1, DType, exptype1> &lhs,         \
+                           const Exp<EType2, DType, exptype2> &rhs)         \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const ScalarExp<int> &lhs,                       \
+                           const Exp<EType, int, exptype> &rhs)             \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const Exp<EType, int, exptype> &lhs,             \
+                           const ScalarExp<int> &rhs)                       \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const Exp<EType, float, exptype> &lhs,           \
+                           const ScalarExp<float> &rhs)                     \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const ScalarExp<float> &lhs,                     \
+                           const Exp<EType, float, exptype> &rhs)           \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const Exp<EType, double, exptype> &lhs,          \
+                           const ScalarExp<double> &rhs)                    \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
+  }                                                                         \
+                                                                            \
+  template <typename EType, int exptype>                                    \
+  inline auto operator opx(const ScalarExp<double> &lhs,                    \
+                           const Exp<EType, double, exptype> &rhs)          \
+      ->decltype(MakeExp<op::opr>(lhs, rhs)) {                              \
+    return MakeExp<op::opr>(lhs, rhs);                                      \
   }
 
 ArithmeticBinaryMapExpTpl(+, plus);
 ArithmeticBinaryMapExpTpl(-, minus);
 ArithmeticBinaryMapExpTpl(*, mul);
 ArithmeticBinaryMapExpTpl(/, div);
+
+// truncate operations
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline auto truncate(const Exp<EType1, DType, exptype1> &lhs,
+                     const Exp<EType2, DType, exptype2> &rhs)
+    -> decltype(MakeExp<op::trunc>(lhs, rhs)) {
+  return MakeExp<op::trunc>(lhs, rhs);
+}
+
+template <typename EType, int exptype>
+inline auto truncate(const Exp<EType, float, exptype> &lhs,
+                     const ScalarExp<float> &rhs)
+    -> decltype(MakeExp<op::trunc>(lhs, rhs)) {
+  return MakeExp<op::trunc>(lhs, rhs);
+}
+
+template <typename EType, int exptype>
+inline auto truncate(const ScalarExp<float> &lhs,
+                     const Exp<EType, float, exptype> &rhs)
+    -> decltype(MakeExp<op::trunc>(lhs, rhs)) {
+  return MakeExp<op::trunc>(lhs, rhs);
+}
+
+template <typename EType, int exptype>
+inline auto truncate(const Exp<EType, double, exptype> &lhs,
+                     const ScalarExp<double> &rhs)
+    -> decltype(MakeExp<op::trunc>(lhs, rhs)) {
+  return MakeExp<op::trunc>(lhs, rhs);
+}
+
+template <typename EType, int exptype>
+inline auto truncate(const ScalarExp<double> &lhs,
+                     const Exp<EType, double, exptype> &rhs)
+    -> decltype(MakeExp<op::trunc>(lhs, rhs)) {
+  return MakeExp<op::trunc>(lhs, rhs);
+}
+
+inline float truncate(float lhs, float rhs) {
+  return op::trunc::map<float>(lhs, rhs);
+}
+
+inline double truncate(double lhs, double rhs) {
+  return op::trunc::map<double>(lhs, rhs);
+}
+
+template <typename EType1, typename EType2, typename DType>
+inline auto slice(const Exp<EType1, DType, ExprType::kDense> &lhs,
+                  const Exp<EType2, DType, ExprType::kSparse> &rhs)
+    -> decltype(MakeExp<op::left>(lhs, rhs)) {
+  return MakeExp<op::left>(lhs, rhs);
+}
 
 /***dot operations***/
 template <typename OP, typename EType1, typename EType2, typename DType,

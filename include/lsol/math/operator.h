@@ -94,6 +94,33 @@ struct divto {
   }
 };
 
+// truncate
+struct trunc {
+  template <typename DType>
+  inline static DType map(const DType& a, const DType& b) {
+    if (a >= 0)
+      return a > b ? a - b : 0;
+    else
+      return -a > b ? a + b : 0;
+  }
+};
+
+// get the left value
+struct left {
+  template <typename DType>
+  inline static const DType& map(const DType& a, const DType& b) {
+    return a;
+  }
+};
+
+// get the right value
+struct right {
+  template <typename DType>
+  inline static const DType& map(const DType& a, const DType& b) {
+    return b;
+  }
+};
+
 //---------------
 // unary operators
 // --------------

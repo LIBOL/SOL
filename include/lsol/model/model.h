@@ -23,6 +23,7 @@
 #include <lsol/pario/data_point.h>
 #include <lsol/pario/data_iter.h>
 #include <lsol/math/operator.h>
+#include <lsol/model/regularizer.h>
 
 namespace lsol {
 namespace model {
@@ -89,6 +90,13 @@ class LSOL_EXPORTS Model {
   ///
   /// \return status code 0 if load successfully
   static Model *Load(const std::string &path);
+
+  /// \brief  get the sparsity of model
+  ///
+  /// \param thresh threshold below which weight is considered zero
+  ///
+  /// \return sparsity
+  virtual float model_sparsity() const = 0;
 
   /// \brief  get model info string
   std::string model_info() const;
@@ -167,6 +175,8 @@ class LSOL_EXPORTS Model {
   std::string type_;
   // data normalization type
   lsol::math::expr::op::OpType norm_type_;
+  // regularizer
+  Regularizer *regularizer_;
   // max feature index
   index_t max_index_;
   // pre-selected features

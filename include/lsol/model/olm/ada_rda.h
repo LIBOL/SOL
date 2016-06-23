@@ -36,6 +36,15 @@ class AdaRDA : public OnlineLinearModel {
 
 };  // class AdaRDA
 
+/// \brief  AdaRDA with l1 regularization
+class AdaRDA_L1 : public AdaRDA {
+ public:
+  using AdaRDA::AdaRDA;
+
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
+                      float loss);
+};
+
 }  // namespace model
 }  // namespace lsol
 #endif

@@ -23,7 +23,7 @@ AdaRDA::AdaRDA(int class_num) : OnlineLinearModel(class_num), delta_(10.f) {
   this->ut_ = new math::Vector<real_t>[this->clf_num_];
   for (int i = 0; i < this->clf_num_; ++i) {
     this->H_[i].resize(this->dim_);
-    this->H_[i] = 0;
+    this->H_[i] = this->delta_;
 
     this->ut_[i].resize(this->dim_);
     this->ut_[i] = 0;
@@ -38,6 +38,8 @@ AdaRDA::~AdaRDA() {
 void AdaRDA::SetParameter(const std::string& name, const std::string& value) {
   if (name == "delta") {
     this->delta_ = stof(value);
+    Check(delta_ > 0);
+    for (int c = 0; c < this->clf_num_; ++c) this->H_[c] = this->delta_;
   } else if (name == "eta") {
     this->eta_ = stof(value);
     Check(eta_ >= 0);
@@ -51,23 +53,25 @@ void AdaRDA::Update(const pario::DataPoint& dp, const float*, float loss) {
   for (int c = 0; c < this->clf_num_; ++c) {
     if (g(c) == 0) continue;
 
-    H_[c] = Sqrt(L2(H_[c]) + L2(g(c) * L1(x)));
-    H_[c][0] = sqrtf(H_[c][0] * H_[c][0] + g(c) * g(c));
+    H_[c] = Sqrt(L2(H_[c] - delta_) + L2(g(c) * x)) + delta_;
+    H_[c][0] =
+        sqrtf((H_[c][0] - delta_) * (H_[c][0] - delta_) + g(c) * g(c)) + delta_;
 
     ut_[c] += g(c) * x;
     ut_[c][0] += g(c);
 
-    w(c) = -eta_ * ut_[c] / (this->delta_ + H_[c]);
+    w(c) = -eta_ * ut_[c] / H_[c];
     // update bias
-    w(c)[0] = -bias_eta() * ut_[c][0] / (this->delta_ + H_[c][0]);
+    w(c)[0] *= bias_eta0_;
   }
 }
 
 void AdaRDA::update_dim(index_t dim) {
   if (dim >= this->dim_) {
+    float delta = this->delta_;
     for (int c = 0; c < this->clf_num_; ++c) {
       this->H_[c].resize(dim);
-      this->H_[c].slice_op([](real_t& val) { val = 0; }, this->dim_);
+      this->H_[c].slice_op([delta](real_t& val) { val = delta; }, this->dim_);
 
       this->ut_[c].resize(dim);
       this->ut_[c].slice_op([](real_t& val) { val = 0; }, this->dim_);
@@ -122,6 +126,29 @@ int AdaRDA::SetModelParam(const Json::Value& root) {
 }
 
 RegisterModel(AdaRDA, "ada-rda", "Adaptive Subgradient RDA");
+
+void AdaRDA_L1::Update(const pario::DataPoint& dp, const float* predicts,
+                       float loss) {
+  const auto& x = dp.data();
+  float trunc_thresh = 0.f * cur_iter_num_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    if (g(c) == 0) continue;
+
+    H_[c] = Sqrt(L2(H_[c] - delta_) + L2(g(c) * x)) + delta_;
+    H_[c][0] =
+        sqrtf((H_[c][0] - delta_) * (H_[c][0] - delta_) + g(c) * g(c)) + delta_;
+
+    ut_[c] += g(c) * x;
+    ut_[c][0] += g(c);
+
+    w(c) = -eta_ * truncate(ut_[c], trunc_thresh) / H_[c];
+    // update bias
+    w(c)[0] *= bias_eta0_;
+  }
+}
+
+RegisterModel(AdaRDA_L1, "ada-rda-l1",
+              "Adaptive Subgradient RDA with l1 regularization");
 
 }  // namespace model
 }  // namespace lsol

@@ -45,6 +45,10 @@ OnlineLinearModel::~OnlineLinearModel() {
 
 label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
   OnlineModel::Iterate(dp, predicts);
+  if (this->regularizer_ != nullptr) {
+    this->online_regularizer()->BeginIterate(dp);
+    ;
+  }
 
   label_t label = this->Predict(dp, predicts);
   float loss = this->loss_->gradient(dp, predicts, label, this->gradients_,
@@ -57,6 +61,10 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
   } else if (loss > 0) {
     ++this->update_num_;
     this->Update(dp, predicts, loss);
+  }
+
+  if (this->regularizer_ != nullptr) {
+    this->online_regularizer()->EndIterate(dp);
   }
   return label;
 }
@@ -83,6 +91,16 @@ void OnlineLinearModel::update_dim(index_t dim) {
     }
     OnlineModel::update_dim(dim);
   }
+}
+
+float OnlineLinearModel::model_sparsity() const {
+  size_t non_zero_num = 0;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    w(c).slice_op([&non_zero_num](const real_t& val) {
+      if (val != 0) ++non_zero_num;
+    }, 1);  // ignore bias
+  }
+  return 1.f - float(non_zero_num / double(this->clf_num_ * (this->dim_ - 1)));
 }
 
 void OnlineLinearModel::GetModelParam(Json::Value& root) const {

@@ -21,21 +21,19 @@ class OnlineLinearModel : public OnlineModel {
   virtual ~OnlineLinearModel();
 
  public:
-  /// \brief  iterate the model with one new instance
-  ///
-  /// \param dp training instance
-  /// \param predicts predicted scores over classes
-  ///
-  /// \return predicted label
-  virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
+  virtual void BeginTrain() { OnlineModel::BeginTrain(); }
 
-  /// \brief  predict the label of data
-  ///
-  /// \param dp input data
-  /// \param predicts predicted scores on the data
-  ///
-  /// \return predicted class label
+  virtual void EndTrain() {
+    if (this->regularizer_ != nullptr) {
+      for (int c = 0; c < this->clf_num_; ++c) {
+        this->regularizer_->FinalizeRegularization(w(c));
+      }
+    }
+    OnlineModel::EndTrain();
+  }
   virtual label_t Predict(const pario::DataPoint& dp, float* predicts);
+
+  virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
 
  protected:
   /// \brief  update model
@@ -45,6 +43,10 @@ class OnlineLinearModel : public OnlineModel {
   /// \param loss prediction loss
   virtual void Update(const pario::DataPoint& dp, const float* predict,
                       float loss) = 0;
+  virtual void update_dim(index_t dim);
+
+ public:
+  virtual float model_sparsity() const;
 
  protected:
   /// \brief  serialize model parameters
@@ -67,7 +69,6 @@ class OnlineLinearModel : public OnlineModel {
 
   real_t g(int cls_id) const { return this->gradients_[cls_id]; }
   real_t& g(int cls_id) { return this->gradients_[cls_id]; }
-  virtual void update_dim(index_t dim);
 
  private:
   // the first element is zero

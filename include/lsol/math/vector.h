@@ -95,6 +95,13 @@ class Vector : public Matrix<DType> {
     for (DType* iter = start_iter; iter != end_iter; ++iter) op(*iter);
   }
 
+  inline void slice_op(const std::function<void(const DType&)>& op,
+                       size_t start = 0, size_t end = -1) const {
+    const DType* start_iter = this->begin() + start;
+    const DType* end_iter = end == -1 ? this->end() : this->begin() + end;
+    for (const DType* iter = start_iter; iter != end_iter; ++iter) op(*iter);
+  }
+
  public:
   inline size_t dim() const {
     return this->shape_ == nullptr ? 0 : (*this->shape_)[1];

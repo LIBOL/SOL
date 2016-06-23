@@ -78,6 +78,7 @@ int train(cmdline::parser& parser) {
   double end_time = lsol::get_current_time();
   fprintf(stdout, "training accuracy: %.4f\n", accu);
   fprintf(stdout, "training time: %.3f seconds\n", end_time - start_time);
+  fprintf(stdout, "model sparsity: %.4f%%\n", model->model_sparsity() * 100.f);
 
   // save model
   if (parser.exist("output")) {

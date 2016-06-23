@@ -64,6 +64,10 @@ class OnlineModel : public Model {
  protected:
   inline float bias_eta() const { return this->bias_eta0_ * this->eta_; }
 
+  OnlineRegularizer* online_regularizer() {
+    return static_cast<OnlineRegularizer*>(this->regularizer_);
+  }
+
  protected:
   // initial learning rate for bias
   float bias_eta0_;
