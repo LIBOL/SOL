@@ -57,6 +57,7 @@ int LazyOnlineL1Regularizer::SetParameter(const std::string &name,
                                           const std::string &value) {
   if (name == "t0") {
     this->initial_t_ = stof(value);
+    this->last_update_time_ = this->initial_t_;
   } else {
     return OnlineL1Regularizer::SetParameter(name, value);
   }
@@ -78,7 +79,7 @@ void LazyOnlineL1Regularizer::EndIterate(const pario::DataPoint &dp,
   // update last update time
   const auto &x = dp.data();
   auto &last_update_time = this->last_update_time_;
-  real_t time_stamp = cur_iter_num;
+  real_t time_stamp = real_t(cur_iter_num);
   x.indexes().slice_op([&last_update_time, time_stamp](const index_t &idx) {
     last_update_time[idx] = time_stamp;
   });

@@ -39,6 +39,7 @@ class AdaFOBOS_L1 : public AdaFOBOS {
  public:
   AdaFOBOS_L1(int class_num);
 
+  virtual void BeginTrain();
   virtual void EndTrain();
 
  protected:

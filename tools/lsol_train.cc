@@ -83,8 +83,8 @@ int train(cmdline::parser& parser) {
   // save model
   if (parser.exist("output")) {
     model->Save(parser.get<string>("output"));
+    fprintf(stdout, "save time: %.3f seconds\n", get_current_time() - end_time);
   }
-  fprintf(stdout, "save time: %.3f seconds\n", get_current_time() - end_time);
 
   return Status_OK;
 }

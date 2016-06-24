@@ -7,6 +7,7 @@
 #define LSOL_MATH_EXPRESSION_H__
 
 #include <stdexcept>
+#include <sstream>
 
 #include <lsol/util/types.h>
 #include <lsol/math/operator.h>
@@ -145,7 +146,10 @@ struct BinaryMapExp
       return shape1;
     }
 
-    throw std::runtime_error("BinaryMapExp: shapes of operands are different");
+    std::ostringstream oss;
+    oss << "BinaryMapExp: shapes of operands are different (" << shape1
+        << " vs " << shape2 << ")";
+    throw std::runtime_error(oss.str());
   }
 };
 

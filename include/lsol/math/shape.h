@@ -87,14 +87,8 @@ class Shape {
     return !(*this == shape);
   }
 
-  inline std::ostream& operator<<(std::ostream& os) {
-    os << "shape: ";
-    os << this->shape_[0];
-    for (int i = 1; i < kDim; ++i) {
-      os << "," << this->shape_[i];
-    }
-    return os;
-  }
+  template <int kDim2>
+  friend std::ostream& operator<<(std::ostream& os, const Shape<kDim2>& s);
 
   inline std::string shape_string() const {
     std::ostringstream oss;
@@ -105,6 +99,16 @@ class Shape {
  protected:
   size_t shape_[kDim];
 };
+
+template <int kDim>
+std::ostream& operator<<(std::ostream& os, const Shape<kDim>& s) {
+  os << "shape: ";
+  os << s.shape_[0];
+  for (int i = 1; i < kDim; ++i) {
+    os << "," << s.shape_[i];
+  }
+  return os;
+}
 
 }  // namespace math
 }  // namespace lsol
