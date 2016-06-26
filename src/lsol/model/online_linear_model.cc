@@ -96,7 +96,7 @@ label_t OnlineLinearModel::Predict(const pario::DataPoint& dp,
 }
 
 void OnlineLinearModel::update_dim(index_t dim) {
-  if (dim >= this->dim_) {
+  if (dim > this->dim_) {
     for (int i = 0; i < this->clf_num_; ++i) {
       w(i).resize(dim);
       // set the new value to zero

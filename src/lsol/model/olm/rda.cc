@@ -38,7 +38,7 @@ void RDA::SetParameter(const std::string& name, const std::string& value) {
 
 label_t RDA::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
-  float t = cur_iter_num_ - 1.f + 1e-20f;
+  real_t t = real_t(cur_iter_num_ - 1 + 1e-20);
   eta_ = 1.f / (t * sigma_);
   for (int c = 0; c < this->clf_num_; ++c) {
     w(c) = -eta_ * ut_[c].slice(x);
@@ -59,7 +59,7 @@ void RDA::Update(const pario::DataPoint& dp, const float*, float loss) {
 }
 
 void RDA::EndTrain() {
-  float t = cur_iter_num_ + 1e-20f;
+  real_t t = real_t(cur_iter_num_ + 1e-20);
   eta_ = 1.f / (t * sigma_);
   for (int c = 0; c < this->clf_num_; ++c) {
     w(c) = -eta_ * ut_[c];
@@ -69,7 +69,7 @@ void RDA::EndTrain() {
 }
 
 void RDA::update_dim(index_t dim) {
-  if (dim >= this->dim_) {
+  if (dim > this->dim_) {
     for (int c = 0; c < this->clf_num_; ++c) {
       this->ut_[c].resize(dim);
       this->ut_[c].slice_op([](real_t& val) { val = 0; }, this->dim_);
@@ -115,8 +115,8 @@ RDA_L1::RDA_L1(int class_num) : RDA(class_num) { this->regularizer_ = &l1_; }
 
 label_t RDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
-  float t = cur_iter_num_ - 1.f + 1e-20f;
-  float trunc_thresh = l1_.lambda() * t;
+  real_t t = real_t(cur_iter_num_ - 1.f + 1e-20);
+  real_t trunc_thresh = l1_.lambda() * t;
   eta_ = 1.f / (t * sigma_);
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
@@ -129,8 +129,8 @@ label_t RDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
 }
 
 void RDA_L1::EndTrain() {
-  float t = cur_iter_num_ + 1e-20f;
-  float trunc_thresh = l1_.lambda() * t;
+  real_t t = real_t(cur_iter_num_ + 1e-20);
+  real_t trunc_thresh = l1_.lambda() * t;
   eta_ = 1.f / (t * sigma_);
   for (int c = 0; c < this->clf_num_; ++c) {
     w(c) = -eta_ * expr::truncate(ut_[c], trunc_thresh);
@@ -157,9 +157,9 @@ void ERDA_L1::SetParameter(const std::string& name, const std::string& value) {
 label_t ERDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
   // gamma is represented by sigma
-  float t = cur_iter_num_ - 1.f + 1e-20f;
+  real_t t = real_t(cur_iter_num_ - 1 + 1e-20);
   eta_ = 1.f / (sqrtf(t) * sigma_);
-  float trunc_thresh = l1_.lambda() * t + sigma_ * rou_ * sqrtf(t);
+  real_t trunc_thresh = l1_.lambda() * t + sigma_ * rou_ * sqrtf(t);
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
     w(c) = -eta_ * expr::truncate(ut_[c].slice(x), trunc_thresh);
@@ -171,9 +171,9 @@ label_t ERDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
 }
 
 void ERDA_L1::EndTrain() {
-  float t = cur_iter_num_ + 1e-20f;
+  real_t t = real_t(cur_iter_num_ + 1e-20);
   eta_ = 1.f / (sqrtf(t) * sigma_);
-  float trunc_thresh = l1_.lambda() * t + sigma_ * rou_ * sqrtf(t);
+  real_t trunc_thresh = l1_.lambda() * t + sigma_ * rou_ * sqrtf(t);
   for (int c = 0; c < this->clf_num_; ++c) {
     w(c) = -eta_ * expr::truncate(ut_[c], trunc_thresh);
     w(c)[0] = -bias_eta() * expr::truncate(ut_[c][0], trunc_thresh);

@@ -105,7 +105,7 @@ void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
 }
 
 void ECCW::update_dim(index_t dim) {
-  if (dim >= this->dim_) {
+  if (dim > this->dim_) {
     float a = this->a_;
     for (int c = 0; c < this->clf_num_; ++c) {
       math::Vector<real_t>& Sigma = this->Sigmas_[c];

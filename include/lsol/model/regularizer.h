@@ -15,7 +15,7 @@ namespace model {
 
 class LSOL_EXPORTS Regularizer {
  public:
-  Regularizer() : lambda_(0.f){};
+  Regularizer() : lambda_(0){};
   /// \brief  set model parameters
   ///
   /// \param name name of the parameter
@@ -37,11 +37,11 @@ class LSOL_EXPORTS Regularizer {
   virtual void GetRegularizerInfo(Json::Value &root) const;
 
  public:
-  inline float lambda() const { return this->lambda_; }
+  inline real_t lambda() const { return this->lambda_; }
 
  protected:
   // regularization weight
-  float lambda_;
+  real_t lambda_;
 };
 
 class LSOL_EXPORTS OnlineRegularizer : public Regularizer {

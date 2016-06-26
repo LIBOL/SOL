@@ -57,8 +57,8 @@ void AdaFOBOS::Update(const pario::DataPoint& dp, const float*, float loss) {
 }
 
 void AdaFOBOS::update_dim(index_t dim) {
-  if (dim >= this->dim_) {
-    float delta = this->delta_;
+  if (dim > this->dim_) {
+    real_t delta = real_t(this->delta_);
     for (int c = 0; c < this->clf_num_; ++c) {
       this->H_[c].resize(dim);
       this->H_[c].slice_op([delta](real_t& val) { val = delta; }, this->dim_);
@@ -110,12 +110,12 @@ void AdaFOBOS_L1::BeginTrain() {
 
 label_t AdaFOBOS_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
+  real_t t = real_t(cur_iter_num_ - 1);
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
-    w(c) = expr::truncate(w(c).slice(x),
-                          eta_ * (l1_.lambda() * cur_iter_num_ -
-                                  l1_.lambda() * l1_.last_update_time()) /
-                              H_[c]);
+    w(c) =
+        expr::truncate(w(c).slice(x), (eta_ * l1_.lambda()) *
+                                          (t - l1_.last_update_time()) / H_[c]);
     // truncate bias
     w(c)[0] = expr::truncate(w(c)[0], bias_eta() * l1_.lambda() / H_[c][0]);
   }
@@ -124,11 +124,11 @@ label_t AdaFOBOS_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
 }
 
 void AdaFOBOS_L1::EndTrain() {
+  real_t t = real_t(cur_iter_num_);
   for (int c = 0; c < this->clf_num_; ++c) {
     // trucate weights
-    w(c) = expr::truncate(w(c), eta_ * (l1_.lambda() * cur_iter_num_ -
-                                        l1_.lambda() * l1_.last_update_time()) /
-                                    H_[c]);
+    w(c) = expr::truncate(
+        w(c), (eta_ * l1_.lambda()) * (t - l1_.last_update_time()) / H_[c]);
     // truncate bias
     w(c)[0] = expr::truncate(w(c)[0], bias_eta() * l1_.lambda() / H_[c][0]);
   }

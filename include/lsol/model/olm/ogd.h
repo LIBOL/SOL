@@ -37,6 +37,28 @@ class OGD : public OnlineLinearModel {
   float (*pow_)(int iter, float power_t);
 };  // class OGD
 
+/// \brief  Sparse online learning via Truncated Gradient
+class STG : public OGD {
+ public:
+  STG(int class_num);
+
+  virtual void SetParameter(const std::string& name, const std::string& value);
+  virtual void BeginTrain();
+  virtual void EndTrain();
+
+ protected:
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
+  void update_dim(index_t dim);
+
+  virtual void GetModelInfo(Json::Value& root) const;
+
+ protected:
+  // truncate every k steps
+  int k_;
+  OnlineL1Regularizer l1_;
+  math::Vector<real_t> last_trunc_time_;
+};  // class STG
+
 }  // namespace model
 }  // namespace lsol
 #endif

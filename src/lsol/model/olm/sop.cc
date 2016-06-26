@@ -59,7 +59,7 @@ void SOP::Update(const pario::DataPoint& dp, const float*, float) {
 }
 
 void SOP::update_dim(index_t dim) {
-  if (dim >= this->dim_) {
+  if (dim > this->dim_) {
     this->S_.resize(dim);
 
     this->X_.resize(dim);
