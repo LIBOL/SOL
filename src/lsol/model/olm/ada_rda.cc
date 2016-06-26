@@ -8,8 +8,6 @@
 #include <cmath>
 #include <iostream>
 
-#include "lsol/loss/hinge_loss.h"
-
 using namespace std;
 using namespace lsol;
 using namespace lsol::math;
@@ -65,6 +63,15 @@ void AdaRDA::Update(const pario::DataPoint& dp, const float*, float loss) {
     // update bias
     w(c)[0] *= bias_eta0_;
   }
+}
+
+void AdaRDA::EndTrain() {
+  for (int c = 0; c < this->clf_num_; ++c) {
+    w(c) = -eta_ * ut_[c] / H_[c];
+    // update bias
+    w(c)[0] *= bias_eta0_;
+  }
+  OnlineLinearModel::EndTrain();
 }
 
 void AdaRDA::update_dim(index_t dim) {
@@ -151,7 +158,7 @@ void AdaRDA_L1::EndTrain() {
     w(c) = -eta_ * expr::truncate(ut_[c], trunc_thresh) / H_[c];
     w(c)[0] *= bias_eta0_;
   }
-  AdaRDA::EndTrain();
+  OnlineLinearModel::EndTrain();
 }
 
 RegisterModel(AdaRDA_L1, "ada-rda-l1",
