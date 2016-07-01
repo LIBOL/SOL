@@ -94,7 +94,7 @@ if __name__ == '__main__':
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("train model...")
-            accu = m.train(dt.data_path,dt.dtype, args.passes, args.output)
+            accu = 1 - m.train(dt.data_path,dt.dtype, args.passes, args.output)
             logging.info("training accuracy: %f" %(accu))
     except Exception as err:
-        print 'train failed %s' %(err.message)
+        print 'train failed: %s' %(err.message)

@@ -18,16 +18,17 @@ def find_lib_path():
     dll_path = [curr_path, api_path]
     dll_path.append(os.path.join(curr_path, '../build/bin', 'Release'))
     dll_path.append(os.path.join(curr_path, '../build/bin'))
+    dll_path = [p.replace('/', os.sep) for p in dll_path]
 
     if os.name == "posix" and os.environ.get('LD_LIBRARY_PATH', None):
         dll_path.extend([p.strip() for p in os.environ['LD_LIBRARY_PATH'].split(":")])
 
     if sys.platform == 'win32':
-        dll_path = [os.path.join(p, 'lsol_core.dll') for p in dll_path]
+        dll_path = [os.path.join(p, 'lsol.dll') for p in dll_path]
     elif sys.platform == 'cygwin':
-        dll_path = [os.path.join(p, 'lsol_core.dll') for p in dll_path]
+        dll_path = [os.path.join(p, 'lsol.dll') for p in dll_path]
     else:
-        dll_path = [os.path.join(p, 'liblsol_core.so') for p in dll_path]
+        dll_path = [os.path.join(p, 'liblsol.so') for p in dll_path]
 
     lib_path = [p for p in dll_path if os.path.exists(p) and os.path.isfile(p)]
     if len(lib_path) == 0:
@@ -98,13 +99,15 @@ class Model(object):
             self.model = c_void_p(Model._LIB.lsol_RestoreModel(model_path))
         elif model_name != None and class_num != None:
             self.model = c_void_p(Model._LIB.lsol_CreateModel(model_name, class_num))
+            if self.model.value == None:
+                raise RuntimeError("invalid parameters for Model constructor")
             for k,v in params:
                 if Model._LIB.lsol_SetModelParameter(self.model, k, str(v)) != 0:
                     raise RuntimeError("set parameter %s=%s failed" %(k,v))
         else:
             raise RuntimeError("invalid parameters for Model constructor")
 
-        if self.model == 0:
+        if self.model.value == None:
             raise RuntimeError("invalid parameters for Model constructor")
 
         self.data_iter = c_void_p(Model._LIB.lsol_CreateDataIter(batch_size, buf_size))
@@ -131,7 +134,7 @@ class Model(object):
             output_path: string
                 path to save the model
         Return:
-            training accuracy
+            training error rate
         """
         if type(data_path) == str:
             data_path = [data_path]
@@ -140,10 +143,10 @@ class Model(object):
             if ret != 0:
                 print 'load data %s failed' %(data_path)
                 return 0
-        accu = Model._LIB.lsol_Train(self.model, self.data_iter)
+        err_rate = Model._LIB.lsol_Train(self.model, self.data_iter)
         if model_path != None:
             Model._LIB.lsol_SaveModel(self.model, model_path)
-        return accu
+        return err_rate
 
     def test(self, data_path, data_type, output_path = None):
         """test on the given data
@@ -155,7 +158,7 @@ class Model(object):
             output_path: string
                 path to save the predicted results
         Return:
-            training accuracy
+            test error rate
         """
         ret = Model._LIB.lsol_LoadData(self.data_iter, data_path, data_type, 1)
         if ret != 0:

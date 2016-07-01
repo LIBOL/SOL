@@ -68,7 +68,7 @@ if __name__ == '__main__':
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("predicting...")
-            accu = m.test(dt.data_path,dt.dtype, args.output)
+            accu = 1 - m.test(dt.data_path,dt.dtype, args.output)
             logging.info("test accuracy: %f" %(accu))
     except Exception as err:
         print 'test failed %s' %(err.message)

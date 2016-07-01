@@ -62,14 +62,14 @@ int test(cmdline::parser& parser) {
       iter.AddReader(parser.get<string>("input"), parser.get<string>("format"));
   if (ret != Status_OK) return ret;
 
-  float accu;
+  float err_rate;
   if (parser.exist("output")) {
     ofstream out_file(parser.get<string>("output").c_str(), ios::out);
-    accu = model->Test(iter, &out_file);
+    err_rate = model->Test(iter, &out_file);
   } else {
-    accu = model->Test(iter, nullptr);
+    err_rate = model->Test(iter, nullptr);
   }
-  fprintf(stdout, "test accuracy: %.4f\n", accu);
+  fprintf(stdout, "test accuracy: %.4f\n", 1.f - err_rate);
   return Status_OK;
 }
 
