@@ -54,8 +54,8 @@ class CV(object):
             self.train_scores[:, val_fold_id] = train_accu_list
             self.val_scores[:, val_fold_id] = val_accu_list
 
-        self.train_scores[:, self.fold_num] = np.average(self.train_scores, axis = 1)
-        self.val_scores[:, self.fold_num] = np.average(self.val_scores, axis = 1)
+        self.train_scores[:, self.fold_num] = np.sum(self.train_scores, axis = 1) / self.fold_num
+        self.val_scores[:, self.fold_num] = np.sum(self.val_scores, axis = 1) / self.fold_num
 
     def get_best_param(self):
         """Get the best parameters
@@ -121,17 +121,17 @@ class CV(object):
             for param in self.extra_param:
                 params.append(param)
 
-            with Model(model_name, self.dataset.class_num, params = params) as model:
-            	train_paths = [self.dataset.split_path(i) for i in xrange(self.fold_num) if i != val_fold_id]
-            	train_accu = model.train(train_paths, self.dataset.slice_type, self.dataset.pass_num)
-            	val_accu = model.test(self.dataset.split_path(val_fold_id), self.dataset.slice_type)
+            with Model(model_name = model_name, class_num = self.dataset.class_num, params = params) as model:
+                train_paths = [self.dataset.split_path(i) for i in xrange(self.fold_num) if i != val_fold_id]
+                train_accu = 1 - model.train(train_paths, self.dataset.slice_type, self.dataset.pass_num)
+                val_accu = 1 - model.test(self.dataset.split_path(val_fold_id), self.dataset.slice_type)
 
-            	print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
-            	print '\tParameter Setting: %s' %(str(params))
-            	print '\tTraining Accuracy: %f' %(train_accu)
-            	print '\tValidation Accuracy: %f' %(val_accu)
-            	train_accu_list.append(train_accu)
-            	val_accu_list.append(val_accu)
+                print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
+                print '\tParameter Setting: %s' %(str(params))
+                print '\tTraining Accuracy: %f' %(train_accu)
+                print '\tValidation Accuracy: %f' %(val_accu)
+                train_accu_list.append(train_accu)
+                val_accu_list.append(val_accu)
         return train_accu_list, val_accu_list
 
 if __name__ == '__main__':

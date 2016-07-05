@@ -77,26 +77,20 @@ void SOP::GetModelInfo(Json::Value& root) const {
   root["online"]["a"] = this->a_;
 }
 
-void SOP::GetModelParam(Json::Value& root) const {
-  OnlineLinearModel::GetModelParam(root);
+void SOP::GetModelParam(std::ostream& os) const {
+  OnlineLinearModel::GetModelParam(os);
+  os << "X: " << this->X_ << "\n";
 
-  ostringstream oss_X;
-  oss_X << this->X_ << "\n";
-  root["covariance"] = oss_X.str();
-
-  ostringstream oss_v;
-  oss_v << this->v_ << "\n";
-  root["v"] = oss_v.str();
+  os << "v: " << this->v_ << "\n";
 }
 
-int SOP::SetModelParam(const Json::Value& root) {
-  OnlineLinearModel::SetModelParam(root);
+int SOP::SetModelParam(std::istream& is) {
+  OnlineLinearModel::SetModelParam(is);
 
-  istringstream iss_X(root["covariance"].asString());
-  iss_X >> this->X_;
+  string line;
+  is >> line >> this->X_;
 
-  istringstream iss_v(root["v"].asString());
-  iss_v >> this->v_;
+  is >> line >> this->v_;
   return Status_OK;
 }
 

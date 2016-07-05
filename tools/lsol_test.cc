@@ -39,13 +39,20 @@ int main(int argc, char** argv) {
 }
 
 int test(cmdline::parser& parser) {
-  shared_ptr<Model> model;
-  if (parser.exist("model")) {
-    model.reset(Model::Load(parser.get<string>("model")));
+  string model_path, input_path, output_path;
+  if (parser.rest().size() == 2) {
+    model_path = parser.rest()[0];
+    input_path = parser.rest()[1];
+  } else if (parser.rest().size() == 3) {
+    model_path = parser.rest()[0];
+    input_path = parser.rest()[1];
+    output_path = parser.rest()[2];
   } else {
-    fprintf(stderr, "--model should be specified!\n");
+    fprintf(stderr, "%s\n", parser.usage().c_str());
     return Status_Invalid_Argument;
   }
+
+  shared_ptr<Model> model(Model::Load(model_path));
   if (model == nullptr) return Status_Invalid_Argument;
   if (parser.exist("filter")) {
     try {
@@ -58,28 +65,25 @@ int test(cmdline::parser& parser) {
 
   // load data
   DataIter iter(parser.get<int>("batchsize"), parser.get<int>("bufsize"));
-  int ret =
-      iter.AddReader(parser.get<string>("input"), parser.get<string>("format"));
+  int ret = iter.AddReader(input_path, parser.get<string>("format"));
   if (ret != Status_OK) return ret;
 
+  double start_time = lsol::get_current_time();
   float err_rate;
-  if (parser.exist("output")) {
-    ofstream out_file(parser.get<string>("output").c_str(), ios::out);
+  if (!output_path.empty()) {
+    ofstream out_file(output_path.c_str(), ios::out);
     err_rate = model->Test(iter, &out_file);
+    out_file.close();
   } else {
     err_rate = model->Test(iter, nullptr);
   }
+  double end_time = lsol::get_current_time();
   fprintf(stdout, "test accuracy: %.4f\n", 1.f - err_rate);
+  fprintf(stdout, "test time: %.3f seconds\n", end_time - start_time);
   return Status_OK;
 }
 
 void getparser(int argc, char** argv, cmdline::parser& parser) {
-  // input & output
-  parser.add<string>("input", 'i', "input file", true);
-  parser.add<string>("model", 'm', "model to preload, required for test", true);
-  parser.add<string>("output", 'o',
-                     "output model(train) or predict results(test)", false);
-
   // pario related options
   parser.add<string>("format", 'f', "dataset format", false, "", "svm",
                      cmdline::oneof<string>("csv", "svm", "bin"));
@@ -88,6 +92,7 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
 
   parser.add<string>("filter", 0, "filtered features", false);
   parser.add("help", 'h', "print this message");
+  parser.footer("model_file test_file [output_file]");
 
   bool ok = parser.parse(argc, argv);
 

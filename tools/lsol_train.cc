@@ -37,6 +37,17 @@ int main(int argc, char** argv) {
 }
 
 int train(cmdline::parser& parser) {
+  string input_path, output_path;
+  if (parser.rest().size() == 1) {
+    input_path = parser.rest()[0];
+  } else if (parser.rest().size() == 2) {
+    input_path = parser.rest()[0];
+    output_path = parser.rest()[1];
+  } else {
+    fprintf(stderr, "%s\n", parser.usage().c_str());
+    return Status_Invalid_Argument;
+  }
+
   shared_ptr<Model> model;
   if (parser.exist("model")) {
     model.reset(Model::Load(parser.get<string>("model")));
@@ -68,9 +79,8 @@ int train(cmdline::parser& parser) {
 
   // load data
   DataIter iter(parser.get<int>("batchsize"), parser.get<int>("bufsize"));
-  int ret =
-      iter.AddReader(parser.get<string>("input"), parser.get<string>("format"),
-                     parser.get<int>("pass"));
+  int ret = iter.AddReader(input_path, parser.get<string>("format"),
+                           parser.get<int>("pass"));
   if (ret != Status_OK) return ret;
 
   double start_time = lsol::get_current_time();
@@ -81,8 +91,8 @@ int train(cmdline::parser& parser) {
   fprintf(stdout, "model sparsity: %.4f%%\n", model->model_sparsity() * 100.f);
 
   // save model
-  if (parser.exist("output")) {
-    model->Save(parser.get<string>("output"));
+  if (!output_path.empty()) {
+    model->Save(output_path);
     fprintf(stdout, "save time: %.3f seconds\n", get_current_time() - end_time);
   }
 
@@ -108,7 +118,6 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
       cmdline::oneof<string>("", "model", "loss", "reader", "writer"));
 
   // input & output
-  parser.add<string>("input", 'i', "input file", true, "io");
   parser.add<string>("format", 'f', "dataset format", false, "io", "svm",
                      cmdline::oneof<string>("csv", "svm", "bin"));
   parser.add<int>("classes", 'c', "class number", false, "io", 2);
@@ -119,14 +128,14 @@ void getparser(int argc, char** argv, cmdline::parser& parser) {
                   2);
 
   // model setting
-  parser.add<string>("algo", 'a', "learning algorithm", false, "model");
+  parser.add<string>("algo", 'a', "learning algorithm", false, "model", "ogd");
   parser.add<string>("model", 'm', "path to pre-trained model", false, "model");
-  parser.add<string>("output", 'o', "output model(train) ", false, "model");
   parser.add<string>(
       "params", 0, "model parameters, in the format 'param=val;param=val;...'",
       false, "model");
 
   parser.add("help", 'h', "print this message");
+  parser.footer("train_file [model_file]");
 
   bool ok = parser.parse(argc, argv);
   if (parser.exist("show")) {

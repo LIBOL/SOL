@@ -51,17 +51,9 @@ class OnlineLinearModel : public OnlineModel {
   virtual float model_sparsity() const;
 
  protected:
-  /// \brief  serialize model parameters
-  ///
-  /// \param root root node to save the parameters
-  virtual void GetModelParam(Json::Value& root) const;
+  virtual void GetModelParam(std::ostream& os) const;
 
-  /// \brief  load model parameters from stream
-  ///
-  /// \param root root node of model info
-  ///
-  /// \return status code, zero if ok
-  virtual int SetModelParam(const Json::Value& root);
+  virtual int SetModelParam(std::istream& is);
 
  public:
   const math::Vector<real_t>& w(int cls_id) const {

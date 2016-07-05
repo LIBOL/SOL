@@ -28,8 +28,8 @@ class CW : public OnlineLinearModel {
   virtual void update_dim(index_t dim);
 
   virtual void GetModelInfo(Json::Value& root) const;
-  virtual void GetModelParam(Json::Value& root) const;
-  virtual int SetModelParam(const Json::Value& root);
+  virtual void GetModelParam(std::ostream& os) const;
+  virtual int SetModelParam(std::istream& is);
 
  protected:
   loss::HingeBase* hinge_base_;

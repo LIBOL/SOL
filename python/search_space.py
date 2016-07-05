@@ -91,18 +91,14 @@ class SearchSpace(object):
             parameter string, with format like '[('a', '1:2:8'),(b, '2:2:16')]'
         """
         #detect param
-        num_pattern     = r'\d*\.?\d+'
-        search_pattern  = r'(?P<start_val>{0}):(?P<step_val>{1}):(?P<end_val>{2})'\
-                .format(num_pattern,num_pattern,num_pattern)
-
         self.search_space = []
         for param_name, param_range in cv_params:
-            search_res  = re.match(search_pattern, param_range.strip())
-            if search_res:
+            search_res  = param_range.strip().split(':')
+            if len(search_res) == 3:
                 self.search_space.append(SearchItem(param_name,
-                        search_res.group('start_val'),
-                        search_res.group('step_val'),
-                        search_res.group('end_val')))
+                        search_res[0],
+                        search_res[1],
+                        search_res[2]))
 
             else:
                 raise ValueError('incorrect input parameter {0}'.format(param_range))

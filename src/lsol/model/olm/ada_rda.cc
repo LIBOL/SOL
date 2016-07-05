@@ -94,40 +94,27 @@ void AdaRDA::GetModelInfo(Json::Value& root) const {
   root["online"]["delta"] = this->delta_;
 }
 
-void AdaRDA::GetModelParam(Json::Value& root) const {
-  OnlineLinearModel::GetModelParam(root);
+void AdaRDA::GetModelParam(std::ostream& os) const {
+  OnlineLinearModel::GetModelParam(os);
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "H[" << c << "]";
-    ostringstream oss_value;
-    oss_value << this->H_[c] << "\n";
-    root[oss_name.str()] = oss_value.str();
+    os << "H[" << c << "]: " << this->H_[c] << "\n";
   }
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "ut[" << c << "]";
-    ostringstream oss_value;
-    oss_value << this->ut_[c] << "\n";
-    root[oss_name.str()] = oss_value.str();
+    os << "ut[" << c << "]: " << this->ut_[c] << "\n";
   }
 }
 
-int AdaRDA::SetModelParam(const Json::Value& root) {
-  OnlineLinearModel::SetModelParam(root);
+int AdaRDA::SetModelParam(std::istream& is) {
+  OnlineLinearModel::SetModelParam(is);
 
+  string line;
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "H[" << c << "]";
-    istringstream iss_value(root[oss_name.str()].asString());
-    iss_value >> this->H_[c];
+    is >> line >> this->H_[c];
   }
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "ut[" << c << "]";
-    istringstream iss_value(root[oss_name.str()].asString());
-    iss_value >> this->ut_[c];
+    is >> line >> this->ut_[c];
   }
 
   return Status_OK;

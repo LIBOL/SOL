@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 import logging
+import time
 
 from dataset import DataSet
 from lsol_core import Model
@@ -40,10 +41,11 @@ def getargs():
             argparse.RawTextHelpFormatter)
 
     #input output
-    parser.add_argument('-i', '--input_path', type=str, required=True, help='path to training data')
+    parser.add_argument('model', type=str, help='existing pre-trained model')
+    parser.add_argument('dt_name', type=str, help='dataset name')
+    parser.add_argument('input_path', type=str, help='path to test data')
+    parser.add_argument('output', type=str, nargs='?', help='path to save the predicted results')
     parser.add_argument('-t', '--data_type', type=str, default='svm', choices=['svm', 'bin', 'csv'], help='training data type')
-    parser.add_argument('-m', '--model', type=str, help='existing pre-trained model')
-    parser.add_argument('-o', '--output', type=str, help='path to save the predicted results')
 
     #data related settings
     parser.add_argument('-b', '--batch_size', type=int, default=256, help='mini-batch size')
@@ -60,15 +62,17 @@ def getargs():
 if __name__ == '__main__':
     args = getargs()
 
-    dname = os.path.splitext(os.path.basename(args.input_path))[0]
     try:
-        dt = DataSet(dname,args.input_path, args.data_type)
+        dt = DataSet(args.dt_name,args.input_path, args.data_type)
+        model_path = os.path.join(dt.work_dir, args.model)
 
-        with Model(model_path = args.model, batch_size = args.batch_size, buf_size = args.buf_size) as m:
+        start_time = time.time()
+        with Model(model_path = model_path, batch_size = args.batch_size, buf_size = args.buf_size) as m:
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("predicting...")
             accu = 1 - m.test(dt.data_path,dt.dtype, args.output)
-            logging.info("test accuracy: %f" %(accu))
+            logging.info("test accuracy: %.4f" %(accu))
+            logging.info("test time: %.4f seconds" %(time.time() - start_time))
     except Exception as err:
         print 'test failed %s' %(err.message)

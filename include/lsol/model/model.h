@@ -113,15 +113,15 @@ class LSOL_EXPORTS Model {
  protected:
   /// \brief  serialize model parameters
   ///
-  /// \param root root node to save the parameters
-  virtual void GetModelParam(Json::Value &root) const = 0;
+  /// \param os output stream to write parameters
+  virtual void GetModelParam(std::ostream &os) const = 0;
 
   /// \brief  load model parameters from stream
   ///
-  /// \param root root node of model info
+  /// \param is input stream to load parameters
   ///
   /// \return status code, zero if ok
-  virtual int SetModelParam(const Json::Value &root) = 0;
+  virtual int SetModelParam(std::istream &is) = 0;
 
   /// \brief  Get Model Information
   ///

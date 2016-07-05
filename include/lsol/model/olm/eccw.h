@@ -31,8 +31,8 @@ class ECCW : public OnlineLinearModel {
 
  protected:
   virtual void GetModelInfo(Json::Value& root) const;
-  virtual void GetModelParam(Json::Value& root) const;
-  virtual int SetModelParam(const Json::Value& root);
+  virtual void GetModelParam(std::ostream& os) const;
+  virtual int SetModelParam(std::istream& is);
 
  protected:
   loss::HingeBase* hinge_base_;

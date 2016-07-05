@@ -4,6 +4,7 @@ import os
 import sys
 import argparse
 import logging
+import time
 
 from dataset import DataSet
 from lsol_core import Model
@@ -40,14 +41,14 @@ def getargs():
             argparse.RawTextHelpFormatter)
 
     #input output
-    parser.add_argument('-i', '--input_path', type=str, required=True, help='path to training data')
+    parser.add_argument('dt_name', type=str, help='dataset name')
+    parser.add_argument('input_path', type=str, help='path to training data')
+    parser.add_argument('output', type=str, nargs='?', help='path to save the generated model')
+    parser.add_argument('-a', '--algo', type=str, default='ogd', help='name of the algorithm to use')
     parser.add_argument('-t', '--data_type', type=str, default='svm', choices=['svm', 'bin', 'csv'], help='training data type')
-    parser.add_argument('-a', '--algo', type=str, required=True, help='name of the algorithm to use')
     parser.add_argument('-m', '--model', type=str, help='existing pre-trained model')
-    parser.add_argument('-o', '--output', type=str, help='path to save the generated model')
 
     #data related settings
-    parser.add_argument('-d', '--dim', type=int, help='dimension of the training data')
     parser.add_argument('-p', '--passes', type=int, default=1, help='number of passes to go through the training data')
     parser.add_argument('--norm', type=str, default='none', choices=['none', 'L1', 'L2'], help='normalization method of data')
     parser.add_argument('-b', '--batch_size', type=int, default=256, help='mini-batch size ')
@@ -66,12 +67,11 @@ def getargs():
     set_logging(args)
     return args
 
+
 if __name__ == '__main__':
     args = getargs()
-
-    dname = os.path.splitext(os.path.basename(args.input_path))[0]
     try:
-        dt = DataSet(dname,args.input_path, args.data_type)
+        dt = DataSet(args.dt_name,args.input_path, args.data_type)
         model_params = []
         if args.params != None:
             model_params = [item.split('=') for item in args.params]
@@ -90,11 +90,13 @@ if __name__ == '__main__':
             for k,v in best_params:
                 model_params.append([k,v])
 
+        start_time = time.time()
         with Model(model_name = args.algo, class_num = dt.class_num, batch_size = args.batch_size, buf_size = args.buf_size, params = model_params) as m:
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("train model...")
             accu = 1 - m.train(dt.data_path,dt.dtype, args.passes, args.output)
-            logging.info("training accuracy: %f" %(accu))
+            logging.info("training accuracy: %.4f" %(accu))
+            logging.info("training time: %.4f seconds" %(time.time() - start_time))
     except Exception as err:
         print 'train failed: %s' %(err.message)

@@ -84,26 +84,20 @@ void RDA::GetModelInfo(Json::Value& root) const {
   root["online"]["sigma"] = this->sigma_;
 }
 
-void RDA::GetModelParam(Json::Value& root) const {
-  OnlineLinearModel::GetModelParam(root);
+void RDA::GetModelParam(std::ostream& os) const {
+  OnlineLinearModel::GetModelParam(os);
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "ut[" << c << "]";
-    ostringstream oss_value;
-    oss_value << this->ut_[c] << "\n";
-    root[oss_name.str()] = oss_value.str();
+    os << "ut[" << c << "]: " << this->ut_[c] << "\n";
   }
 }
 
-int RDA::SetModelParam(const Json::Value& root) {
-  OnlineLinearModel::SetModelParam(root);
+int RDA::SetModelParam(std::istream& is) {
+  OnlineLinearModel::SetModelParam(is);
 
+  string line;
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "ut[" << c << "]";
-    istringstream iss_value(root[oss_name.str()].asString());
-    iss_value >> this->ut_[c];
+    is >> line >> this->ut_[c];
   }
 
   return Status_OK;

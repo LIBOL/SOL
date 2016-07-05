@@ -141,9 +141,13 @@ int Model::Save(const string& path) const {
   }
   Json::Value root;
   this->GetModelInfo(root);
-  this->GetModelParam(root);
   Json::StyledStreamWriter writer;
+  out_file << "model info:\n";
   writer.write(out_file, root);
+
+  out_file << "model parameters:\n";
+  this->GetModelParam(out_file);
+
   out_file.close();
   return Status_OK;
 }
@@ -156,37 +160,52 @@ Model* Model::Load(const string& path) {
     fprintf(stderr, "open file %s failed\n", path.c_str());
     return nullptr;
   }
-  Json::Value root;
-  Json::Reader reader;
-  if (reader.parse(in_file, root) == false) {
-    fprintf(stderr, "parse model file %s failed\n", path.c_str());
+  string line;
+  getline(in_file, line);
+  if (line != "model info:") {
+    fprintf(stderr, "invalid model file\n");
     ret = Status_Invalid_Format;
   }
-  in_file.close();
-  if (ret != Status_OK) return model;
-  string cls_name = root.get("model", "").asString();
-  int cls_num = root.get("cls_num", "0").asInt();
-  model = Model::Create(cls_name, cls_num);
-  if (model == nullptr) {
-    fprintf(stderr, "create model failed: no model named %s\n",
-            cls_name.c_str());
-    return model;
+  if (ret == Status_OK) {
+    ostringstream model_info;
+    while (line != "model parameters:") {
+      getline(in_file, line);
+      model_info << line;
+    }
+    Json::Value root;
+    Json::Reader reader;
+    if (reader.parse(model_info.str(), root) == false) {
+      fprintf(stderr, "parse model file %s failed\n", path.c_str());
+      ret = Status_Invalid_Format;
+    }
+
+    if (ret == Status_OK) {
+      string cls_name = root.get("model", "").asString();
+      int cls_num = root.get("cls_num", "0").asInt();
+      model = Model::Create(cls_name, cls_num);
+      if (model == nullptr) {
+        fprintf(stderr, "create model failed: no model named %s\n",
+                cls_name.c_str());
+        ret = Status_Invalid_Format;
+      } else {
+        try {
+          ret = model->SetModelInfo(root);
+        } catch (invalid_argument& err) {
+          fprintf(stderr, "set model parameter failed: %s\n", err.what());
+          ret = Status_Invalid_Argument;
+        }
+      }
+    }
   }
 
-  try {
-    ret = model->SetModelInfo(root);
-  } catch (invalid_argument& err) {
-    fprintf(stderr, "set model parameter failed: %s\n", err.what());
-    ret = Status_Invalid_Argument;
+  if (ret == Status_OK) {
+    ret = model->SetModelParam(in_file);
   }
   if (ret != Status_OK) {
     DeletePointer(model);
-  } else {
-    ret = model->SetModelParam(root);
-  }
-  if (ret != Status_OK) {
     DeletePointer(model);
   }
+  in_file.close();
   return model;
 }
 

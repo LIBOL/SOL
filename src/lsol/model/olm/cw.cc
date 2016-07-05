@@ -118,26 +118,20 @@ void CW::GetModelInfo(Json::Value& root) const {
   root["online"]["phi"] = this->phi_;
 }
 
-void CW::GetModelParam(Json::Value& root) const {
-  OnlineLinearModel::GetModelParam(root);
+void CW::GetModelParam(std::ostream& os) const {
+  OnlineLinearModel::GetModelParam(os);
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "Sigma[" << c << "]";
-    ostringstream oss_value;
-    oss_value << this->Sigmas_[c] << "\n";
-    root[oss_name.str()] = oss_value.str();
+    os << "Sigma[" << c << "]: " << this->Sigmas_[c] << "\n";
   }
 }
 
-int CW::SetModelParam(const Json::Value& root) {
-  OnlineLinearModel::SetModelParam(root);
+int CW::SetModelParam(std::istream& is) {
+  OnlineLinearModel::SetModelParam(is);
 
+  string line;
   for (int c = 0; c < this->clf_num_; ++c) {
-    ostringstream oss_name;
-    oss_name << "Sigma[" << c << "]";
-    istringstream iss_value(root[oss_name.str()].asString());
-    iss_value >> this->Sigmas_[c];
+    is >> line >> this->Sigmas_[c];
   }
 
   return Status_OK;

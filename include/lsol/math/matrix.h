@@ -191,9 +191,9 @@ std::ostream& operator<<(std::ostream& os, const Matrix<DType>& mat) {
     const Shape<2>& s2d = *(mat.shape_);
     const DType* pdata = mat.data();
     for (size_t i = 0; i < s2d[0]; ++i) {
-      os << "[ ";
+      os << "\n[ ";
       for (size_t j = 0; j < s2d[1]; ++j) os << *pdata++ << " ";
-      os << "]\n";
+      os << "]";
     }
   }
   return os;

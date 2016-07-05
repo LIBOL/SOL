@@ -116,17 +116,17 @@ float OnlineLinearModel::model_sparsity() const {
   return 1.f - float(non_zero_num / double(this->clf_num_ * (this->dim_ - 1)));
 }
 
-void OnlineLinearModel::GetModelParam(Json::Value& root) const {
-  ostringstream oss;
+void OnlineLinearModel::GetModelParam(std::ostream& os) const {
   for (int c = 0; c < this->clf_num_; ++c) {
-    oss << w(c) << "\n";
+    os << "weight[" << c << "]:" << w(c) << "\n";
   }
-  root["weight_vector"] = oss.str();
 }
 
-int OnlineLinearModel::SetModelParam(const Json::Value& root) {
-  istringstream iss(root["weight_vector"].asString());
-  for (int c = 0; c < this->clf_num_; ++c) iss >> w(c);
+int OnlineLinearModel::SetModelParam(std::istream& is) {
+  string line;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    is >> line >> w(c);
+  }
   return Status_OK;
 }
 
