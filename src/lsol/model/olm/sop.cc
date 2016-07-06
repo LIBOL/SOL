@@ -13,24 +13,28 @@ namespace lsol {
 
 namespace model {
 SOP::SOP(int class_num) : OnlineLinearModel(class_num), a_(1.f) {
-  this->S_.resize(this->dim_);
   this->X_.resize(this->dim_);
-  this->X_ = this->a_;
+  this->X_ = 0;
 
-  this->v_.resize(this->dim_);
-  this->v_ = 0;
+  this->v_ = new math::Vector<real_t>[this->clf_num_];
+
+  for (int i = 0; i < this->clf_num_; ++i) {
+    v(i).resize(this->dim_);
+    v(i) = 0;
+  }
+
   // loss
   if (class_num == 2) {
     this->SetParameter("loss", "bool");
   } else {
-    throw invalid_argument("SOP does not support multiclass classification!");
+    this->SetParameter("loss", "maxscore-bool");
   }
 }
+SOP::~SOP() { DeleteArray(this->v_); }
 
 void SOP::SetParameter(const std::string& name, const std::string& value) {
   if (name == "a") {
     this->a_ = stof(value);
-    this->X_ = this->a_;
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::BOOL) == 0) {
@@ -41,11 +45,18 @@ void SOP::SetParameter(const std::string& name, const std::string& value) {
   }
 }
 
+void SOP::EndTrain() {
+  for (int c = 0; c < this->clf_num_; ++c) {
+    w(c) = v(c) / (a_ + X_);
+  }
+  OnlineLinearModel::EndTrain();
+}
+
 label_t SOP::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
-  S_ = X_;
-  S_ += L2(x);
-  w(0) = v_ / S_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    w(c) = v(c) / (a_ + X_ + L2(x));
+  }
   return OnlineLinearModel::TrainPredict(dp, predicts);
 }
 
@@ -53,21 +64,24 @@ void SOP::Update(const pario::DataPoint& dp, const float*, float) {
   const auto& x = dp.data();
   this->eta_ = 1.f;
 
-  v_ -= g(0) * x;
-  v_[0] -= bias_eta() * g(0);
-  X_ = S_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    if (g(c) == 0) continue;
+    v(c) -= g(c) * x;
+    // update bias
+    v(c)[0] -= bias_eta() * g(c);
+  }
+  X_ += L2(x);
 }
 
 void SOP::update_dim(index_t dim) {
   if (dim > this->dim_) {
-    this->S_.resize(dim);
-
     this->X_.resize(dim);
-    float a = this->a_;
-    this->X_.slice_op([a](real_t& val) { val = a; }, this->dim_);
+    this->X_.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
 
-    this->v_.resize(dim);
-    this->v_.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
+    for (int c = 0; c < this->clf_num_; ++c) {
+      v(c).resize(dim);
+      v(c).slice_op([](real_t& val) { val = 0.f; }, this->dim_);
+    }
     OnlineLinearModel::update_dim(dim);
   }
 }
@@ -81,7 +95,9 @@ void SOP::GetModelParam(std::ostream& os) const {
   OnlineLinearModel::GetModelParam(os);
   os << "X: " << this->X_ << "\n";
 
-  os << "v: " << this->v_ << "\n";
+  for (int c = 0; c < this->clf_num_; ++c) {
+    os << "v[" << c << "]: " << v(c) << "\n";
+  }
 }
 
 int SOP::SetModelParam(std::istream& is) {
@@ -90,7 +106,9 @@ int SOP::SetModelParam(std::istream& is) {
   string line;
   is >> line >> this->X_;
 
-  is >> line >> this->v_;
+  for (int c = 0; c < this->clf_num_; ++c) {
+    is >> line >> v(c);
+  }
   return Status_OK;
 }
 

@@ -15,8 +15,10 @@ namespace model {
 class SOP : public OnlineLinearModel {
  public:
   SOP(int class_num);
+  virtual ~SOP();
 
   virtual void SetParameter(const std::string& name, const std::string& value);
+  virtual void EndTrain();
 
  protected:
   virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
@@ -30,10 +32,13 @@ class SOP : public OnlineLinearModel {
   virtual void GetModelParam(std::ostream& os) const;
   virtual int SetModelParam(std::istream& is);
 
+protected:
+  math::Vector<real_t>& v(int cls_id) { return this->v_[cls_id]; }
+  const math::Vector<real_t>& v(int cls_id) const { return this->v_[cls_id]; }
+
  protected:
   float a_;
-  math::Vector<real_t> v_;
-  math::Vector<real_t> S_;
+  math::Vector<real_t>* v_;
   math::Vector<real_t> X_;
 
 };  // class SOP

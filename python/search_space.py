@@ -6,7 +6,7 @@ import sys
 class SearchItem(object):
     """the grid search item, each grid item is a paramter with its parameter space
     """
-    __slots__ = ('name','start_val','step_val','end_val','size')
+    __slots__ = ('name','start_val','step_val','end_val','op','size')
 
     def __init__(self, name, start_val, step_val, end_val):
         """Create a new search item
@@ -22,6 +22,10 @@ class SearchItem(object):
         """
         self.name = name
         self.start_val = float(start_val)
+        self.op = '*'
+        if step_val.startswith('+'):
+            self.op = '+'
+            step_val = step_val[1:]
         self.step_val = float(step_val)
         if self.step_val == 1:
             raise ValueError('step value should not be 1')
@@ -32,7 +36,10 @@ class SearchItem(object):
         if self.end_val > self.start_val:
             val = self.start_val
             while val <= self.end_val:
-                val *= self.step_val
+                if self.op == '+':
+                    val += self.step_val
+                else:
+                    val *= self.step_val
                 self.size += 1
 
     def __getitem__(self, index):
@@ -43,7 +50,10 @@ class SearchItem(object):
         """
         ret = self.start_val
         while index > 0:
-            ret *= self.step_val
+            if self.op == '+':
+                ret += self.step_val
+            else:
+                ret *= self.step_val
             index -= 1
         return (self.name, ret)
 

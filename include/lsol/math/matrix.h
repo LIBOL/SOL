@@ -80,6 +80,11 @@ class Matrix
     return *this;
   }
 
+  inline void copyto(Matrix<DType>& dst_mat) {
+    dst_mat.resize(this->shape());
+    dst_mat.assign(*this);
+  }
+
  protected:
   /// \brief init the owned data
   inline void init() {

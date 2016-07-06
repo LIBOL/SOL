@@ -93,14 +93,12 @@ class CV(object):
         """load the result file of cross validation to get the best parameters"""
         logging.info('loading cross validation  results from %s' %result_path)
         with open(result_path, 'r') as fh:
-            pattern = re.compile(r'Best Result: \[.*\]:.*')
+            pattern = re.compile(r'Best Result: \[(.*)\]:.*')
             result_list = pattern.findall(fh.read())
             if len(result_list) != 1:
                 raise Exception('parsing cross validation file %s failed' %(result_path))
-            parma_str = result_list[0]
-            pattern = re.compile(r'\(\'\s*(.*)\s*\'\s*,\s+(.*)\)')
-            result_list = pattern.findall(parma_str)
-            return [result_list[i] for i in xrange(len(result_list))]
+            pattern = re.compile(r'\(\'(\w*)\',\s+(\d+\.\d+)\)')
+            return pattern.findall(result_list[0])
 
     def __train_val_one_fold(self, model_name, val_fold_id):
         """ cross validation on one fold of data

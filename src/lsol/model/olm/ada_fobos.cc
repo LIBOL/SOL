@@ -71,6 +71,7 @@ void AdaFOBOS::update_dim(index_t dim) {
 void AdaFOBOS::GetModelInfo(Json::Value& root) const {
   OnlineLinearModel::GetModelInfo(root);
   root["online"]["delta"] = this->delta_;
+  root["online"]["eta"] = this->eta_;
 }
 
 void AdaFOBOS::GetModelParam(std::ostream& os) const {

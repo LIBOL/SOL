@@ -92,6 +92,7 @@ void AdaRDA::update_dim(index_t dim) {
 void AdaRDA::GetModelInfo(Json::Value& root) const {
   OnlineLinearModel::GetModelInfo(root);
   root["online"]["delta"] = this->delta_;
+  root["online"]["eta"] = this->eta_;
 }
 
 void AdaRDA::GetModelParam(std::ostream& os) const {

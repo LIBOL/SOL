@@ -116,10 +116,10 @@ class DataSet(object):
                 raise Exception('convert data %s to %s format failed' %(self.data_path, self.dtype))
             return cache_path
 
-    def rand_path(self, tgt_type = None):
+    def rand_path(self, tgt_type = None, force=False):
         tgt_type = self.dtype if tgt_type == None else tgt_type
         output_path = os.path.join(self.work_dir, self.data_name + '.shuffle.' + tgt_type)
-        if os.path.exists(output_path):
+        if os.path.exists(output_path) and force == False:
             return output_path
         exe_path = self.__get_cmd_path('shuffle')
         logging.info('shuffle file  %s to %s' %(self.data_path, output_path))
@@ -139,8 +139,20 @@ class DataSet(object):
         """
         self.slice_type = self.dtype if tgt_type == None else tgt_type
         output_prefix = os.path.join(self.work_dir, self.data_name + ".split.")
-        if os.path.exists(output_prefix +  '0.' + tgt_type):
+        is_exist = True
+        for i in xrange(split_num):
+            if not os.path.exists('%s%d.%s' %(output_prefix, i, tgt_type)):
+                is_exist = False
+
+        extra_file = '%s%d.%s' %(output_prefix, split_num, tgt_type)
+        if os.path.exists(extra_file):
+            is_exist = False
+            #remove this file
+            os.remove(extra_file)
+
+        if is_exist == True:
             return None
+
         exe_path = self.__get_cmd_path('split')
         logging.info('split file  %s to %d slices' %(self.data_path, split_num))
         cmd = '{0} -i \"{1}\" -s {2} -n {3} -o \"{4}\" -d {5} -r'.format(exe_path, self.data_path, self.dtype, split_num, output_prefix, self.slice_type)

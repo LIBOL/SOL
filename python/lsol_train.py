@@ -58,6 +58,7 @@ def getargs():
     parser.add_argument('--cv', type=str, nargs='+', help='parameters waiting for cross validation, in the format "param=start_val:step_val:end_val"')
     parser.add_argument('-f', '--fold_num', type=int, default=5, help='number of folds in cross validation')
     parser.add_argument('--params', type=str, nargs='+', help='parameters for the model, in the format "param=val"')
+    parser.add_argument('--retrain', action='store_true',  help='whether retrain model, ignoring existing cache')
 
     #log related settings
     parser.add_argument("--log_level", type=str, default="INFO", help="log level")
@@ -77,7 +78,7 @@ if __name__ == '__main__':
             model_params = [item.split('=') for item in args.params]
         if args.cv != None:
             cv_output_path  = os.path.join(dt.work_dir, 'cv-%s.txt' %(args.algo))
-            if os.path.exists(cv_output_path):
+            if os.path.exists(cv_output_path) and args.retrain == False:
                 best_params = CV.load_results(cv_output_path)
             else:
                 #cross validation
@@ -91,7 +92,9 @@ if __name__ == '__main__':
                 model_params.append([k,v])
 
         start_time = time.time()
-        with Model(model_name = args.algo, class_num = dt.class_num, batch_size = args.batch_size, buf_size = args.buf_size, params = model_params) as m:
+        with Model(model_name = args.algo, class_num = dt.class_num, batch_size
+                = args.batch_size, buf_size = args.buf_size, params =
+                model_params) as m:
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("train model...")

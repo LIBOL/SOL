@@ -114,7 +114,7 @@ class Model(object):
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
@@ -164,5 +164,5 @@ class Model(object):
         if ret != 0:
             print 'load data %s failed' %(data_path)
             return 0
-        return Model._LIB.lsol_Test(self.model, self.data_iter, 
+        return Model._LIB.lsol_Test(self.model, self.data_iter,
                 None if output_path == None else output_path)

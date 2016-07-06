@@ -116,12 +116,13 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
       }
       ++data_num;
       if (data_num >= show_count) {
-        printf("%llu\t\t\t\t%.6f\n", data_num,
+        printf("%llu\t\t\t\t%.6f\r", data_num,
                float(double(err_num) / data_num));
         show_count = (size_t(1) << ++show_step);
       }
     }
   }
+  printf("\n");
   delete[] predicts;
   return float(double(err_num) / data_num);
 }
