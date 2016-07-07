@@ -30,6 +30,10 @@
 #python tmp files
 *.pyc
 
+#temp or log file
+*.log
+*.temp
+*.tmp
 
 #folders
 build/

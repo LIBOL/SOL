@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import os.path as osp
 import sys
+pylsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
+sys.path.insert(0, pylsol_dir)
+
 import argparse
 import logging
 import time
@@ -10,6 +14,8 @@ import numpy as np
 from dataset import DataSet
 from lsol_core import Model
 from cv import CV
+
+import liblinear
 
 DESCRIPTION='Large Scale Online Learning Test Scripts'
 
@@ -60,8 +66,8 @@ def getargs():
     return args
 
 def run_algo(dtrain, dtest, opts, retrain=False, fold_num = 5):
-    model_params = []
-
+    if opts['algo'] == 'liblinear':
+        return liblinear.run(dt_train, dt_test, opts, retrain, fold_num)
     model_params = []
     if 'params' in opts:
         model_params = [item.split('=') for item in opts['params']]
@@ -125,13 +131,17 @@ if __name__ == '__main__':
     opts['perceptron'] = {'algo':'perceptron'}
     opts['rda'] = {'algo':'rda'}
     opts['sop'] = {'algo':'sop', 'cv':['a=0.0625:2:16']}
+    opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
 
+    #dt_train = DataSet('pcmac',args.train_file, args.dtype)
+    #dt_test = DataSet('pcmac',args.test_file, args.dtype)
     dt_train = DataSet('rcv1',args.train_file, args.dtype)
     dt_test = DataSet('rcv1',args.test_file, args.dtype)
 
     res = {}
     for algo, opt in opts.iteritems():
         res[algo] = np.zeros((args.shuffle, 4))
+
 
     for rid in xrange(args.shuffle):
         logging.info('random pass %d' %(rid))
