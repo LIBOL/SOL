@@ -59,6 +59,20 @@ class STG : public OGD {
   math::Vector<real_t> last_trunc_time_;
 };  // class STG
 
+/// \brief  Forward Backward Splitting
+class FOBOS_L1 : public OGD {
+ public:
+  FOBOS_L1(int class_num);
+
+  virtual void EndTrain();
+
+ protected:
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
+
+ protected:
+  LazyOnlineL1Regularizer l1_;
+};  // class STG
+
 }  // namespace model
 }  // namespace lsol
 #endif

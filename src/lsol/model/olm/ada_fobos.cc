@@ -6,7 +6,6 @@
 #include "lsol/model/olm/ada_fobos.h"
 
 #include <cmath>
-#include <iostream>
 
 #include "lsol/loss/hinge_loss.h"
 
@@ -96,11 +95,6 @@ RegisterModel(AdaFOBOS, "ada-fobos", "Adaptive Subgradient FOBOS");
 
 AdaFOBOS_L1::AdaFOBOS_L1(int class_num) : AdaFOBOS(class_num) {
   this->regularizer_ = &l1_;
-}
-
-void AdaFOBOS_L1::BeginTrain() {
-  AdaFOBOS::BeginTrain();
-  cout << l1_.lambda() << endl;
 }
 
 label_t AdaFOBOS_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {

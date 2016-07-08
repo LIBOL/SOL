@@ -8,17 +8,57 @@
 
 #include "lsol/model/online_model.h"
 #include "lsol/util/str_util.h"
+#include "lsol/util/util.h"
+
+#include <sstream>
 
 using namespace std;
 using namespace lsol::pario;
 
 namespace lsol {
 namespace model {
+
+class ExpIterDisplayer : public OnlineModel::IterDisplayer {
+ public:
+  ExpIterDisplayer(size_t base = 2)
+      : next_show_time_(base), base_(base), show_step_(1) {}
+
+  virtual inline size_t next_show_time() { return next_show_time_; }
+  virtual inline void next() {
+    ++show_step_;
+    next_show_time_ = size_t(pow(double(this->base_), this->show_step_));
+  }
+
+ protected:
+  size_t next_show_time_;
+  size_t base_;
+  size_t show_step_;
+};
+
+class StepIterDisplayer : public OnlineModel::IterDisplayer {
+ public:
+  StepIterDisplayer(size_t step = 2) : next_show_time_(step), step_(step) {}
+
+  virtual size_t next_show_time() { return next_show_time_; }
+  virtual void next() { this->next_show_time_ += this->step_; }
+
+ protected:
+  size_t next_show_time_;
+  size_t step_;
+};
+
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type), bias_eta0_(0), dim_(1), eta_(1.f) {
+    : Model(class_num, type),
+      bias_eta0_(0),
+      dim_(1),
+      eta_(1.f),
+      iter_displayer_(nullptr) {
   this->set_initial_t(0);
   this->lazy_update_ = false;
+  this->iter_displayer_ = new ExpIterDisplayer(2);
 }
+
+OnlineModel::~OnlineModel() { DeletePointer(this->iter_displayer_); }
 
 void OnlineModel::SetParameter(const std::string& name,
                                const std::string& value) {
@@ -34,6 +74,12 @@ void OnlineModel::SetParameter(const std::string& name,
     this->update_dim(stoi(value));
   } else if (name == "lazy_update") {
     this->lazy_update_ = value == "true" ? true : false;
+  } else if (name == "exp_show") {
+    DeletePointer(this->iter_displayer_);
+    this->iter_displayer_ = new ExpIterDisplayer(stoi(value));
+  } else if (name == "step_show") {
+    DeletePointer(this->iter_displayer_);
+    this->iter_displayer_ = new StepIterDisplayer(stoi(value));
   } else {
     Model::SetParameter(name, value);
   }
@@ -42,13 +88,17 @@ void OnlineModel::SetParameter(const std::string& name,
 float OnlineModel::Train(DataIter& data_iter) {
   fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
   this->BeginTrain();
-  float err_num(0);
+  ostringstream log_oss;
+  size_t err_num(0);
   size_t data_num = 0;
-  size_t show_step = 1;  // show information every show_step
-  size_t show_count = 2;
+  size_t next_show_time = size_t(-1);
 
-  fprintf(stdout,
-          "Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n");
+  if (this->iter_displayer_ != nullptr) {
+    next_show_time = this->iter_displayer_->next_show_time();
+    fprintf(stdout,
+            "Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n");
+    log_oss << "Iterate No.\tError No.\tUpdate No.\n";
+  }
 
   float* predicts = new float[this->clf_num()];
   MiniBatch* mb = nullptr;
@@ -60,25 +110,31 @@ float OnlineModel::Train(DataIter& data_iter) {
       DataPoint& x = (*mb)[i];
       this->PreProcess(x);
       // predict
-      label_t label = this->Iterate(x, predicts);
-      if (label != x.label()) {
-        // printf("%d\n", data_num + 1);
-        err_num++;
-      }
+      if (this->Iterate(x, predicts) != x.label()) err_num++;
       ++data_num;
 
-      if (data_num >= show_count) {
-        fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num,
-                float(double(err_num) / data_num), this->update_num());
-        show_count = (size_t(1) << ++show_step);
+      if (data_num >= next_show_time) {
+        float err_rate = float(err_num) / data_num;
+        fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num, err_rate,
+                this->update_num());
+        log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
+                << "\n";
+        this->iter_displayer_->next();
+        next_show_time = this->iter_displayer_->next_show_time();
       }
     }
   }
 
-  fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num,
-          float(double(err_num) / data_num), this->update_num());
+  if (this->iter_displayer_ != nullptr) {
+    float err_rate = float(err_num) / data_num;
+    fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num, err_rate,
+            this->update_num());
+    log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
+            << "\n";
+  }
   this->EndTrain();
   delete[] predicts;
+  this->train_log_ = log_oss.str();
 
   return float(double(err_num) / data_num);
 }

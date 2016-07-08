@@ -77,3 +77,13 @@ float lsol_Test(void* model, void* data_iter, const char* output_path) {
     return m->Test(*iter, nullptr);
   }
 }
+
+float lsol_model_sparsity(void* model) {
+  Model* m = (Model*)(model);
+  return m->model_sparsity();
+}
+
+const char* lsol_model_train_log(void* model) {
+  Model* m = (Model*)(model);
+  return m->train_log().c_str();
+}

@@ -134,5 +134,38 @@ void STG::GetModelInfo(Json::Value& root) const {
 }
 
 RegisterModel(STG, "stg", "Sparse Online Learning via Truncated Gradient");
+
+FOBOS_L1::FOBOS_L1(int class_num) : OGD(class_num) {
+  this->regularizer_ = &l1_;
+}
+
+label_t FOBOS_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
+  const auto& x = dp.data();
+  real_t t = real_t(cur_iter_num_ - 1);
+  for (int c = 0; c < this->clf_num_; ++c) {
+    // trucate weights
+    w(c) = truncate(w(c).slice(x),
+                    (eta_ * l1_.lambda()) * (t - l1_.last_update_time()));
+    // truncate bias
+    w(c)[0] = truncate(w(c)[0], bias_eta() * l1_.lambda());
+  }
+
+  return OnlineLinearModel::TrainPredict(dp, predicts);
+}
+
+void FOBOS_L1::EndTrain() {
+  real_t t = real_t(cur_iter_num_);
+  for (int c = 0; c < this->clf_num_; ++c) {
+    // trucate weights
+    w(c) = truncate(w(c), (eta_ * l1_.lambda()) * (t - l1_.last_update_time()));
+    // truncate bias
+    w(c)[0] = truncate(w(c)[0], bias_eta() * l1_.lambda());
+  }
+  OGD::EndTrain();
+}
+
+RegisterModel(FOBOS_L1, "fobos-l1",
+              "Forward Backward Splitting l1 regularization");
+
 }  // namespace model
 }  // namespace lsol

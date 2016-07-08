@@ -79,7 +79,7 @@ void LazyOnlineL1Regularizer::EndIterate(const pario::DataPoint &dp,
   // update last update time
   const auto &x = dp.data();
   auto &last_update_time = this->last_update_time_;
-  real_t time_stamp = real_t(cur_iter_num);
+  real_t time_stamp = real_t(cur_iter_num - 1);
   x.indexes().slice_op([&last_update_time, time_stamp](const index_t &idx) {
     last_update_time[idx] = time_stamp;
   });

@@ -105,11 +105,12 @@ class LSOL_EXPORTS Model {
   /// \param thresh threshold below which weight is considered zero
   ///
   /// \return sparsity
-  virtual float model_sparsity() const = 0;
+  virtual float model_sparsity() const { return 0; }
 
   /// \brief  get model info string
   std::string model_info() const;
 
+  const std::string& train_log() const { return this->train_log_; }
  protected:
   /// \brief  serialize model parameters
   ///
@@ -195,6 +196,7 @@ class LSOL_EXPORTS Model {
   size_t update_num_;
 
   std::string name_;
+  std::string train_log_;
 };
 
 #define RegisterModel(type, name, descr)                                  \

@@ -9,6 +9,9 @@
 #define LSOL_MODEL_ONLINE_MODEL_H__
 
 #include <lsol/model/model.h>
+
+#include <vector>
+
 #include <lsol/pario/data_point.h>
 
 namespace lsol {
@@ -18,7 +21,7 @@ class OnlineModel : public Model {
  public:
   OnlineModel(int class_num, const std::string& type);
 
-  virtual ~OnlineModel() {}
+  virtual ~OnlineModel();
 
   /// \brief  set model parameters
   ///
@@ -84,6 +87,17 @@ class OnlineModel : public Model {
 
   // whether only update when predicted lables are different
   bool lazy_update_;
+
+  //////////show iteration info related settings/////////////////
+public:
+  class IterDisplayer {
+  public:
+	  virtual size_t next_show_time() { return size_t(-1); }
+	  virtual void next() {}
+  };
+
+protected:
+  IterDisplayer* iter_displayer_;
 };  // class Online Model
 }  // namespace model
 }  // namespace lsol

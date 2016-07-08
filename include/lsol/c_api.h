@@ -99,6 +99,20 @@ LSOL_EXPORTS float lsol_Train(void* model, void* data_iter);
 /// \return test accuracy
 LSOL_EXPORTS float lsol_Test(void* model, void* data_iter,
                              const char* output_path);
+
+/// \brief  get the model sparsity
+///
+/// \param model pretrained model
+///
+/// \return model sparsity
+LSOL_EXPORTS float lsol_model_sparsity(void* model);
+
+/// \brief  get the training log of model
+///
+/// \param model pretrained model
+///
+/// \return string of log
+LSOL_EXPORTS const char* lsol_model_train_log(void* model);
 }
 
 #endif

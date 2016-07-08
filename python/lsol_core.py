@@ -4,6 +4,7 @@ import ctypes
 from ctypes import c_char_p, c_int, c_float, c_void_p, byref
 import os
 import sys
+import numpy as np
 
 def find_lib_path():
     """Find MXNet dynamic library files.
@@ -67,6 +68,12 @@ def load_lib():
 
     _LIB.lsol_Test.argtypes = [c_void_p, c_void_p, c_char_p]
     _LIB.lsol_Test.restype = c_float
+
+    _LIB.lsol_model_sparsity.argtypes = [c_void_p]
+    _LIB.lsol_model_sparsity.restype = c_float
+
+    _LIB.lsol_model_train_log.argtypes = [c_void_p]
+    _LIB.lsol_model_train_log.restype = c_char_p
 
     return _LIB
 
@@ -145,6 +152,16 @@ class Model(object):
         if model_path != None:
             Model._LIB.lsol_SaveModel(self.model, model_path)
         return err_rate
+
+    def train_log(self):
+        """get the training log"""
+        log =  Model._LIB.lsol_model_train_log(self.model)
+        log = [filter(None, l.split('\t')) for l in filter(None, log.split('\n'))[1:]]
+        return np.array([[float(v) for v in l] for l in log])
+
+    def sparsity(self):
+        return Model._LIB.lsol_model_sparsity(self.model)
+
 
     def test(self, data_path, data_type, output_path = None):
         """test on the given data

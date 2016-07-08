@@ -44,7 +44,6 @@ label_t RDA::TrainPredict(const pario::DataPoint& dp, float* predicts) {
     w(c) = -eta_ * ut_[c].slice(x);
     w(c)[0] = -bias_eta() * ut_[c][0];
   }
-
   return OnlineLinearModel::TrainPredict(dp, predicts);
 }
 
@@ -109,7 +108,7 @@ RDA_L1::RDA_L1(int class_num) : RDA(class_num) { this->regularizer_ = &l1_; }
 
 label_t RDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
   const auto& x = dp.data();
-  real_t t = real_t(cur_iter_num_ - 1.f + 1e-20);
+  real_t t = real_t(cur_iter_num_ - 1.f);
   real_t trunc_thresh = l1_.lambda() * t;
   eta_ = 1.f / (t * sigma_);
   for (int c = 0; c < this->clf_num_; ++c) {
@@ -118,7 +117,6 @@ label_t RDA_L1::TrainPredict(const pario::DataPoint& dp, float* predicts) {
     // truncate bias
     w(c)[0] = -bias_eta() * expr::truncate(ut_[c][0], trunc_thresh);
   }
-
   return OnlineLinearModel::TrainPredict(dp, predicts);
 }
 
