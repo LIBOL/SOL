@@ -6,10 +6,11 @@
 # MODIFIED: 2015-05-16 23:37:47
 
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot  as plt
 from matplotlib import rc
 import logging
+
+matplotlib.use('Agg')
 #rc('text', usetex=True)
 #rc('font', family='Times New Roman')
 matplotlib.rcParams['ps.useafm'] = True
