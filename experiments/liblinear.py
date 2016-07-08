@@ -47,7 +47,7 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
             logging.info("test accuracy: %.4f" %(test_accu))
             logging.info("model sparsity: %.4f" %(sparsity))
 
-        return test_accu_list, sparsity_list
+        return sparsity_list, test_accu_list
     else:
         if 'cv' in opts:
             cv_output_path  = osp.join(dtrain.work_dir, 'cv-liblinear.txt')

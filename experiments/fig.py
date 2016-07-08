@@ -14,7 +14,7 @@ import logging
 #rc('font', family='Times New Roman')
 matplotlib.rcParams['ps.useafm'] = True
 matplotlib.rcParams['pdf.use14corefonts'] = True
-matplotlib.rcParams['text.usetex'] = True
+#matplotlib.rcParams['text.usetex'] = True
 
 
 def plot(xs, labels, ys, x_label, y_label, output_path,
