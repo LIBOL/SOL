@@ -212,8 +212,8 @@ def exp_online(args, dt_train, dt_test, cache_data_path=None):
         error_rates.append(ave_error_rates / args.shuffle)
         update_nums.append(ave_update_nums / args.shuffle)
 
-    fig.plot(xs,algo_list, error_rates, 'Number of samples', 'Cumulative Error Rate', 'error_rate.pdf', draw_legend=False)
-    fig.plot(xs,algo_list, update_nums, 'Number of samples', 'Cumulative Number of Updates', 'update_num.pdf')
+    fig.plot(xs,algo_list, error_rates, 'Number of samples', 'Cumulative Error Rate', 'error-rate.pdf', draw_legend=False)
+    fig.plot(xs,algo_list, update_nums, 'Number of samples', 'Cumulative Number of Updates', 'update-num.pdf')
 
 def run_sol(dtrain, dtest, opts):
     if opts['algo'] == 'liblinear':
@@ -316,7 +316,7 @@ def exp_sol(args, dt_train, dt_test, cache_data_path):
         ave_test_accu_list.append(ave_test_accu)
 
     #draw sparsity vs test accuracy
-    fig.plot(ave_sparsity_list,algo_list, ave_test_accu_list, 'Sparsity', 'Test Error Rate', 'sparsity_test_error.pdf')
+    fig.plot(ave_sparsity_list,algo_list, ave_test_accu_list, 'Sparsity', 'Test Error Rate', 'sparsity-test-error.pdf')
 
 if __name__ == '__main__':
     args = getargs()
