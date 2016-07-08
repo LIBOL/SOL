@@ -34,6 +34,7 @@
 *.log
 *.temp
 *.tmp
+*.pkl
 
 #folders
 build/
@@ -41,4 +42,5 @@ install/
 tmp/
 temp/
 dist/
-cache
+cache/
+data/
