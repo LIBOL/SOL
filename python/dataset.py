@@ -17,7 +17,6 @@ class DataSet(object):
     env_sep = ';' if sys.platform == 'win32' else ':'
     if bin_dir not in env_paths.split('env_sep'):
         os.environ['PATH'] = bin_dir + env_sep + env_paths;
-    data_dir = config.get('data', 'DATA_DIR', '.')
     cache_dir = config.get('data', 'CACHE_DIR', 'cache')
 
     def __init__(self, name, data_path = '', dtype = 'svm', pass_num = 1):
@@ -27,9 +26,9 @@ class DataSet(object):
 
         if data_path == '':
             data_path = '{0}{1}{0}_train'.format(name, os.sep)
-        self.data_path = self.get_data_path(data_path)
+        self.data_path = data_path
         if os.path.exists(self.data_path) == False:
-            raise Exception('file %s not found, DATA_ROOT not set?' %(self.data_path))
+            raise Exception('file %s not found' %(self.data_path))
         self.data_name = os.path.splitext(os.path.basename(self.data_path))[0]
 
         self.work_dir = os.path.join(self.cache_dir, self.name)
@@ -40,12 +39,6 @@ class DataSet(object):
 
         #prepare the dataset
         self.__analyze_dataset()
-
-    def get_data_path(self, path):
-        if os.path.isabs(path):
-            return path
-        else:
-            return os.path.join(self.data_dir, path)
 
     def __get_cmd_path(self, cmd_name):
         if sys.platform == 'win32':
