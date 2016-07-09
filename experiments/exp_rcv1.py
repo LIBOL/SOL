@@ -74,6 +74,7 @@ def getargs():
     return args
 
 def run_ol(dtrain, dtest, opts, retrain=False, fold_num = 5):
+    logging.info('run ol: %s' %(opts['algo']))
     if opts['algo'] == 'liblinear':
         return liblinear.run(dt_train, dt_test, opts, retrain, fold_num)
     elif opts['algo'] == 'vw':
@@ -216,6 +217,7 @@ def exp_online(args, dt_train, dt_test, cache_data_path=None):
     fig.plot(xs,algo_list, update_nums, 'Number of samples', 'Cumulative Number of Updates', 'update_num.pdf')
 
 def run_sol(dtrain, dtest, opts):
+    logging.info('run sol: %s' %(opts['algo']))
     if opts['algo'] == 'liblinear':
         return liblinear.run(dt_train, dt_test, opts)
     elif opts['algo'] == 'vw':
@@ -243,7 +245,7 @@ def run_sol(dtrain, dtest, opts):
         with Model(model_name = opts['algo'], class_num = 2, params = model_params + [('lambda', l1)]) as m:
             logging.info("train model...")
             start_time = time.time()
-            train_accu = 1 - m.train(dtrain.rand_path(), dtrain.dtype)
+            train_accu = 1 - m.train(dtrain.rand_path('bin'), 'bin')
             end_time = time.time()
             train_time = end_time - start_time
 
@@ -252,7 +254,7 @@ def run_sol(dtrain, dtest, opts):
 
             logging.info("test model...")
             start_time = time.time()
-            test_accu = 1 - m.test(dtest.data_path,dtest.dtype)
+            test_accu = 1 - m.test(dtest.rand_path('bin'), 'bin')
             end_time = time.time()
             test_time = end_time - start_time
 
@@ -289,6 +291,7 @@ def exp_sol(args, dt_train, dt_test, cache_data_path):
         for rid in xrange(args.shuffle):
             logging.info('random pass %d' %(rid))
             rand_path = dt_train.rand_path(force=True)
+            rand_path = dt_train.rand_path(tgt_type='bin', force=True)
             for algo, opt in opts.iteritems():
                 algo_res = run_sol(dt_train, dt_test, opt)
                 res[algo][0][rid,:] = algo_res[0]
