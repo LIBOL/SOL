@@ -57,11 +57,11 @@ def plot(xs, labels, ys, x_label, y_label, output_path,
         ax.axis(axis)
     ax.grid()
     if draw_legend:
-        ax.legend(lines,labels,loc='best',fontsize=14,ncol=2)
-    plt.xlabel(x_label,fontsize=16)
-    plt.ylabel(y_label,fontsize=16)
+        ax.legend(lines,labels,loc='best',fontsize=20,ncol=2)
+    plt.xlabel(x_label,fontsize=24)
+    plt.ylabel(y_label,fontsize=24)
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
 
-    plt.savefig(output_path)
+    plt.savefig(output_path,bbox_inches='tight')
     logging.info('figure saved to %s' %(output_path))
     #plt.show()
