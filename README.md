@@ -1,6 +1,6 @@
-=====================================================
-LIBSOL - A Large Scale Sparse Online Learning Library
-====================================================
+==========================================================
+LIBSOL - A Library for Scalable Online Learning Algorithms
+=========================================================
 
 
 About LIBSOL
@@ -105,58 +105,58 @@ The dataset we use will be `a1a` provided in the ``data`` folder.
 
 The command for training wit default algorithm is as the following shows.
 
-    $ lsol_train data/a1a
+    $ libsol_train data/a1a
     training accuracy: 0.8125
     training time: 0.000 seconds
     model sparsity: 15.1260%
 
 Users can use the python wrapper to do the same thing. 
 
-    $ python python/lsol_train.py data/a1a
+    $ python python/libsol_train.py data/a1a
 
 The learned model can be saved to a file (``a1a.model`` for example) by:
 
     $ #using executable
-    $ lsol_train data/a1a a1a.model
+    $ libsol_train data/a1a a1a.model
     $ #using python
-    $ python python/lsol_train.py data/a1a a1a.model
+    $ python python/libsol_train.py data/a1a a1a.model
 
 By default, LIBSOL use ``OGD`` to learn a model. If users want to try another
 algorithm (``AROW`` for example) and save to another file (``arow.model``):
 
     $ #using executable
-    $ lsol_train -a arow data/a1a arow.model
+    $ libsol_train -a arow data/a1a arow.model
     $ #using python
-    $ python python/lsol_train.py -a arow data/a1a a1a.model
+    $ python python/libsol_train.py -a arow data/a1a a1a.model
 
 Each algorithm may have its own parameters. The following command changes the
 default value of parameter ``r`` to ``2.0``:
 
     $ #using executable
-    $ lsol_train -a arow --params r=2.0 data/a1a arow.model
+    $ libsol_train -a arow --params r=2.0 data/a1a arow.model
     $ #using python
-    $ python python/lsol_train.py --params r=2.0 -a arow data/a1a arow.model
+    $ python python/libsol_train.py --params r=2.0 -a arow data/a1a arow.model
 
 The python wrapper also provides the cross validation ability. For example, if
 users want to do a 5-fold GridSearch Cross Validation in the range [2^-5,2^-4,...,2^4, 2^5] for
 parameter ``r`` of AROW, the command will be:
 
-    $ python python/lsol_train.py -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
+    $ python python/libsol_train.py -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
     cross validation parameters: [('r', 2.0)]
 
 In some cases we want to finetune from a pretrained model,
 
     $ #using executable
-    $ lsol_train -m arow.model data/a1a arow2.model
+    $ libsol_train -m arow.model data/a1a arow2.model
     $ #using python
-    $ python python/lsol_train.py -m arow.model data/a1a arow2.model
+    $ python python/libsol_train.py -m arow.model data/a1a arow2.model
 
 We can test with the learned model:
 
     $ #using executable
-    $ lsol_test arow.model data/a1a.t predict.txt
+    $ libsol_test arow.model data/a1a.t predict.txt
     $ #using python
-    $ python python/lsol_test.py arow.model data/a1a.t
+    $ python python/libsol_test.py arow.model data/a1a.t
     test accuracy: 0.8437
     test time: 0.016 seconds
 
