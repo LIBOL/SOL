@@ -319,7 +319,7 @@ def exp_sol(args, dt_train, dt_test, cache_data_path):
         ave_test_accu_list.append(ave_test_accu)
 
     #draw sparsity vs test accuracy
-    fig.plot(ave_sparsity_list,algo_list, ave_test_accu_list, 'Sparsity', 'Test Error Rate', 'sparsity-test-error.pdf')
+    fig.plot(ave_sparsity_list,algo_list, ave_test_accu_list, 'Sparsity', 'Test Accuracy', 'sparsity-test-error.pdf', axis=[0.2,1.0,0.8,1.0])
 
 if __name__ == '__main__':
     args = getargs()

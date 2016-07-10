@@ -20,7 +20,7 @@ matplotlib.rcParams['pdf.use14corefonts'] = True
 
 def plot(xs, labels, ys, x_label, y_label, output_path,
         line_width=3,
-        marker_size=8,
+        marker_size=12,
         axis=None, xtickers=None, draw_legend=True):
 
     color_list = [(0.12,0.56,1),(0.58,0.66,0.2),(0.48,0.41,0.93),
@@ -40,9 +40,10 @@ def plot(xs, labels, ys, x_label, y_label, output_path,
                 color=color_list[c_ind % len(color_list)],
                 marker=marker_list[m_ind % len(marker_list)],
                 linestyle=line_styles[c_ind % len(line_styles)],
-                clip_on=False,markersize=marker_size,
+                clip_on=True,markersize=marker_size,
                 linewidth=line_width,
-                fillstyle='full',zorder=100
+                #fillstyle='full',
+                zorder=100
                 )
         c_ind += 1
         m_ind += 1
