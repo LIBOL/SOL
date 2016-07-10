@@ -42,7 +42,6 @@ def getargs():
 
     #input output
     parser.add_argument('model', type=str, help='existing pre-trained model')
-    parser.add_argument('dt_name', type=str, help='dataset name')
     parser.add_argument('input_path', type=str, help='path to test data')
     parser.add_argument('output', type=str, nargs='?', help='path to save the predicted results')
     parser.add_argument('-t', '--data_type', type=str, default='svm', choices=['svm', 'bin', 'csv'], help='training data type')
@@ -63,11 +62,11 @@ if __name__ == '__main__':
     args = getargs()
 
     try:
-        dt = DataSet(args.dt_name,args.input_path, args.data_type)
-        model_path = os.path.join(dt.work_dir, args.model)
+        dt_name = os.path.basename(args.input_path)
+        dt = DataSet(dt_name,args.input_path, args.data_type)
 
         start_time = time.time()
-        with Model(model_path = model_path, batch_size = args.batch_size, buf_size = args.buf_size) as m:
+        with Model(model_path = args.model, batch_size = args.batch_size, buf_size = args.buf_size) as m:
             if args.output != None and not os.path.isabs(args.output):
                 args.output = os.path.join(dt.work_dir, args.output)
             logging.info("predicting...")

@@ -41,7 +41,6 @@ def getargs():
             argparse.RawTextHelpFormatter)
 
     #input output
-    parser.add_argument('dt_name', type=str, help='dataset name')
     parser.add_argument('input_path', type=str, help='path to training data')
     parser.add_argument('output', type=str, nargs='?', help='path to save the generated model')
     parser.add_argument('-a', '--algo', type=str, default='ogd', help='name of the algorithm to use')
@@ -72,7 +71,8 @@ def getargs():
 if __name__ == '__main__':
     args = getargs()
     try:
-        dt = DataSet(args.dt_name,args.input_path, args.data_type)
+        dt_name = os.path.basename(args.input_path)
+        dt = DataSet(dt_name,args.input_path, args.data_type)
         model_params = []
         if args.params != None:
             model_params = [item.split('=') for item in args.params]
@@ -95,11 +95,10 @@ if __name__ == '__main__':
         with Model(model_name = args.algo, class_num = dt.class_num, batch_size
                 = args.batch_size, buf_size = args.buf_size, params =
                 model_params) as m:
-            if args.output != None and not os.path.isabs(args.output):
-                args.output = os.path.join(dt.work_dir, args.output)
             logging.info("train model...")
             accu = 1 - m.train(dt.data_path,dt.dtype, args.passes, args.output)
             logging.info("training accuracy: %.4f" %(accu))
             logging.info("training time: %.4f seconds" %(time.time() - start_time))
+            logging.info("model sparsity: %.4f%% seconds" %(m.sparsity() * 100))
     except Exception as err:
         print 'train failed: %s' %(err.message)
