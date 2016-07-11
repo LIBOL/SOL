@@ -26,6 +26,8 @@ def find_lib_path():
 
     if sys.platform == 'win32':
         dll_path = [os.path.join(p, 'lsol.dll') for p in dll_path]
+    elif sys.platform == 'cygwin':
+        dll_path = [os.path.join(p, 'liblsol.dll') for p in dll_path]
     else:
         dll_path = [os.path.join(p, 'liblsol.so') for p in dll_path]
 
