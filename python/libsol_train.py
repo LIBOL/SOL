@@ -7,7 +7,7 @@ import logging
 import time
 
 from dataset import DataSet
-from lsol_core import Model
+from libsol_core import Model
 from cv import CV
 
 DESCRIPTION='Large Scale Online Learning Training Scripts'

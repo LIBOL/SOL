@@ -3,8 +3,8 @@
 import os
 import os.path as osp
 import sys
-pylsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
-sys.path.insert(0, pylsol_dir)
+pylibsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
+sys.path.insert(0, pylibsol_dir)
 
 import argparse
 import logging
@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from dataset import DataSet
-from lsol_core import Model
+from libsol_core import Model
 from cv import CV
 
 import liblinear

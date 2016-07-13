@@ -9,7 +9,7 @@ import numpy as np
 
 from dataset import DataSet
 import search_space
-from lsol_core import Model
+from libsol_core import Model
 
 class CV(object):
     """cross validation class
