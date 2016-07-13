@@ -35,8 +35,12 @@
 *.temp
 *.tmp
 *.pkl
+*.sln
+*.txt
+*.pdf
 
 #folders
+.vs/
 build/
 install/
 tmp/

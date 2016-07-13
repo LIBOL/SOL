@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
   if (dst_type == "csv") {
     // for csv, get extra info
-	  cout << "figuring out feature dimension\n";
+    cout << "figuring out feature dimension\n";
     index_t feat_dim = 0;
     while (true) {
       mb = iter.Next(mb);
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     }
     writer->SetExtraInfo((char*)(&feat_dim));
     if (feat_dim == 0) {
-		cerr << "figuring out feature dimension failed\n";
+      cerr << "figuring out feature dimension failed\n";
       return Status_Invalid_Format;
     }
     ret = iter.AddReader(src_path, src_type);
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     if (mb == nullptr) break;
     data_num += mb->size();
     if (data_num % 1000 > print_thresh) {
-		cout << data_num << " examples converted\r";
+      cout << data_num << " examples converted\r";
       print_thresh += 1000;
     }
 

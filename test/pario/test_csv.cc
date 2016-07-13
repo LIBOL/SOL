@@ -26,10 +26,10 @@ using namespace std;
 #define CHECK_EQ(x, y) assert(std::abs((x) - (y)) < 1e-6)
 
 int test_csv_reader(const char* path, vector<DataPoint>& dps) {
-	cout << "load and parse data\n";
+  cout << "load and parse data\n";
   DataReader* reader = DataReader::Create("csv");
   if (reader == nullptr) {
-	  cerr << "create csv reader failed!\n";
+    cerr << "create csv reader failed!\n";
     return -1;
   }
   if (reader->Open(path) != Status_OK) {
@@ -38,7 +38,7 @@ int test_csv_reader(const char* path, vector<DataPoint>& dps) {
   int ret = Status_OK;
   for (int i = 0; i < 5; ++i) {
     DataPoint dp;
-	cout << "parse line " << i << "\n";
+    cout << "parse line " << i << "\n";
     ret = reader->Next(dp);
     switch (i) {
       case 0:
@@ -93,7 +93,7 @@ int test_csv_writer(vector<DataPoint>& dps) {
   const char* out_path = "tmp_test_csv_writer.csv";
   DataWriter* writer = DataWriter::Create("csv");
   if (writer == nullptr) {
-	  cerr << "create csv writer failed!\n";
+    cerr << "create csv writer failed!\n";
     return -1;
   }
   index_t max_dim = 0;
@@ -113,7 +113,7 @@ int test_csv_writer(vector<DataPoint>& dps) {
 
   DataReader* reader = DataReader::Create("csv");
   if (reader == nullptr) {
-    cerr<< "create csv reader failed!\n";
+    cerr << "create csv reader failed!\n";
     return -1;
   }
   if (reader->Open(out_path) != Status_OK) {
@@ -129,21 +129,24 @@ int test_csv_writer(vector<DataPoint>& dps) {
 
   // check if dps and dps2 are the same
   if (dps.size() != dps2.size()) {
-	  cerr << "check csv writer failed!\n";
+    cerr << "check csv writer failed!\n";
     return Status_Error;
   }
   for (size_t i = 0; i < dps.size(); ++i) {
     if (dps[i].label() != dps2[i].label()) {
-		cerr << "check csv writer failed: label of instance " << i << " not the same\n";
+      cerr << "check csv writer failed: label of instance " << i
+           << " not the same\n";
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
       if (dps[i].index(j) != dps2[i].index(j)) {
-		cerr << "check csv writer failed: index "<<j<<" of instance " << i << " not the same\n";
+        cerr << "check csv writer failed: index " << j << " of instance " << i
+             << " not the same\n";
         return Status_Error;
       }
       if (dps[i].feature(j) != dps2[i].feature(j)) {
-		cerr << "check csv writer failed: feature "<<j<<" of instance " << i << " not the same\n";
+        cerr << "check csv writer failed: feature " << j << " of instance " << i
+             << " not the same\n";
         return Status_Error;
       }
     }
@@ -173,7 +176,7 @@ int main() {
   const char* out_path = "tmp_test_csv_reader.csv";
   ofstream out_file(out_path, ios::out);
   if (!out_file) {
-	  cerr << "open " << out_path << " failed!\n";
+    cerr << "open " << out_path << " failed!\n";
     return -1;
   }
   out_file << test_data;
@@ -182,20 +185,20 @@ int main() {
   vector<DataPoint> dps;
   int ret = 0;
   if ((ret = test_csv_reader(out_path, dps)) == 0) {
-	cout << dps.size() << " features loaded\n";
+    cout << dps.size() << " features loaded\n";
     for (const DataPoint& dp : dps) {
-		cout << dp.label();
+      cout << dp.label();
       for (size_t i = 0; i < dp.indexes().size(); ++i) {
-		  cout << " " << dp.index(i) << ":" << dp.feature(i);
+        cout << " " << dp.index(i) << ":" << dp.feature(i);
       }
-	  cout << "\n";
+      cout << "\n";
     }
-	cout << "check csv reader succeed!\n";
+    cout << "check csv reader succeed!\n";
   }
   delete_file(out_path, true);
 
   if ((ret = test_csv_writer(dps)) == Status_OK) {
-	cout << "check csv writer succeed!\n";
+    cout << "check csv writer succeed!\n";
   }
   return ret;
 }

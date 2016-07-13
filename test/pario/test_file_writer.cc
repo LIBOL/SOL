@@ -61,7 +61,7 @@ int main(int argc, char** args) {
   if (writer.Good() == false || reader.Good() == false) {
     status = -1;
   } else {
-	  cerr << file_len << "bytes read and write\n";
+    cerr << file_len << "bytes read and write\n";
   }
 
   delete[] buf;

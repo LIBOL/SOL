@@ -64,7 +64,8 @@ int FileWriter::Write(char* src_buf, size_t length) {
   if (write_len == length) {
     return Status_OK;
   } else {
-	  cerr << "Error " << Status_IO_Error << ": only " << write_len << " bytes are written while " << length << " bytes are specified.\n";
+    cerr << "Error " << Status_IO_Error << ": only " << write_len
+         << " bytes are written while " << length << " bytes are specified.\n";
     return Status_IO_Error;
   }
 }

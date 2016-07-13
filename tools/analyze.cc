@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     }
 
     if (data_num > print_thresh) {
-	  cout << data_num << " examples analyzed\r";
+      cout << data_num << " examples analyzed\r";
       print_thresh += 10000;
     }
   }
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
   }
   FileWriter fw;
   if ((ret = fw.Open(output_path.c_str(), "w")) != Status_OK) {
-	  cerr << "Write analysis result to " << output_path << " failed\n";
+    cerr << "Write analysis result to " << output_path << " failed\n";
     return ret;
   }
   fw.Printf("data number  : %lu\n", data_num);

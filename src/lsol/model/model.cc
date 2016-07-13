@@ -28,7 +28,7 @@ Model* Model::Create(const std::string& name, int class_num) {
   try {
     if (create_func != nullptr) ins = create_func(class_num);
   } catch (invalid_argument& err) {
-	  cerr << "create model failed: " << err.what() << "\n";
+    cerr << "create model failed: " << err.what() << "\n";
     ins = nullptr;
   }
   return ins;
@@ -89,7 +89,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
 }
 
 float Model::Test(DataIter& data_iter, std::ostream* os) {
-	cout << "Model Information: \n" << this->model_info() << "\n";
+  cout << "Model Information: \n" << this->model_info() << "\n";
 
   size_t err_num = 0;
   size_t data_num = 0;
@@ -111,11 +111,11 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
       label_t label = this->Predict(x, predicts);
       if (label != x.label()) err_num++;
       if (os != nullptr) {
-		  (*os) << x.label() << "\t" << label;
-		  for (int k = 0; k < this->clf_num_; ++k){
-			  (*os) << "\t" << predicts[k];
-		  }
-		  (*os) << "\n";
+        (*os) << x.label() << "\t" << label;
+        for (int k = 0; k < this->clf_num_; ++k) {
+          (*os) << "\t" << predicts[k];
+        }
+        (*os) << "\n";
       }
       ++data_num;
     }
@@ -131,10 +131,10 @@ void Model::BeginTrain() {
 }
 
 int Model::Save(const string& path) const {
-	cout << "save model to " << path << "\n";
+  cout << "save model to " << path << "\n";
   ofstream out_file(path.c_str(), ios::out);
   if (!out_file) {
-	  cerr << "open file " << path << " failed\n";
+    cerr << "open file " << path << " failed\n";
     return Status_IO_Error;
   }
   Json::Value root;
@@ -155,13 +155,13 @@ Model* Model::Load(const string& path) {
   Model* model = nullptr;
   ifstream in_file(path.c_str(), ios::in);
   if (!in_file) {
-	  cerr << "open file " << path << " failed\n";
+    cerr << "open file " << path << " failed\n";
     return nullptr;
   }
   string line;
   getline(in_file, line);
   if (line != "model info:") {
-    cerr<< "invalid model file\n";
+    cerr << "invalid model file\n";
     ret = Status_Invalid_Format;
   }
   if (ret == Status_OK) {
@@ -173,7 +173,7 @@ Model* Model::Load(const string& path) {
     Json::Value root;
     Json::Reader reader;
     if (reader.parse(model_info.str(), root) == false) {
-		cerr << "parse model file " << path << " failed\n";
+      cerr << "parse model file " << path << " failed\n";
       ret = Status_Invalid_Format;
     }
 
@@ -182,13 +182,13 @@ Model* Model::Load(const string& path) {
       int cls_num = root.get("cls_num", "0").asInt();
       model = Model::Create(cls_name, cls_num);
       if (model == nullptr) {
-        cerr<<"create model failed: no model named "<<cls_name<<"\n";
+        cerr << "create model failed: no model named " << cls_name << "\n";
         ret = Status_Invalid_Format;
       } else {
         try {
           ret = model->SetModelInfo(root);
         } catch (invalid_argument& err) {
-			cerr << "set model parameter failed: " << err.what() << "\n";
+          cerr << "set model parameter failed: " << err.what() << "\n";
           ret = Status_Invalid_Argument;
         }
       }
@@ -225,7 +225,7 @@ int Model::SetModelInfo(const Json::Value& root) {
     Check(root.get("cls_num", "").asInt() == this->class_num());
     Check(root.get("clf_num", "").asInt() == this->clf_num());
   } catch (invalid_argument& err) {
-	  cerr << "set model info failed: " << err.what() << "\n";
+    cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }
   // loss
@@ -243,7 +243,7 @@ int Model::SetModelInfo(const Json::Value& root) {
          iter != relu_settings.end(); ++iter) {
       if (this->regularizer_->SetParameter(iter.name(), iter->asString()) !=
           Status_OK) {
-		  cerr << "unrecognized regularizer option: " << iter.name() << "\n";
+        cerr << "unrecognized regularizer option: " << iter.name() << "\n";
         return Status_Invalid_Argument;
       }
     }
@@ -299,7 +299,7 @@ int Model::LoadPreSelFeatures(const string& path) {
 
   ifstream in_file(path.c_str(), ios::in);
   if (!in_file) {
-	  cerr << "open file " << path << " failed\n!";
+    cerr << "open file " << path << " failed\n!";
     return Status_IO_Error;
   }
 
@@ -315,7 +315,7 @@ int Model::LoadPreSelFeatures(const string& path) {
 
     index = (index_t)(stoi(line));
     if (index <= 0) {
-		cerr << "parse index " << line << " failed!\n";
+      cerr << "parse index " << line << " failed!\n";
       return Status_Invalid_Format;
     }
     indexes.push_back(index);

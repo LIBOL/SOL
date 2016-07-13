@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
   const vector<string>& input_list = split(src_path, ';');
 
   if (dst_type == "csv") {
-	  cout << "analyzing feature dimension\n";
+    cout << "analyzing feature dimension\n";
     index_t feat_dim = 0;
     for (const string& input_path : input_list) {
       ret = iter.AddReader(input_path, src_type);
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         if (feat_dim < dp.dim()) feat_dim = dp.dim();
       }
     }
-	cout << "total dimension: " << feat_dim << "\n";
+    cout << "total dimension: " << feat_dim << "\n";
     writer->SetExtraInfo((char*)(&feat_dim));
   }
 
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     }
 
     if (data_num > print_thresh) {
-	  cout << data_num << " examples concatenated\r";
+      cout << data_num << " examples concatenated\r";
       print_thresh += 10000;
     }
   }

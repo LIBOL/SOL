@@ -79,18 +79,21 @@ int main(int argc, char** argv) {
   for (const auto& pair : res_table) {
     if ((ret = test_algo(pair.first, argv[1], argv[2], class_num, params, accu,
                          update_num)) != Status_OK) {
-		cerr << "test algorithm " << pair.first << " failed\n";
+      cerr << "test algorithm " << pair.first << " failed\n";
       break;
     }
     if (abs(accu - pair.second.accu) > 1e-6 ||
         update_num != pair.second.update_num) {
-		cerr << "test algorithm " << pair.first << " failed, accu(" << accu << "), update_num(" << update_num << "), expected: accu(" << pair.second.accu << "), update_num(" << pair.second.update_num << ")\n";
+      cerr << "test algorithm " << pair.first << " failed, accu(" << accu
+           << "), update_num(" << update_num << "), expected: accu("
+           << pair.second.accu << "), update_num(" << pair.second.update_num
+           << ")\n";
       ret = Status_Error;
       break;
     }
   }
   if (ret == Status_OK) {
-    cerr<< "test model succeed\n";
+    cerr << "test model succeed\n";
   }
   return ret;
 }
@@ -101,7 +104,7 @@ float roundp(float f, int precision) {
 int test_algo(const std::string& algo, const std::string& train_path,
               const std::string& dtype, int cls_num,
               map<string, string>& params, float& accu, size_t& update_num) {
-	cout << "Test algorithm: " << algo << "\n";
+  cout << "Test algorithm: " << algo << "\n";
   shared_ptr<Model> model;
   model.reset(Model::Create(algo, cls_num));
   if (model == nullptr) return Status_Invalid_Argument;

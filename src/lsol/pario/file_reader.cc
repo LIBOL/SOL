@@ -84,7 +84,8 @@ int FileReader::Read(char* dst, size_t length) {
   } else if (feof(this->file_)) {
     return Status_EndOfFile;
   } else {
-	  cerr << "Error " << Status_IO_Error << ": only " << read_len << " bytes are read while " << length << " bytes are specified.\n";
+    cerr << "Error " << Status_IO_Error << ": only " << read_len
+         << " bytes are read while " << length << " bytes are specified.\n";
     return Status_IO_Error;
   }
 }
