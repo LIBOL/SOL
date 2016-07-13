@@ -11,13 +11,20 @@ import logging
 class DataSet(object):
     curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
     config = ConfigParser.ConfigParser()
-    config.read(os.path.join(curr_path, 'defaults.cfg'))
-    bin_dir = config.get('env', 'BIN_DIR', '.')
+    config_path = os.path.join(curr_path, 'defaults.cfg') 
+
     env_paths = os.environ['PATH']
     env_sep = ';' if sys.platform == 'win32' else ':'
+    if os.path.exists(config_path):
+        config.read(config_path)
+        bin_dir = config.get('env', 'BIN_DIR', '.')
+        cache_dir = config.get('data', 'CACHE_DIR', 'cache')
+    else:
+        bin_dir = os.path.join(curr_path, '../dist/bin')
+        cache_dir = os.path.join(curr_path, '../cache')
+
     if bin_dir not in env_paths.split('env_sep'):
         os.environ['PATH'] = bin_dir + env_sep + env_paths;
-    cache_dir = config.get('data', 'CACHE_DIR', 'cache')
 
     def __init__(self, name, data_path = '', dtype = 'svm', pass_num = 1):
         self.name = name

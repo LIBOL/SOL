@@ -1,6 +1,5 @@
 [env]
-BIN_DIR:/home/yuewu/work/lsol/dist/bin
+BIN_DIR:/home/yuewu/work/LIBSOL/dist/bin
 [data]
-DATA_DIR:/home/yuewu/work/lsol/data
-CACHE_DIR:/home/yuewu/work/lsol/cache
+CACHE_DIR:/home/yuewu/work/LIBSOL/cache
 
