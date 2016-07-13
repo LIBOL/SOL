@@ -8,6 +8,7 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 #include "lsol/pario/file_reader.h"
 #include "lsol/util/error_code.h"
@@ -33,21 +34,21 @@ int main(int argc, char** args) {
 
   reader.Open(path.c_str(), "r");
   if (reader.Good() == false) {
-    fprintf(stderr, "open file (%s) failed\n", path.c_str());
+	  cerr << "open file (" << path << ") failed\n";
     return -1;
   }
-  printf("test readline\n");
+  cout << "test readline\n";
   int buf_len = 1024;
   char* buf = new char[buf_len];
   size_t file_len = 0;
   for (int i = 0; i < 10; ++i) {
-    fprintf(stderr, "\tread round %d\t", i);
+	  cerr << "\tread round " << i << "\t";
     file_len = 0;
     while (reader.ReadLine(buf, buf_len) == Status_OK) {
       file_len += strlen(buf);
     }
     if (reader.Good()) {
-      printf("%llu bytes read\n", file_len);
+		cout << file_len << " bytes read\n";
       reader.Rewind();
     }
   }
@@ -58,14 +59,14 @@ int main(int argc, char** args) {
     reader.Rewind();
   }
   if (status == 0) {
-    fprintf(stderr, "test read, file length: %llu\n", file_len);
+	  cerr << "test read, file length: " << file_len << "\n";
     buf = (char*)realloc(buf, file_len);
     for (int i = 0; i < 10; ++i) {
-      fprintf(stderr, "\tread round %d\t", i);
+		cerr << "\tread round " << i << "\t";
       while (reader.Read(buf, file_len / 2) == Status_OK) {
       }
       if (reader.Good()) {
-        fprintf(stderr, "%llu bytes read\n", file_len);
+		  cerr << file_len << " bytes read\n";
         reader.Rewind();
       }
     }
@@ -77,6 +78,6 @@ int main(int argc, char** args) {
   }
 
   delete[] buf;
-  fprintf(stderr, "program exited with code %d\n", status);
+  cerr << "program exited with code " << status << "\n";
   return status;
 }

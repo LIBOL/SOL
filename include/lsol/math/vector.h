@@ -123,9 +123,8 @@ class Vector : public Matrix<DType> {
   inline DType& back() { return *(this->end() - 1); }
 
   template <typename EType>
-  inline auto slice(
-      const expr::Exp<EType, DType, expr::ExprType::kSparse>& indexes)
-      -> decltype(expr::MakeExp<expr::op::left>(Vector<DType>(), indexes)) {
+  inline expr::BinaryMapExp<expr::op::left, (expr::ExprType::kDense | expr::ExprType::kSparse), Matrix<DType>, expr::ExprType::kDense, EType, expr::ExprType::kSparse, DType>
+	  slice(const expr::Exp<EType, DType, expr::ExprType::kSparse>& indexes) {
     return expr::MakeExp<expr::op::left>(*this, indexes);
   }
 };

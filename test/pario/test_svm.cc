@@ -26,10 +26,10 @@ using namespace std;
 #define CHECK_EQ(x, y) assert(std::abs((x) - (y)) < 1e-6)
 
 int test_svm_reader(const char* path, vector<DataPoint>& dps) {
-  printf("load and parse data\n");
+  cout<<"load and parse data\n";
   DataReader* reader = DataReader::Create("svm");
   if (reader == nullptr) {
-    fprintf(stderr, "create svm reader failed!\n");
+    cerr<< "create svm reader failed!\n";
     return -1;
   }
   if (reader->Open(path) != Status_OK) {
@@ -38,7 +38,7 @@ int test_svm_reader(const char* path, vector<DataPoint>& dps) {
   int ret = Status_OK;
   for (int i = 0; i < 5; ++i) {
     DataPoint dp;
-    printf("parse line %d\n", i);
+	cout << "parse line " << i << "\n";
     ret = reader->Next(dp);
     switch (i) {
       case 0:
@@ -93,7 +93,7 @@ int test_svm_writer(vector<DataPoint>& dps) {
   const char* out_path = "tmp_test_svm_writer.svm";
   DataWriter* writer = DataWriter::Create("svm");
   if (writer == nullptr) {
-    fprintf(stderr, "create svm writer failed!\n");
+    cerr<< "create svm writer failed!\n";
     return -1;
   }
   if (writer->Open(out_path) != Status_OK) {
@@ -106,7 +106,7 @@ int test_svm_writer(vector<DataPoint>& dps) {
 
   DataReader* reader = DataReader::Create("svm");
   if (reader == nullptr) {
-    fprintf(stderr, "create svm reader failed!\n");
+    cerr<< "create svm reader failed!\n";
     return -1;
   }
   reader->Open(out_path);
@@ -120,31 +120,21 @@ int test_svm_writer(vector<DataPoint>& dps) {
 
   // check if dps and dps2 are the same
   if (dps.size() != dps2.size()) {
-    fprintf(stderr, "check svm writer failed!\n");
+    cerr<< "check svm writer failed!\n";
     return Status_Error;
   }
   for (size_t i = 0; i < dps.size(); ++i) {
     if (dps[i].label() != dps2[i].label()) {
-      fprintf(stderr,
-              "check svm writer failed: label of instance %llu not the same\n",
-              i);
+		cerr << "check svm writer failed: label of instance " << i << " not the same\n";
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
       if (dps[i].index(j) != dps2[i].index(j)) {
-        fprintf(stderr,
-                "check svm writer failed: index %llu of instance %llu "
-                "not the "
-                "same\n",
-                j, i);
+		cerr << "check csv writer failed: index "<<j<<" of instance " << i << " not the same\n";
         return Status_Error;
       }
       if (dps[i].feature(j) != dps2[i].feature(j)) {
-        fprintf(stderr,
-                "check svm writer failed: feature %llu of instance %llu "
-                "not the "
-                "same\n",
-                j, i);
+		cerr << "check csv writer failed: label of instance " << i << " not the same\n";
         return Status_Error;
       }
     }
@@ -168,12 +158,12 @@ int main() {
       "1\t1:0.1  2e-3\t:-0.1	3:1.5e-1	4:-1.5e1 5:-1.5e-1\n"
       "1  1:0.1  2 :-0.1	3: 1.5e-1	4:\t-1.5e1 5:-1.5e-1";
 
-  printf("write test data to disk\n");
+  cout << "write test data to disk\n";
 
   const char* out_path = "tmp_test_svm_reader.svm";
   ofstream out_file(out_path, ios::out);
   if (!out_file) {
-    fprintf(stderr, "open %s failed!\n", out_path);
+	  cerr << "open " << out_path << " failed!\n";
     return -1;
   }
   out_file << test_data;
@@ -182,20 +172,20 @@ int main() {
   vector<DataPoint> dps;
   int ret = 0;
   if ((ret = test_svm_reader(out_path, dps)) == 0) {
-    printf("%llu features loaded\n", dps.size());
+	  cout << dps.size() << " features loaded\n";
     for (const DataPoint& dp : dps) {
-      printf("%d", dp.label());
+      cout<< dp.label();
       for (size_t i = 0; i < dp.indexes().size(); ++i) {
-        printf(" %d:%g", dp.index(i), dp.feature(i));
+		  cout << " " << dp.index(i) << ":" << dp.feature(i);
       }
-      printf("\n");
+	  cout << "\n";
     }
-    printf("check svm reader succeed!\n");
+	cout << "check svm reader succeed!\n";
   }
   delete_file(out_path, true);
 
   if ((ret = test_svm_writer(dps)) == Status_OK) {
-    printf("check svm writer succeed!\n");
+    cout<<"check svm writer succeed!\n";
   }
   return ret;
 }

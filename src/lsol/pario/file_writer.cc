@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include <cstdarg>
+#include <iostream>
 
 #include "lsol/util/util.h"
 #include "lsol/util/error_code.h"
@@ -63,10 +64,7 @@ int FileWriter::Write(char* src_buf, size_t length) {
   if (write_len == length) {
     return Status_OK;
   } else {
-    fprintf(stderr,
-            "Error %d: only %llu bytes are written while %llu bytes are "
-            "specified.\n",
-            Status_IO_Error, write_len, length);
+	  cerr << "Error " << Status_IO_Error << ": only " << write_len << " bytes are written while " << length << " bytes are specified.\n";
     return Status_IO_Error;
   }
 }

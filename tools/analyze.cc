@@ -46,13 +46,13 @@ int main(int argc, char** argv) {
   math::Vector<char> feat_flags;
   map<int, size_t> map_class_sample_num;
 
-  int print_thresh = 10000;
+  size_t print_thresh = 10000;
   while (true) {
     mb = data_iter.Next(mb);
     if (mb == nullptr) break;
     data_num += mb->size();
 
-    for (size_t i = 0; i < mb->size(); ++i) {
+    for (int i = 0; i < mb->size(); ++i) {
       DataPoint& dp = (*mb)[i];
 
       if (feat_dim < dp.dim()) {
@@ -82,11 +82,11 @@ int main(int argc, char** argv) {
     }
 
     if (data_num > print_thresh) {
-      fprintf(stdout, "%llu examples analyzed\r", data_num);
+	  cout << data_num << " examples analyzed\r";
       print_thresh += 10000;
     }
   }
-  fprintf(stdout, "%llu examples analyzed\n", data_num);
+  cout << data_num << " examples analyzed\n";
 
   size_t valid_dim = 0;
   for (size_t i = 0; i < feat_flags.size(); i++) {
@@ -94,8 +94,7 @@ int main(int argc, char** argv) {
   }
   FileWriter fw;
   if ((ret = fw.Open(output_path.c_str(), "w")) != Status_OK) {
-    fprintf(stderr, "Write analysis result to %s failed\n",
-            output_path.c_str());
+	  cerr << "Write analysis result to " << output_path << " failed\n";
     return ret;
   }
   fw.Printf("data number  : %lu\n", data_num);

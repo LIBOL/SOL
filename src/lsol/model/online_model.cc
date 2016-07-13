@@ -11,6 +11,8 @@
 #include "lsol/util/util.h"
 
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 using namespace lsol::pario;
@@ -86,7 +88,7 @@ void OnlineModel::SetParameter(const std::string& name,
 }
 
 float OnlineModel::Train(DataIter& data_iter) {
-  fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
+	cout << "Model Information: \n" << this->model_info() << "\n";
   this->BeginTrain();
   ostringstream log_oss;
   size_t err_num(0);
@@ -95,8 +97,7 @@ float OnlineModel::Train(DataIter& data_iter) {
 
   if (this->iter_displayer_ != nullptr) {
     next_show_time = this->iter_displayer_->next_show_time();
-    fprintf(stdout,
-            "Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n");
+    cout<<"Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n";
     log_oss << "Iterate No.\tError No.\tUpdate No.\n";
   }
 
@@ -115,8 +116,7 @@ float OnlineModel::Train(DataIter& data_iter) {
 
       if (data_num >= next_show_time) {
         float err_rate = float(err_num) / data_num;
-        fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num, err_rate,
-                this->update_num());
+		cout << data_num << "\t\t\t" << std::fixed << setprecision(6) <<  err_rate << "\t\t" << this->update_num() << "\n";
         log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
                 << "\n";
         this->iter_displayer_->next();
@@ -127,8 +127,7 @@ float OnlineModel::Train(DataIter& data_iter) {
 
   if (this->iter_displayer_ != nullptr) {
     float err_rate = float(err_num) / data_num;
-    fprintf(stdout, "%llu\t\t\t%.6f\t\t%llu\n", data_num, err_rate,
-            this->update_num());
+	cout << data_num << "\t\t\t" << std::fixed << setprecision(6) << err_rate << "\t\t" << this->update_num() << "\n";
     log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
             << "\n";
   }
@@ -157,7 +156,7 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
   Model::SetModelInfo(root);
   const Json::Value& online_settings = root["online"];
   if (online_settings.isNull()) {
-    fprintf(stderr, "no online info found for online model\n");
+	  cerr << "no online info found for online model\n";
     return Status_Invalid_Format;
   }
   try {
@@ -166,7 +165,7 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
       this->SetParameter(iter.name(), iter->asString());
     }
   } catch (std::invalid_argument& err) {
-    fprintf(stderr, "set model info failed: %s\n", err.what());
+	  cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }
   return Status_OK;
