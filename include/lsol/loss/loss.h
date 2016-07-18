@@ -23,14 +23,16 @@ class LSOL_EXPORTS Loss {
 
  public:
   enum Type {
+    // loss function for regression
+    RG = 1,
     // loss function for binary classification
-    BC = 1,
-    // loss function for binary classification
-    MC = 2,
+    BC = 2,
+    // loss function for multi-class classification
+    MC = 4,
     // hinge-based loss function
-    BOOL = 4,
+    BOOL = 8,
     // bool-based loss function
-    HINGE = 8,
+    HINGE = 16,
   };
 
   inline static char Sign(float x) { return x >= 0.f ? 1 : -1; }
