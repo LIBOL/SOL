@@ -7,6 +7,8 @@
 #ifndef LSOL_MATH_OPERATOR_H__
 #define LSOL_MATH_OPERATOR_H__
 
+#include <cmath>
+
 namespace lsol {
 namespace math {
 namespace expr {

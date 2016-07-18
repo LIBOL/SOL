@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 using namespace std;
 using namespace lsol::pario;

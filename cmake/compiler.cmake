@@ -7,7 +7,9 @@ else()
 endif()
 
 IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_MACOSX_RPATH 1)
     cmake_policy(SET CMP0022 NEW)
+    cmake_policy(SET CMP0042 NEW)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
