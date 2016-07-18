@@ -95,7 +95,7 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
   size_t data_num = 0;
 
   if (os != nullptr) {
-    (*os) << "label\tpredict\tscores\\n";
+    (*os) << "label\tpredict\tscores\n";
   }
 
   float* predicts = new float[this->clf_num()];
