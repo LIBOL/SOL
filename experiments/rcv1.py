@@ -21,6 +21,10 @@ ol_opts['perceptron'] = {'algo':'perceptron'}
 ol_opts['sop'] = {'algo':'sop', 'cv':['a=0.0625:2:16']}
 ol_opts['rda'] = {'algo':'rda'}
 ol_opts['erda'] = {'algo':'erda-l1'}
+
+for k,v in ol_opts.iteritems():
+	ol_opts[k]['params'] = ['step_show=50000']
+
 ol_opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
 ol_opts['vw'] = {'algo':'vw', 'cv':{'l':np.logspace(-4,7,12,base=2)}}
 

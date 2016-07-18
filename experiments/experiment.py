@@ -32,7 +32,6 @@ def run_ol(dtrain, dtest, opts, retrain=False, fold_num = 5):
     model_params = []
     if 'params' in opts:
         model_params = [item.split('=') for item in opts['params']]
-    model_params.append(('step_show','50000'))
 
     if 'cv' in opts:
         cv_output_path  = osp.join(dtrain.work_dir, 'cv-%s.txt' %(opts['algo']))
@@ -88,7 +87,6 @@ def run_sol(dtrain, dtest, opts):
     model_params = []
     if 'params' in opts:
         model_params = [item.split('=') for item in opts['params']]
-    model_params.append(('step_show','50000'))
 
     if 'cv' in opts:
         cv_output_path  = osp.join(dtrain.work_dir, 'cv-%s.txt' %(opts['cv']))
@@ -110,9 +108,12 @@ def run_sol(dtrain, dtest, opts):
             train_accu = 1 - m.train(dtrain.rand_path('bin'), 'bin')
             end_time = time.time()
             train_time = end_time - start_time
+            sparsity = m.sparsity()
+            sparsity_list.append(sparsity)
 
             logging.info("training accuracy: %.4f" %(train_accu))
             logging.info("training time: %.4f seconds" %(train_time))
+            logging.info("model sparsity: %.4f seconds" %(sparsity))
 
             logging.info("test %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
             start_time = time.time()
@@ -123,7 +124,6 @@ def run_sol(dtrain, dtest, opts):
             logging.info("test accuracy: %.4f" %(test_accu))
             logging.info("test time: %.4f seconds" %(test_time))
 
-            sparsity_list.append(m.sparsity())
             test_accu_list.append(test_accu)
 
     return np.array(sparsity_list), np.array(test_accu_list)
@@ -246,8 +246,7 @@ def exp_online(args, dt_train, dt_test, opts, cache_data_path):
              error_rates,
              'Number of samples',
              'Cumulative Error Rate',
-             dt_train.name + '-error-rate.pdf',
-             draw_legend=False)
+             dt_train.name + '-error-rate.pdf')
     fig.plot(xs,algo_list,
              update_nums,
              'Number of samples',

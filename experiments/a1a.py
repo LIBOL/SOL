@@ -22,17 +22,17 @@ ol_opts['perceptron'] = {'algo':'perceptron'}
 ol_opts['sop'] = {'algo':'sop', 'cv':['a=0.0625:2:16']}
 ol_opts['rda'] = {'algo':'rda'}
 ol_opts['erda'] = {'algo':'erda-l1'}
-#dimension of a1a.t is larger than a1a, liblinear will throw an exception
-#ol_opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
-#ol_opts['vw'] = {'algo':'vw', 'cv':{'l':np.logspace(-4,7,12,base=2)}}
+
+for k,v in ol_opts.iteritems():
+	ol_opts[k]['params'] = ['step_show=200']
 
 sol_opts = {}
-sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['fobos-l1'] = {'algo':'fobos-l1', 'cv':'ogd', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['rda-l1'] = {'algo':'rda-l1', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-7,-2,10,base=10) }
-#dimension of a1a.t is larger than a1a, liblinear will throw an exception
-#sol_opts['liblinear'] = {'algo':'liblinear', 'params':{'penalty':'l1'}, 'lambda':np.logspace(-5,7,13, base=2)}
-#sol_opts['vw'] = {'algo':'vw','cv':'vw', 'lambda':np.logspace(-6,-2,10, base=10)}
+sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-3,-0.5,5,base=10) }
+sol_opts['fobos-l1'] = {'algo':'fobos-l1', 'cv':'ogd', 'lambda': np.logspace(-3,-0.5,5,base=10) }
+sol_opts['rda-l1'] = {'algo':'rda-l1', 'lambda': np.logspace(-3,-0.5,5,base=10) }
+sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda':
+		np.logspace(-3,-1,5,base=10) }
+sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda':
+		np.logspace(-3,-0.5,5,base=10) }
+sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda':
+		np.logspace(-3,-1,5,base=10) }
