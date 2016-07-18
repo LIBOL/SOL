@@ -82,9 +82,9 @@ of the following:
             $ make install
 
 
-    + For users with Eclipse
+    + For users with Xcode
 
-            $ cmake -G"Eclipse CDT4 - Unix Makefiles" ..
+            $ cmake -G"Xcode" ..
 
     + For windows users
 
@@ -95,6 +95,11 @@ of the following:
         **Note**: Both 32-bit and 64-bit programs are ok to build and run. But if users want to use the python wrapper, it's required that the architectures of ``python`` and LIBSOL are the same, i.e., 64-bit ``python`` can only use 64-bit LIBSOL, 32-bit ``python`` can only use 32-bit LIBSOL.
 
 3. The generated package will be copied to $LIBSOL/dist
+
+4. Install python  wrapper. [optional]
+
+        $ cd python && pip install -r requirements.txt
+
 
 Quick Start
 ===========
@@ -161,6 +166,18 @@ We can test with the learned model:
     test accuracy: 0.8437
     test time: 0.016 seconds
 
+##Known Issues of Python Wrappers
+
+- The wrappers are tested on Windows with Anaconda python distribution.
+
+- On MacOS, the default python is not a framework build.  Seems matplotlib does not work properly. See [here](http://matplotlib.org/faq/virtualenv_faq.html) for more details. We recommend the Anaconda python distribution.
+
+- On MacOS, if you met the 'Value Error: unknown locale: UTF-8' error, fix by:
+
+        $ export LC_ALL=en_US.UTF-8
+        $ export LANG=en_US.UTF-8
+
+
 For  details, please check documentation of LIBSOL.
 
 Comparison of Online Learning Algorithms
@@ -176,10 +193,10 @@ provided in the data folder:
 The script will conduct cross validation to select best parameters for each
 algorithm. Then the script will shuffle the training 10 times. For each
 shuffled data, the script will train and test for each algorithm. The final
-output is the average of all results. And a final table report will be shown as follows. 
+output is the average of all results. And a final table report will be shown as follows.
 
-	algorithm   train           train           test            test           
-	            accuracy        time(s)         accuracy        time(s)        
+	algorithm   train           train           test            test
+	            accuracy        time(s)         accuracy        time(s)
 	pa1         0.8017+/-0.0059 0.0132+/-0.0051 0.8112+/-0.0188 0.0283+/-0.0020
 	pa2         0.7928+/-0.0080 0.0112+/-0.0021 0.8046+/-0.0242 0.0275+/-0.0033
 	eccw        0.7945+/-0.0061 0.0123+/-0.0013 0.8030+/-0.0186 0.0279+/-0.0017
@@ -204,8 +221,8 @@ Users can also compare on the multi-class dataset
 
 The output is:
 
-	algorithm   train           train           test            test           
-	            accuracy        time(s)         accuracy        time(s)        
+	algorithm   train           train           test            test
+	            accuracy        time(s)         accuracy        time(s)
 	pa1         0.9859+/-0.0000 1.0040+/-0.0000 0.9939+/-0.0000 0.1630+/-0.0000
 	pa2         0.9856+/-0.0000 1.0110+/-0.0000 0.9939+/-0.0000 0.1620+/-0.0000
 	eccw        0.8892+/-0.0000 1.0290+/-0.0000 0.8865+/-0.0000 0.1780+/-0.0000
