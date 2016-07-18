@@ -101,6 +101,8 @@ class OnlineModel : public Model {
 public:
   class IterDisplayer {
   public:
+      virtual ~IterDisplayer(){}
+      
 	  virtual size_t next_show_time() { return size_t(-1); }
 	  virtual void next() {}
   };

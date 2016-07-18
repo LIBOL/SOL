@@ -66,7 +66,7 @@ inline void comp_index(const math::Vector<T>& indexes,
 template <typename T, typename index_type_traits<T>::type* = nullptr>
 inline void decomp_index(const math::Vector<char>& codes,
                          math::Vector<T>& indexes) {
-  size_t sz = indexes.size();
+  //size_t sz = indexes.size();
   indexes.clear();
   uint64_t last = 0;
   uint64_t index = 0;

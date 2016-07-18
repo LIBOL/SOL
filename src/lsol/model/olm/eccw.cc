@@ -89,7 +89,7 @@ void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
       0.5f * (-alpha_i * vi_ * phi_ +
               sqrtf(alpha_i * alpha_i * vi_ * vi_ * phi_ * phi_ + 4.f * vi_));
   ui *= ui;
-  float beta_i = alpha_i * phi_ / (sqrtf(ui) + vi_ * alpha_i * phi_);
+  //float beta_i = alpha_i * phi_ / (sqrtf(ui) + vi_ * alpha_i * phi_);
 
   this->eta_ = alpha_i;
   tmp = alpha_i * phi_ * sqrtf(ui);
