@@ -1,9 +1,12 @@
 #! /usr/bin/env python
 #################################################################################
-#     File Name           :     rcv1.py
-#     Created By          :     yuewu
-#     Description         :     options for rcv1 dataset
+#     File Name           :     mnist.py
+#     Created By          :     
+#     Creation Date       :     [2016-07-18 20:01]
+#     Last Modified       :     [2016-07-18 20:26]
+#     Description         :      
 #################################################################################
+
 import numpy as np
 
 ol_opts = {}
@@ -22,10 +25,13 @@ ol_opts['sop'] = {'algo':'sop', 'cv':['a=0.0625:2:16']}
 ol_opts['rda'] = {'algo':'rda'}
 ol_opts['erda'] = {'algo':'erda-l1'}
 
-#sol_opts = {}
-#sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-6,-1,10,base=10) }
-#sol_opts['fobos-l1'] = {'algo':'fobos-l1', 'cv':'ogd', 'lambda': np.logspace(-6,-1,10,base=10) }
-#sol_opts['rda-l1'] = {'algo':'rda-l1', 'lambda': np.logspace(-6,-1,10,base=10) }
-#sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda': np.logspace(-6,-1,10,base=10) }
-#sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda': np.logspace(-6,-1,10,base=10) }
-#sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-7,-2,10,base=10) }
+for k,v in ol_opts.iteritems():
+	ol_opts[k]['params'] = ['step_show=5000']
+
+sol_opts = {}
+sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-4,-1,5,base=10) }
+sol_opts['fobos-l1'] = {'algo':'fobos-l1', 'cv':'ogd', 'lambda': np.logspace(-4,-1,5,base=10) }
+sol_opts['rda-l1'] = {'algo':'rda-l1', 'lambda': np.logspace(-4,-1,5,base=10) }
+sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda': np.logspace(-4,-1,5,base=10) }
+sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda': np.logspace(-4,-1,5,base=10) }
+sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-4,-1,5,base=10) }
