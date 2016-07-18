@@ -208,7 +208,7 @@ struct BinaryMapExp<OP, exptype, EType1, exptype1, EType2, ExprType::kSparse,
 /// \brief  make a binary expression
 template <typename OP, typename EType1, typename EType2, typename DType,
           int exptype1, int exptype2,
-          typename = std::enable_if<exptype1 != ExprType::kSparse ||
+          typename = typename std::enable_if<exptype1 != ExprType::kSparse ||
                                     exptype2 != ExprType::kSparse>::type>
 inline BinaryMapExp<OP, (exptype1 | exptype2), EType1, exptype1, EType2,
                     exptype2, DType>
