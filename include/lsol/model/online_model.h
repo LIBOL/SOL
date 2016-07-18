@@ -47,6 +47,15 @@ class OnlineModel : public Model {
   virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
 
  protected:
+  /// \brief  predict the label of data in the trainig phase
+  ///
+  /// \param dp input data
+  /// \param predicts predicted scores on the data
+  ///
+  /// \return predicted class label
+  virtual label_t TrainPredict(const pario::DataPoint &dp, float *predicts) = 0;
+
+ protected:
   /// \brief  Get Model Information
   ///
   /// \param root root node of saver
