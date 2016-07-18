@@ -148,7 +148,7 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
             x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
 
             clf = GridSearchCV(estimator=VWClassifier(), param_grid=opts['cv'],
-                        n_jobs=4, cv=fold_num, verbose=True)
+                        n_jobs=1, cv=fold_num, verbose=True)
             clf.fit(x_train, y_train)
 
             best_l = max(clf.grid_scores_, key=itemgetter(1)).parameters['l']
