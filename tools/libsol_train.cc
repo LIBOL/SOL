@@ -1,5 +1,5 @@
 /*********************************************************************************
-*     File Name           :     lsol.cc
+*     File Name           :     libsol_train.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-03-09 15:17]
 *     Last Modified       :     [2016-03-09 17:36]

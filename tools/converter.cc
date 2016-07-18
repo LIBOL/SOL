@@ -58,41 +58,41 @@ int main(int argc, char** argv) {
 
   if (dst_type == "csv") {
     // for csv, get extra info
-    fprintf(stdout, "figuring out feature dimension\n");
+    cout << "figuring out feature dimension\n";
     index_t feat_dim = 0;
     while (true) {
       mb = iter.Next(mb);
       if (mb == nullptr) break;
 
-      for (size_t i = 0; i < mb->size(); ++i) {
+      for (int i = 0; i < mb->size(); ++i) {
         DataPoint& pt = (*mb)[i];
         if (feat_dim < pt.dim()) feat_dim = pt.dim();
       }
     }
     writer->SetExtraInfo((char*)(&feat_dim));
     if (feat_dim == 0) {
-      fprintf(stderr, "figuring out feature dimension failed\n");
+      cerr << "figuring out feature dimension failed\n";
       return Status_Invalid_Format;
     }
     ret = iter.AddReader(src_path, src_type);
     if (ret != Status_OK) return ret;
   }
   size_t data_num = 0;
-  int print_thresh = 1000;
+  size_t print_thresh = 1000;
   while (true) {
     mb = iter.Next(mb);
     if (mb == nullptr) break;
     data_num += mb->size();
     if (data_num % 1000 > print_thresh) {
-      fprintf(stdout, "%llu examples converted\r", data_num);
+      cout << data_num << " examples converted\r";
       print_thresh += 1000;
     }
 
-    for (size_t i = 0; i < mb->size(); ++i) {
+    for (int i = 0; i < mb->size(); ++i) {
       writer->Write((*mb)[i]);
     }
   }
-  fprintf(stdout, "%llu examples converted\n", data_num);
+  cout << data_num << " examples converted\n";
   writer->Close();
   delete writer;
   return ret;

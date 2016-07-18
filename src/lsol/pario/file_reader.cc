@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <memory>
+#include <iostream>
 
 #include "lsol/util/util.h"
 #include "lsol/util/error_code.h"
@@ -83,10 +84,8 @@ int FileReader::Read(char* dst, size_t length) {
   } else if (feof(this->file_)) {
     return Status_EndOfFile;
   } else {
-    fprintf(stderr,
-            "Error %d: only %llu bytes are read while %llu bytes are "
-            "specified.\n",
-            Status_IO_Error, read_len, length);
+    cerr << "Error " << Status_IO_Error << ": only " << read_len
+         << " bytes are read while " << length << " bytes are specified.\n";
     return Status_IO_Error;
   }
 }

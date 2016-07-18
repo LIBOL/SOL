@@ -28,7 +28,7 @@ int test_binary(vector<DataPoint>& dps) {
   const char* out_path = "tmp_test_binary_writer.bin";
   DataWriter* writer = DataWriter::Create("bin");
   if (writer == nullptr) {
-    fprintf(stderr, "create binary writer failed!\n");
+    cerr << "create binary writer failed!\n";
     return -1;
   }
   if (writer->Open(out_path) != Status_OK) {
@@ -41,7 +41,7 @@ int test_binary(vector<DataPoint>& dps) {
 
   DataReader* reader = DataReader::Create("bin");
   if (reader == nullptr) {
-    fprintf(stderr, "create binary reader failed!\n");
+    cerr << "create binary reader failed!\n";
     return -1;
   }
   if (reader->Open(out_path) != Status_OK) {
@@ -57,35 +57,26 @@ int test_binary(vector<DataPoint>& dps) {
 
   // check if dps and dps2 are the same
   if (dps.size() != dps2.size()) {
-    fprintf(stderr,
-            "check svm writer faileds: data point size not the same (%llu "
-            "vs %llu)!\n",
-            dps.size(), dps2.size());
+    cerr << "check svm writer faileds: data point size not the same ("
+         << dps.size() << " vs " << dps2.size() << ")!\n";
     return Status_Error;
   }
   for (size_t i = 0; i < dps.size(); ++i) {
     if (dps[i].label() != dps2[i].label()) {
-      fprintf(stderr,
-              "check svm writer failed: label of instance %llu not the "
-              "same (%d vs %d)\n",
-              i, dps[i].label(), dps2[i].label());
+      cerr << "check svm writer failed: label of instance " << i
+           << " not the same (" << dps[i].label() << " vs " << dps2[i].label()
+           << ")\n";
       return Status_Error;
     }
     for (size_t j = 0; j < dps[i].indexes().size(); ++j) {
       if (dps[i].index(j) != dps2[i].index(j)) {
-        fprintf(stderr,
-                "check svm writer failed: index %llu of instance %llu "
-                "not the "
-                "same\n",
-                j, i);
+        cerr << "check svm writer failed: index " << j << " of instance " << i
+             << " not the same\n";
         return Status_Error;
       }
       if (dps[i].feature(j) != dps2[i].feature(j)) {
-        fprintf(stderr,
-                "check svm writer failed: feature %llu of instance %llu "
-                "not the "
-                "same\n",
-                j, i);
+        cerr << "check svm writer failed: feature " << j << " of instance " << i
+             << " not the same\n";
         return Status_Error;
       }
     }
@@ -107,7 +98,7 @@ int main() {
   vector<DataPoint> dps;
   DataReader* reader = DataReader::Create("svm");
   if (reader == nullptr) {
-    fprintf(stderr, "create svm reader failed!\n");
+    cerr << "create svm reader failed!\n";
     return -1;
   }
   if (reader->Open(path) != Status_OK) {
@@ -122,7 +113,7 @@ int main() {
 
   int ret = 0;
   if ((ret = test_binary(dps)) == 0) {
-    printf("check binary reader succeed!\n");
+    cout << "check binary reader succeed!\n";
   }
 
   return ret;

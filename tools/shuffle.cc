@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
   while (true) {
     mb = iter.Next(mb);
     if (mb == nullptr) break;
-    for (size_t i = 0; i < mb->size(); ++i) {
+    for (int i = 0; i < mb->size(); ++i) {
       DataPoint* dp = new DataPoint();
       (*mb)[i].Clone(*dp);
       data_list.push_back(dp);
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     data_num += mb->size();
   }
 
-  fprintf(stdout, "%llu examples loaded\n", data_num);
+  cout << data_num << " examples loaded\n";
   random_device rd;
   mt19937 g(rd());
   std::shuffle(data_list.begin(), data_list.end(), g);

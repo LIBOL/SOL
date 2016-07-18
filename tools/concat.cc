@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <random>
 #include <cmath>
+#include <iostream>
 
 #include <lsol/lsol.h>
 #include <lsol/util/str_util.h>
@@ -54,7 +55,7 @@ int main(int argc, char** argv) {
   const vector<string>& input_list = split(src_path, ';');
 
   if (dst_type == "csv") {
-    fprintf(stdout, "analyzing feature dimension\n");
+    cout << "analyzing feature dimension\n";
     index_t feat_dim = 0;
     for (const string& input_path : input_list) {
       ret = iter.AddReader(input_path, src_type);
@@ -63,17 +64,17 @@ int main(int argc, char** argv) {
     while (true) {
       mb = iter.Next(mb);
       if (mb == nullptr) break;
-      for (size_t i = 0; i < mb->size(); ++i) {
+      for (int i = 0; i < mb->size(); ++i) {
         DataPoint& dp = (*mb)[i];
         if (feat_dim < dp.dim()) feat_dim = dp.dim();
       }
     }
-    fprintf(stdout, "total dimension: %llu\n", size_t(feat_dim));
+    cout << "total dimension: " << feat_dim << "\n";
     writer->SetExtraInfo((char*)(&feat_dim));
   }
 
   size_t data_num = 0;
-  int print_thresh = 10000;
+  size_t print_thresh = 10000;
   for (const string& input_path : input_list) {
     ret = iter.AddReader(input_path, src_type);
     if (ret != Status_OK) return ret;
@@ -82,19 +83,18 @@ int main(int argc, char** argv) {
     mb = iter.Next(mb);
     if (mb == nullptr) break;
     data_num += mb->size();
-    for (size_t i = 0; i < mb->size(); ++i) {
+    for (int i = 0; i < mb->size(); ++i) {
       writer->Write((*mb)[i]);
     }
 
     if (data_num > print_thresh) {
-      fprintf(stdout, "%llu examples concatenated\r", data_num);
+      cout << data_num << " examples concatenated\r";
       print_thresh += 10000;
     }
   }
 
   writer->Close();
   delete writer;
-  fprintf(stdout, "%llu examples concatenated to %s\n", data_num,
-          dst_path.c_str());
+  cout << data_num << " examples concatenated to " << dst_path << "\n";
   return ret;
 }

@@ -9,6 +9,8 @@
 #include "lsol/model/model.h"
 
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
 
 #include "lsol/util/util.h"
 #include "lsol/util/error_code.h"
@@ -26,7 +28,7 @@ Model* Model::Create(const std::string& name, int class_num) {
   try {
     if (create_func != nullptr) ins = create_func(class_num);
   } catch (invalid_argument& err) {
-    fprintf(stderr, "%s\n", err.what());
+    cerr << "create model failed: " << err.what() << "\n";
     ins = nullptr;
   }
   return ins;
@@ -87,16 +89,13 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
 }
 
 float Model::Test(DataIter& data_iter, std::ostream* os) {
-  fprintf(stdout, "Model Information: \n%s\n", this->model_info().c_str());
-  fprintf(stdout, "Test Process....\nIterate No.\t\t\tError Rate\t\t\n");
+  cout << "Model Information: \n" << this->model_info() << "\n";
 
   size_t err_num = 0;
   size_t data_num = 0;
-  size_t show_step = 1;  // show information every show_step
-  size_t show_count = 2;
 
   if (os != nullptr) {
-    (*os) << "predict\tlabel\n";
+    (*os) << "label\tpredict\tscores\\n";
   }
 
   float* predicts = new float[this->clf_num()];
@@ -112,17 +111,15 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
       label_t label = this->Predict(x, predicts);
       if (label != x.label()) err_num++;
       if (os != nullptr) {
-        (*os) << label << "\t" << x.label() << "\n";
+        (*os) << x.label() << "\t" << label;
+        for (int k = 0; k < this->clf_num_; ++k) {
+          (*os) << "\t" << predicts[k];
+        }
+        (*os) << "\n";
       }
       ++data_num;
-      if (data_num >= show_count) {
-        printf("%llu\t\t\t\t%.6f\r", data_num,
-               float(double(err_num) / data_num));
-        show_count = (size_t(1) << ++show_step);
-      }
     }
   }
-  printf("\n");
   delete[] predicts;
   return float(double(err_num) / data_num);
 }
@@ -134,10 +131,10 @@ void Model::BeginTrain() {
 }
 
 int Model::Save(const string& path) const {
-  fprintf(stdout, "save model to %s\n", path.c_str());
+  cout << "save model to " << path << "\n";
   ofstream out_file(path.c_str(), ios::out);
   if (!out_file) {
-    fprintf(stderr, "open file %s failed\n", path.c_str());
+    cerr << "open file " << path << " failed\n";
     return Status_IO_Error;
   }
   Json::Value root;
@@ -158,13 +155,13 @@ Model* Model::Load(const string& path) {
   Model* model = nullptr;
   ifstream in_file(path.c_str(), ios::in);
   if (!in_file) {
-    fprintf(stderr, "open file %s failed\n", path.c_str());
+    cerr << "open file " << path << " failed\n";
     return nullptr;
   }
   string line;
   getline(in_file, line);
   if (line != "model info:") {
-    fprintf(stderr, "invalid model file\n");
+    cerr << "invalid model file\n";
     ret = Status_Invalid_Format;
   }
   if (ret == Status_OK) {
@@ -176,7 +173,7 @@ Model* Model::Load(const string& path) {
     Json::Value root;
     Json::Reader reader;
     if (reader.parse(model_info.str(), root) == false) {
-      fprintf(stderr, "parse model file %s failed\n", path.c_str());
+      cerr << "parse model file " << path << " failed\n";
       ret = Status_Invalid_Format;
     }
 
@@ -185,14 +182,13 @@ Model* Model::Load(const string& path) {
       int cls_num = root.get("cls_num", "0").asInt();
       model = Model::Create(cls_name, cls_num);
       if (model == nullptr) {
-        fprintf(stderr, "create model failed: no model named %s\n",
-                cls_name.c_str());
+        cerr << "create model failed: no model named " << cls_name << "\n";
         ret = Status_Invalid_Format;
       } else {
         try {
           ret = model->SetModelInfo(root);
         } catch (invalid_argument& err) {
-          fprintf(stderr, "set model parameter failed: %s\n", err.what());
+          cerr << "set model parameter failed: " << err.what() << "\n";
           ret = Status_Invalid_Argument;
         }
       }
@@ -229,7 +225,7 @@ int Model::SetModelInfo(const Json::Value& root) {
     Check(root.get("cls_num", "").asInt() == this->class_num());
     Check(root.get("clf_num", "").asInt() == this->clf_num());
   } catch (invalid_argument& err) {
-    fprintf(stderr, "set model info failed: %s\n", err.what());
+    cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }
   // loss
@@ -247,8 +243,7 @@ int Model::SetModelInfo(const Json::Value& root) {
          iter != relu_settings.end(); ++iter) {
       if (this->regularizer_->SetParameter(iter.name(), iter->asString()) !=
           Status_OK) {
-        fprintf(stderr, "unrecognized regularizer option: %s\n",
-                iter.name().c_str());
+        cerr << "unrecognized regularizer option: " << iter.name() << "\n";
         return Status_Invalid_Argument;
       }
     }
@@ -304,7 +299,7 @@ int Model::LoadPreSelFeatures(const string& path) {
 
   ifstream in_file(path.c_str(), ios::in);
   if (!in_file) {
-    fprintf(stderr, "open file %s failed\n!", path.c_str());
+    cerr << "open file " << path << " failed\n!";
     return Status_IO_Error;
   }
 
@@ -320,7 +315,7 @@ int Model::LoadPreSelFeatures(const string& path) {
 
     index = (index_t)(stoi(line));
     if (index <= 0) {
-      fprintf(stderr, "parse index %s failed!\n", line.c_str());
+      cerr << "parse index " << line << " failed!\n";
       return Status_Invalid_Format;
     }
     indexes.push_back(index);

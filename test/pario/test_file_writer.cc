@@ -9,6 +9,7 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 #include "lsol/pario/file_writer.h"
 #include "lsol/pario/file_reader.h"
@@ -60,7 +61,7 @@ int main(int argc, char** args) {
   if (writer.Good() == false || reader.Good() == false) {
     status = -1;
   } else {
-    fprintf(stderr, "%llu bytes read and write\n", file_len);
+    cerr << file_len << "bytes read and write\n";
   }
 
   delete[] buf;
