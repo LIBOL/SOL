@@ -76,15 +76,6 @@ class LSOL_EXPORTS Model {
   /// \return predicted class label
   virtual label_t Predict(const pario::DataPoint &dp, float *predicts) = 0;
 
- protected:
-  /// \brief  predict the label of data in the trainig phase
-  ///
-  /// \param dp input data
-  /// \param predicts predicted scores on the data
-  ///
-  /// \return predicted class label
-  virtual label_t TrainPredict(const pario::DataPoint &dp, float *predicts) = 0;
-
  public:
   /// \brief  Save model to file
   ///
