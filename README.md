@@ -252,12 +252,12 @@ Additional Information
 
 Please cite LIBSOL in your publications if it helps your research:
 
-@article{libsol2016,
-Author = {Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},
-Journal = {SMU Technical Report (SMU-TR-2016-07-25)},
-Title = {LIBSOL: A Library for Scalable Online Learning Algorithms},
-Year = {2016},
-url= {http://libsol.stevenhoi.org}
+@article{libsol2016,<br>
+Author = {Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},<br>
+Journal = {SMU Technical Report (SMU-TR-2016-07-25)},<br>
+Title = {LIBSOL: A Library for Scalable Online Learning Algorithms},<br>
+Year = {2016},<br>
+url= {http://libsol.stevenhoi.org}<br>
 }
 
 For any questions and comments, please send your email to
