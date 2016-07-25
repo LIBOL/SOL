@@ -247,20 +247,24 @@ command:
     $ python experiment.py --shuffle 10 rcv1 ../data/rcv1_train ../data/rcv1_test
 
 
-Additional Information
+License and Citation
 ======================
 
 LIBSOL is released under the Apache 2.0 open source license. 
 
 Please cite LIBSOL in your publications if it helps your research:
 
-@article{libsol2016,<br>
-Author = {Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},<br>
-Journal = {SMU Technical Report (SMU-TR-2016-07-25)},<br>
-Title = {LIBSOL: A Library for Scalable Online Learning Algorithms},<br>
-Year = {2016},<br>
-url= {http://libsol.stevenhoi.org}<br>
+```
+@article{libsol2016,
+  title={LIBSOL: A Library for Scalable Online Learning Algorithms},
+  author={Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},
+  journal={SMU Technical Report (SMU-TR-2016-07-25)},
+  year={2016}
 }
+```
+
+Additional Information
+======================
 
 For any questions and comments, please send your email to
 chhoi@smu.edu.sg
