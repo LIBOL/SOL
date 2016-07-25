@@ -247,15 +247,17 @@ command:
     $ python experiment.py --shuffle 10 rcv1 ../data/rcv1_train ../data/rcv1_test
 
 
-
 Citing LIBSOL
 ======================
-Please cite the LIBSOL technical report in your publications if it helps your research:
+Please cite LIBSOL in your publications if it helps your research:
 
 @article{libsol2016,
   Author = {Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},
+
   Journal = {SMU Technical Report (SMU-TR-2016-07-25)},
+
   Title = {LIBSOL: A Library for Scalable Online Learning Algorithms},
+
   Year = {2016}
 }
 
