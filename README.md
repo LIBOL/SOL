@@ -250,6 +250,8 @@ command:
 Additional Information
 ======================
 
+LIBSOL is released under the Apache 2.0 open source license. 
+
 Please cite LIBSOL in your publications if it helps your research:
 
 @article{libsol2016,<br>
