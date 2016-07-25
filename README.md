@@ -257,7 +257,7 @@ Please cite LIBSOL in your publications if it helps your research:
 ```
 @article{libsol2016,
   title={LIBSOL: A Library for Scalable Online Learning Algorithms},
-  author={Wu, Yue and Hoi, Steven C.H. and Yue, Nenghai},
+  author={Wu, Yue and Hoi, Steven C.H. and Yu, Nenghai},
   journal={SMU Technical Report (SMU-TR-2016-07-25)},
   year={2016}
 }
