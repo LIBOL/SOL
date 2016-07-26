@@ -72,9 +72,10 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
         #l2-svm
         clf = svm.LinearSVC(penalty=penalty, C=C)
 
-        logging.info("train model...")
+        logging.info("loading data...")
         start_time = time.time()
         x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+        logging.info("train model...")
         clf.fit(x_train, y_train)
         end_time = time.time()
         train_accu = clf.score(x_train, y_train)
@@ -83,9 +84,10 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
         logging.info("training accuracy: %.4f" %(train_accu))
         logging.info("training time: %.4f seconds" %(train_time))
 
-        logging.info("test model...")
+        logging.info("loading data...")
         start_time = time.time()
         x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
+        logging.info("test model...")
         test_accu = clf.score(x_test, y_test)
         end_time = time.time()
         test_time = end_time - start_time

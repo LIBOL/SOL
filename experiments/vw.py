@@ -22,7 +22,7 @@ def vw_exe():
     else:
         return'vw'
 
-def convert_to_vw(input_path, output_path):
+def convert_to_vw(input_path, output_path, class_num = 2):
     """convert data into vw format
     """
     logging.info('convert %s to %s' %(input_path, output_path))
@@ -37,12 +37,15 @@ def convert_to_vw(input_path, output_path):
             while line[pos] != ' ' and line[pos] != '\t':
                 pos = pos + 1
 
-            wfh.write('%s |%s' %(line[0:pos], line[pos:]))
+            label = int(line[0:pos])
+            if class_num != 2:
+                label += 1
+            wfh.write('%s |%s' %(label, line[pos:]))
 
     return None
 
-def calc_accuracy(test_path, predict_path):
-    """calculate prediction accuracy 
+def calc_accuracy(test_path, predict_path, class_num):
+    """calculate prediction accuracy
     """
     labels = []
     with open(test_path,'r') as rfh:
@@ -51,34 +54,35 @@ def calc_accuracy(test_path, predict_path):
     for line in lines:
         if len(line.strip()) == 0:
             break
-        pos = 0
-        while line[pos] != ' ' and line[pos] != '\t':
-            pos = pos + 1
-        val = int(line[:pos])
+        val = int(line.split('|')[0])
         if val == 0:
             val = -1
         labels.append(val)
 
     with open(predict_path,'r') as rfh:
         lines = rfh.readlines()
-    predicts = [1 if float(v) > 0 else -1 for v in filter(None, [l.strip() for l in lines])]
+    if class_num == 2:
+        predicts = [1 if float(v) > 0 else -1 for v in filter(None, [l.strip() for l in lines])]
+    else:
+        predicts = [int(v)  for v in filter(None, [l.strip() for l in lines])]
+
     assert len(labels) == len(predicts)
     return float(np.sum(np.array(labels) == np.array(predicts))) / len(labels)
 
-def parse_sparsity(dt, model_path):
+def parse_sparsity(dt, model_path, class_num):
     with open(model_path, 'r') as fh:
         lines = fh.readlines()
-    valid_dim = float(len(lines) - 12)
+    valid_dim = float(len(lines) - 11)
     if valid_dim < 0:
         valid_dim = 0
-    return  1 - valid_dim / dt.dim
+    return  1 - valid_dim / (dt.dim * class_num)
 
 def test(dtest, cache=False):
     """test vw model"""
     assert dtest.dtype == 'svm'
-    vw_data_path = dtest.data_path + '.vw'
+    vw_data_path = osp.join(dtest.work_dir, osp.basename(dtest.data_path) + '.vw')
     if osp.exists(vw_data_path) == False:
-        convert_to_vw(dtest.data_path, vw_data_path)
+        convert_to_vw(dtest.data_path, vw_data_path, dtest.class_num)
 
     model_path = osp.join(dtest.work_dir, 'vw.model')
     predict_path = osp.join(dtest.work_dir, 'vw.predict')
@@ -97,7 +101,7 @@ def test(dtest, cache=False):
         logging.error('call vw failed, vw in path?')
         sys.exit()
     test_time = time.time() - start_time
-    return calc_accuracy(dtest.data_path, predict_path), test_time
+    return calc_accuracy(vw_data_path, predict_path, dtest.class_num), test_time
 
 def train(dtrain, model_params=[], cache=False, readable_path = None):
     """train vw model"""
@@ -106,6 +110,9 @@ def train(dtrain, model_params=[], cache=False, readable_path = None):
     model_path = osp.join(dtrain.work_dir, 'vw.model')
 
     cmd = vw_exe() + ' -f \"%s\"' %(model_path)
+
+    if dtrain.class_num != 2:
+        cmd += ' --oaa %d' %(dtrain.class_num)
 
     if cache == True:
         cache_path = vw_data_path +  '.cache'
@@ -158,7 +165,7 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
         logging.info('cross validation parameters: l=%f' %(best_l))
 
     vw_data_path = dtrain.rand_path('svm') + '.vw'
-    convert_to_vw(dtrain.rand_path('svm'), vw_data_path)
+    convert_to_vw(dtrain.rand_path('svm'), vw_data_path, dtrain.class_num)
     cache_path = vw_data_path +  '.cache'
     if osp.exists(cache_path):
         os.remove(cache_path)
@@ -177,7 +184,7 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
             logging.info("test accuracy: %.4f" %(test_accu))
             logging.info("test time: %.4f seconds" %(test_time))
             #parse sparsity
-            sparsity = parse_sparsity(dtrain, readable_model_path)
+            sparsity = parse_sparsity(dtrain, readable_model_path, dtrain.class_num)
             sparsity_list.append(sparsity)
             test_accu_list.append(test_accu)
 
