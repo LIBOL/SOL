@@ -8,13 +8,13 @@ About LIBSOL
 LIBSOL is an open-source library for scalable online learning with high-dimensional data. The library provides a family of regular and sparse online learning algorithms for large-scale binary and multi-class classification tasks with high efficiency, scalability, portability, and extensibility. We provide easy-to-use command-line tools, python wrappers and library calls for users and developers, and comprehensive documents for both beginners and advanced users. LIBSOL is not only a machine learning toolbox, but also a comprehensive experimental platform for online learning research. Experiments demonstrate that LIBSOL is highly efficient and scalable for large-scale learning with high-dimensional data.
 
 Specifically, LIBSOL consists of a family of:
-+ First Order Online feature selection algorithms:
++ First-order Online Learning algorithms:
     - Perceptron: The Perceptron Algorithm(Rosenblatt, 1958)
     - OGD: Online Gradient Descent(Zinkevich, 2003)
     - PA: Online Passive Aggressive Algorithms(Crammer et al., 2006)
     - ALMA: Approximate Large Margin Algorithm(Gentile, 2002)
     - RDA: Regularized Dual Averaging(Xiao, 2010)
-+ Second order online learning algorithms:
++ Second-order Online Learning algorithms:
     - SOP: Second-Order Perceptron(Cesa-Bianchi et al., 2005)
     - CW: Confidence Weighted Learning(Dredze et al., 2008)
     - ECCW: Exactly Convex Confidence Weighted Learning(Crammer et al., 2008)
@@ -22,18 +22,18 @@ Specifically, LIBSOL consists of a family of:
     - Ada-FOBOS: Adaptive Regularized Online Learning(Crammer et al., 2009)
     - Ada-RDA: Adaptive Regularized Dual Averaging(Crammer et al., 2009)
 
-+ First order Sparse online learning algorithms:
++ First-order Sparse Online Learning algorithms:
     - STG: sparse online learning via truncated graidient (Langford et al., 2009);
     - FOBOS-L1: l1 Regularized Forward backward splitting (Duchi et al., 2009);
     - RDA-L1: Mixed l1/l2^2 Regularized Dual averaging(Xiao, 2010);
     - ERDA-L1: Enhanced l1/l2^2 Regularized Dual averaging(Xiao, 2010);
 
-+ Second order sparse online learning algorithms as follows
++ Second-order Sparse Online Learning algorithms:
     - Ada-FOBOS-L1: Ada-FOBOS with l1 regularization
     - Ada-RDA-L1: Ada-RDA with l1 regularization
 
-This document briefly explains the usage of LIBSOL. A more detailed manual can be
-found from documentation of LIBSOL.
+This document briefly explains the usage of LIBSOL. A more detailed manual for users and developers can be
+found in the documentation of LIBSOL.
 
 To get started, please read the ``Quick Start'' section first.
 
