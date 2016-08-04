@@ -59,6 +59,10 @@ OnlineModel::OnlineModel(int class_num, const std::string& type)
   this->set_initial_t(0);
   this->lazy_update_ = false;
   this->iter_displayer_ = new ExpIterDisplayer(2);
+  // active learning
+  this->active_smoothness_ = 0;
+  // cost sensitive learning
+  this->cost_sensitive_learning_ = false;
 }
 
 OnlineModel::~OnlineModel() { DeletePointer(this->iter_displayer_); }
@@ -77,6 +81,18 @@ void OnlineModel::SetParameter(const std::string& name,
     this->update_dim(stoi(value));
   } else if (name == "lazy_update") {
     this->lazy_update_ = value == "true" ? true : false;
+  } else if (name == "active_smoothness") {
+    this->active_smoothness_ = stof(value);
+    Check(active_smoothness_ >= 1);
+  } else if (name == "cost_margin") {
+    if (this->clf_num_ != 1) {
+      throw invalid_argument(
+          "cost sensitive learning is only allowed in binary classification "
+          "yet");
+    }
+    this->cost_margin_ = stof(value);
+    Check(cost_margin_ > 0);
+    this->cost_sensitive_learning_ = true;
   } else if (name == "exp_show") {
     DeletePointer(this->iter_displayer_);
     this->iter_displayer_ = new ExpIterDisplayer(stoi(value));
@@ -88,9 +104,27 @@ void OnlineModel::SetParameter(const std::string& name,
   }
 }
 
+void OnlineModel::BeginTrain() {
+  if (this->cost_sensitive_learning_) {
+    if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0 ||
+        (this->loss_->type() & loss::Loss::Type::BC) == 0) {
+      throw invalid_argument(
+          "only hinge-based loss functions of binary classification are "
+          "allowed in cost sensitive learning");
+    }
+  }
+
+  Model::BeginTrain();
+}
+
 float OnlineModel::Train(DataIter& data_iter) {
   cout << "Model Information: \n" << this->model_info() << "\n";
-  this->BeginTrain();
+  try {
+    this->BeginTrain();
+  } catch (invalid_argument& err) {
+    fprintf(stderr, "%s\n", err.what());
+    return -1;
+  }
   ostringstream log_oss;
   size_t err_num(0);
   size_t data_num = 0;
@@ -153,6 +187,12 @@ void OnlineModel::GetModelInfo(Json::Value& root) const {
   root["online"]["t"] = this->cur_iter_num_;
   root["online"]["dim"] = this->dim_;
   root["online"]["lazy_update"] = this->lazy_update_ ? "true" : "false";
+  if (this->active_smoothness_ >= 1) {
+    root["online"]["active_smoothness"] = this->active_smoothness_;
+  }
+  if (this->cost_sensitive_learning_) {
+    root["online"]["cost_margin"] = this->cost_margin_;
+  }
 }
 
 int OnlineModel::SetModelInfo(const Json::Value& root) {

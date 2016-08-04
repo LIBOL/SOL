@@ -30,6 +30,8 @@ class OnlineModel : public Model {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
+  virtual void BeginTrain();
+
   /// \brief  Train from a data set
   //
   /// \param data_iter data iterator
@@ -53,7 +55,7 @@ class OnlineModel : public Model {
   /// \param predicts predicted scores on the data
   ///
   /// \return predicted class label
-  virtual label_t TrainPredict(const pario::DataPoint &dp, float *predicts) = 0;
+  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts) = 0;
 
  protected:
   /// \brief  Get Model Information
@@ -97,17 +99,22 @@ class OnlineModel : public Model {
   // whether only update when predicted lables are different
   bool lazy_update_;
 
+  // active learning
+  float active_smoothness_;
+  // cost sensitive
+  bool cost_sensitive_learning_;
+  float cost_margin_;
   //////////show iteration info related settings/////////////////
-public:
+ public:
   class IterDisplayer {
-  public:
-      virtual ~IterDisplayer(){}
-      
-	  virtual size_t next_show_time() { return size_t(-1); }
-	  virtual void next() {}
+   public:
+    virtual ~IterDisplayer() {}
+
+    virtual size_t next_show_time() { return size_t(-1); }
+    virtual void next() {}
   };
 
-protected:
+ protected:
   IterDisplayer* iter_displayer_;
 };  // class Online Model
 }  // namespace model

@@ -8,7 +8,10 @@
 #include "lsol/model/online_linear_model.h"
 
 #include <algorithm>
+#include <random>
+#include <limits>
 
+#include "lsol/loss/hinge_loss.h"
 #include "lsol/util/util.h"
 
 using namespace std;
@@ -47,10 +50,38 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
   OnlineModel::Iterate(dp, predicts);
   if (this->regularizer_ != nullptr) {
     this->online_regularizer()->BeginIterate(dp);
-    ;
   }
 
   label_t label = this->TrainPredict(dp, predicts);
+  // active learning
+  if (this->active_smoothness_ >= 1) {
+    static random_device rd;
+    static mt19937 gen(rd());
+    static uniform_real_distribution<float> dis(0, 1);
+    float margin = 0;
+    if (this->clf_num_ == 1) {
+      margin = abs(*predicts);
+    } else {
+      float tmp = predicts[label];
+      predicts[label] = -(std::numeric_limits<float>::max)();
+      margin = tmp - *max_element(predicts, predicts + this->clf_num_);
+      predicts[label] = tmp;
+    }
+    float prob = active_smoothness_ / (active_smoothness_ + margin);
+    if (prob < dis(gen)) {
+      --this->cur_iter_num_;
+      return label;
+    }
+  }
+  // cost sensitive learning, binary learning with hinge loss only yet
+  if (this->cost_sensitive_learning_) {
+    loss::HingeBase* hinge_loss = static_cast<loss::HingeBase*>(this->loss_);
+    if (dp.label() == 1) {
+      hinge_loss->set_margin(this->cost_margin_);
+    } else {
+      hinge_loss->set_margin(1.f);
+    }
+  }
   float loss = this->loss_->gradient(dp, predicts, label, this->gradients_,
                                      this->clf_num_);
   if (this->lazy_update_) {
