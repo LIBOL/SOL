@@ -22,8 +22,6 @@ inline FILE* open_file(const char* path, const char* mode) {
   return file;
 }
 
-inline double get_current_time() { return GetTickCount() / 1000.0; }
-
 }  // namespace lsol
 
 #endif  // LSOL_UTIL_PLATFORM_WIN32_H__

@@ -9,10 +9,11 @@
 #ifndef LSOL_UTIL_PLATFORM_H__
 #define LSOL_UTIL_PLATFORM_H__
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 /// \brief  declaration of functions
 namespace lsol {
@@ -64,7 +65,12 @@ inline void delete_file(const char* path, bool is_force = false) {
 /// \brief  get current time, in seconds
 ///
 /// \return seconds
-inline double get_current_time();
+inline double get_current_time() {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+             std::chrono::system_clock::now().time_since_epoch())
+             .count() *
+         0.001;
+}
 
 }  // namespace lsol
 
