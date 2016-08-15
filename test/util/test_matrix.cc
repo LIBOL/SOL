@@ -111,6 +111,9 @@ int main() {
   cout << "sv2 : " << endl << sv2 << endl;
   v2 = v2 * 0.1f * sv2;
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
+  sv.push_back(8, 3);
+  cout << "v2 : " << endl << v2 << endl;
+  cout << "sv2 : " << endl << sv2 << endl;
   v2 *= 0.1f * sv2;
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;

@@ -150,9 +150,14 @@ inline DType reduce(const Exp<EType, DType, ExprType::kDense> &exp) {
 template <typename OP, typename CType, typename DType, typename EType>
 void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
              const Exp<EType, DType, ExprType::kSparse> &exp) {
+  const CType &dvec = dst.self();
+  size_t dsz = dvec.shape().size();
   DType *pdata = dst.self().data();
+
   const EType &svec = exp.self();
   size_t sz = svec.shape().size();
+  while (sz > 0 && svec.index(sz - 1) >= dsz) --sz;
+
   for (size_t idx = 0; idx < sz; ++idx) {
     OP::template map<DType>(pdata[svec.index(idx)], svec.value(idx));
   }
@@ -163,7 +168,9 @@ inline DType dot(const Exp<EType1, DType, ExprType::kDense> &lhs,
                  const Exp<EType2, DType, ExprType::kSparse> &rhs) {
   const EType1 &exp_val1 = lhs.self();
   const EType2 &exp_val2 = rhs.self();
+  size_t lhs_sz = exp_val1.shape().size();
   size_t sz = exp_val2.shape().size();
+  while (sz > 0 && exp_val2.index(sz - 1) >= lhs_sz) --sz;
   DType val = 0;
   for (size_t idx = 0; idx < sz; ++idx) {
     val += OP::template map<DType>(exp_val1[exp_val2.index(idx)],
