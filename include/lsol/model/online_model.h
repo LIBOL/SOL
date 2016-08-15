@@ -82,6 +82,9 @@ class OnlineModel : public Model {
     return static_cast<OnlineRegularizer*>(this->regularizer_);
   }
 
+ public:
+  int cur_iter_num() const { return this->cur_iter_num_; }
+
  protected:
   // initial learning rate for bias
   float bias_eta0_;

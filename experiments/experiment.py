@@ -234,11 +234,11 @@ def exp_online(args, dt_train, dt_test, opts, cache_data_path):
     for algo, log in res_log.iteritems():
         algo_list.append(algo)
         xs.append(log[0][:,0].astype(np.int))
-        ave_error_rates = np.zeros(log[0][:,1].shape)
-        ave_update_nums = np.zeros(log[0][:,2].shape)
+        ave_error_rates = np.zeros(log[0][:,2].shape)
+        ave_update_nums = np.zeros(log[0][:,3].shape)
         for rid in xrange(args.shuffle):
-            ave_error_rates = ave_error_rates + log[rid][:,1]
-            ave_update_nums = ave_update_nums + log[rid][:,2]
+            ave_error_rates = ave_error_rates + log[rid][:,2]
+            ave_update_nums = ave_update_nums + log[rid][:,3]
         error_rates.append(ave_error_rates / args.shuffle)
         update_nums.append(ave_update_nums / args.shuffle)
 
