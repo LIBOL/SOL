@@ -83,7 +83,7 @@ void OnlineModel::SetParameter(const std::string& name,
     this->lazy_update_ = value == "true" ? true : false;
   } else if (name == "active_smoothness") {
     this->active_smoothness_ = stof(value);
-    Check(active_smoothness_ >= 1);
+    Check(active_smoothness_ > 0);
   } else if (name == "cost_margin") {
     if (this->clf_num_ != 1) {
       throw invalid_argument(
@@ -132,8 +132,9 @@ float OnlineModel::Train(DataIter& data_iter) {
 
   if (this->iter_displayer_ != nullptr) {
     next_show_time = this->iter_displayer_->next_show_time();
-    cout << "Training Process....\nIterate No.\t\tError Rate\t\tUpdate No.\n";
-    log_oss << "Iterate No.\tError No.\tUpdate No.\n";
+    cout << "Training Process....\nData No.\tIterate No.\tError Rate\tUpdate "
+            "No.\n";
+    log_oss << "Data No.\tIterate No.\tError No.\tUpdate No.\n";
   }
 
   float* predicts = new float[this->clf_num()];
@@ -151,10 +152,11 @@ float OnlineModel::Train(DataIter& data_iter) {
 
       if (data_num >= next_show_time) {
         float err_rate = float(err_num) / data_num;
-        cout << data_num << "\t\t\t" << std::fixed << setprecision(6)
-             << err_rate << "\t\t" << this->update_num() << "\n";
-        log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
-                << "\n";
+        cout << data_num << "\t\t" << this->cur_iter_num() << "\t\t"
+             << std::fixed << setprecision(6) << err_rate << "\t"
+             << this->update_num() << "\n";
+        log_oss << data_num << "\t" << this->cur_iter_num() << "\t" << err_rate
+                << "\t" << this->update_num() << "\n";
         this->iter_displayer_->next();
         next_show_time = this->iter_displayer_->next_show_time();
       }
@@ -163,10 +165,10 @@ float OnlineModel::Train(DataIter& data_iter) {
 
   if (this->iter_displayer_ != nullptr) {
     float err_rate = float(err_num) / data_num;
-    cout << data_num << "\t\t\t" << std::fixed << setprecision(6) << err_rate
-         << "\t\t" << this->update_num() << "\n";
-    log_oss << data_num << "\t" << err_rate << "\t" << this->update_num()
-            << "\n";
+    cout << data_num << "\t\t" << this->cur_iter_num() << "\t\t" << std::fixed
+         << setprecision(6) << err_rate << "\t" << this->update_num() << "\n";
+    log_oss << data_num << "\t" << this->cur_iter_num() << "\t" << err_rate
+            << "\t" << this->update_num() << "\n";
   }
   this->EndTrain();
   delete[] predicts;

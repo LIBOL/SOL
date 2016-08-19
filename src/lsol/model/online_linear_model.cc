@@ -54,7 +54,7 @@ label_t OnlineLinearModel::Iterate(const DataPoint& dp, float* predicts) {
 
   label_t label = this->TrainPredict(dp, predicts);
   // active learning
-  if (this->active_smoothness_ >= 1) {
+  if (this->active_smoothness_ > 0) {
     static random_device rd;
     static mt19937 gen(rd());
     static uniform_real_distribution<float> dis(0, 1);
