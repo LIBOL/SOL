@@ -70,7 +70,8 @@ int train(cmdline::parser& parser) {
       }
       try {
         model->SetParameter(strip(opt_pair[0]), strip(opt_pair[1]));
-      } catch (invalid_argument& err) {
+      }
+      catch (invalid_argument& err) {
         fprintf(stderr, "%s\n", err.what());
         return Status_Invalid_Argument;
       }
@@ -84,7 +85,17 @@ int train(cmdline::parser& parser) {
   if (ret != Status_OK) return ret;
 
   double start_time = lsol::get_current_time();
+  try {
+    model->BeginTrain();
+  }
+  catch (invalid_argument& err) {
+    fprintf(stderr, "BeginTrain failed: %s\n", err.what());
+    ret = Status_Invalid_Argument;
+  }
+  if (ret != Status_OK) return ret;
+
   float err_rate = model->Train(iter);
+  model->EndTrain();
   double end_time = lsol::get_current_time();
   fprintf(stdout, "training accuracy: %.4f\n", 1.f - err_rate);
   fprintf(stdout, "training time: %.3f seconds\n", end_time - start_time);

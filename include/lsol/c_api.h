@@ -83,6 +83,12 @@ LSOL_EXPORTS void lsol_ReleaseModel(void** model);
 /// \return status code, 0 if succeed
 LSOL_EXPORTS int lsol_SetModelParameter(void* model, const char* param_name,
                                         const char* param_val);
+/// \brief  Initialize the model for training
+///
+/// \param model model to be trained
+///
+/// \return status code, 0 if succeed
+LSOL_EXPORTS int lsol_BeginTrain(void* model);
 
 /// \brief  train a model
 ///
@@ -91,6 +97,11 @@ LSOL_EXPORTS int lsol_SetModelParameter(void* model, const char* param_name,
 ///
 /// \return training accuracy
 LSOL_EXPORTS float lsol_Train(void* model, void* data_iter);
+
+/// \brief  Finalize the model after training
+///
+/// \param model the trained model
+LSOL_EXPORTS void lsol_EndTrain(void* model);
 
 /// \brief  test a model
 ///

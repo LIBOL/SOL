@@ -90,7 +90,9 @@ int train(cmdline::parser& parser) {
   }
 
   if (ret == Status_OK) {
+    lsol_BeginTrain(model);
     float accu = lsol_Train(model, data_iter);
+    lsol_EndTrain(model);
     fprintf(stdout, "training accuracy: %.4f\n", accu);
 
     // save model

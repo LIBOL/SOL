@@ -54,8 +54,20 @@ int lsol_SetModelParameter(void* model, const char* param_name,
   Model* m = (Model*)(model);
   try {
     m->SetParameter(param_name, param_val);
-  } catch (invalid_argument& err) {
+  }
+  catch (invalid_argument& err) {
     fprintf(stderr, "%s\n", err.what());
+    return Status_Invalid_Argument;
+  }
+  return Status_OK;
+}
+
+int lsol_BeginTrain(void* model) {
+  try {
+    ((Model*)(model))->EndTrain();
+  }
+  catch (invalid_argument& err) {
+    fprintf(stderr, "BeginTrain failed: %s\n", err.what());
     return Status_Invalid_Argument;
   }
   return Status_OK;
@@ -66,6 +78,8 @@ float lsol_Train(void* model, void* data_iter) {
   DataIter* iter = (DataIter*)(data_iter);
   return m->Train(*iter);
 }
+
+void lsol_EndTrain(void* model) { ((Model*)(model))->EndTrain(); }
 
 float lsol_Test(void* model, void* data_iter, const char* output_path) {
   Model* m = (Model*)(model);

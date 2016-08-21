@@ -118,13 +118,6 @@ void OnlineModel::BeginTrain() {
 }
 
 float OnlineModel::Train(DataIter& data_iter) {
-  cout << "Model Information: \n" << this->model_info() << "\n";
-  try {
-    this->BeginTrain();
-  } catch (invalid_argument& err) {
-    fprintf(stderr, "%s\n", err.what());
-    return -1;
-  }
   ostringstream log_oss;
   size_t err_num(0);
   size_t data_num = 0;
@@ -170,7 +163,6 @@ float OnlineModel::Train(DataIter& data_iter) {
     log_oss << data_num << "\t" << this->cur_iter_num() << "\t" << err_rate
             << "\t" << this->update_num() << "\n";
   }
-  this->EndTrain();
   delete[] predicts;
   this->train_log_ = log_oss.str();
 

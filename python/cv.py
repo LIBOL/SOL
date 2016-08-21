@@ -11,10 +11,12 @@ from dataset import DataSet
 import search_space
 from libsol_core import Model
 
+
 class CV(object):
     """cross validation class
     """
-    def __init__(self,  dataset, fold_num, cv_params, extra_param = []):
+
+    def __init__(self, dataset, fold_num, cv_params, extra_param=[]):
         """Create a new cross validation instance
         Parameters:
         dataset: dataset
@@ -28,17 +30,19 @@ class CV(object):
         """
         self.dataset = dataset
         self.fold_num = int(fold_num)
-        if self.fold_num < 2 :
+        if self.fold_num < 2:
             raise ValueError('fold number must bigger than 2!')
 
         self.cv_params = cv_params
         self.search_space = search_space.SearchSpace(cv_params)
         #the last column is for average
-        self.train_scores = np.zeros((self.search_space.size, self.fold_num + 1))
+        self.train_scores = np.zeros(
+            (self.search_space.size, self.fold_num + 1))
         self.val_scores = np.zeros((self.search_space.size, self.fold_num + 1))
-        self.extra_param =  extra_param
+        self.extra_param = extra_param
 
 #    #cross validation
+
     def train_val(self, model_name):
         """train and validate on the dataset
         """
@@ -46,16 +50,20 @@ class CV(object):
         self.dataset.split_file(self.fold_num, "bin")
 
         #cross validation
-        for val_fold_id in range(0,self.fold_num):
+        for val_fold_id in range(0, self.fold_num):
             print '---------------------------'
-            print 'Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
+            print 'Cross Validation on Model %s with Data %s: Fold %d/%d' % (
+                model_name, self.dataset.name, val_fold_id, self.fold_num)
             print '---------------------------'
-            train_accu_list, val_accu_list = self.__train_val_one_fold(model_name, val_fold_id)
+            train_accu_list, val_accu_list = self.__train_val_one_fold(
+                model_name, val_fold_id)
             self.train_scores[:, val_fold_id] = train_accu_list
             self.val_scores[:, val_fold_id] = val_accu_list
 
-        self.train_scores[:, self.fold_num] = np.sum(self.train_scores, axis = 1) / self.fold_num
-        self.val_scores[:, self.fold_num] = np.sum(self.val_scores, axis = 1) / self.fold_num
+        self.train_scores[:, self.fold_num] = np.sum(self.train_scores,
+                                                     axis=1) / self.fold_num
+        self.val_scores[:, self.fold_num] = np.sum(self.val_scores,
+                                                   axis=1) / self.fold_num
 
     def get_best_param(self):
         """Get the best parameters
@@ -65,38 +73,40 @@ class CV(object):
 
     def save_results(self, output_path):
         max_param, max_parma_id = self.get_best_param()
-        with open(output_path,'w') as wfh:
-            wfh.write('Cross Validation Parameters: %s\n' %(str(self.cv_params)))
-            wfh.write('Extra Model Parameters: %s\n' %(str(self.extra_param)))
-            wfh.write('Best Result: %s:\t%.4f\t%.4f\n' %(str(max_param),
-                self.train_scores[max_parma_id, self.fold_num],
+        with open(output_path, 'w') as wfh:
+            wfh.write('Cross Validation Parameters: %s\n' %
+                      (str(self.cv_params)))
+            wfh.write('Extra Model Parameters: %s\n' % (str(self.extra_param)))
+            wfh.write('Best Result: %s:\t%.4f\t%.4f\n' % (
+                str(max_param), self.train_scores[max_parma_id, self.fold_num],
                 self.val_scores[max_parma_id, self.fold_num]))
 
             wfh.write("Validation Accuracies\n")
             for y in xrange(self.val_scores.shape[0]):
-                wfh.write('%s:' %(str(self.search_space.get_param(y))))
+                wfh.write('%s:' % (str(self.search_space.get_param(y))))
                 for x in xrange(self.val_scores.shape[1]):
-                    wfh.write('\t%.4f' % (self.val_scores[y,x]))
+                    wfh.write('\t%.4f' % (self.val_scores[y, x]))
                 wfh.write('\n')
 
             wfh.write("Train Accuracies\n")
             for y in xrange(self.train_scores.shape[0]):
-                wfh.write('%s:' %(str(self.search_space.get_param(y))))
+                wfh.write('%s:' % (str(self.search_space.get_param(y))))
                 for x in xrange(self.train_scores.shape[1]):
-                    wfh.write('\t%.4f' % (self.train_scores[y,x]))
+                    wfh.write('\t%.4f' % (self.train_scores[y, x]))
                 wfh.write('\n')
 
-        logging.info('cross validation result written to %s' %output_path)
+        logging.info('cross validation result written to %s' % output_path)
 
     @staticmethod
     def load_results(result_path):
         """load the result file of cross validation to get the best parameters"""
-        logging.info('loading cross validation  results from %s' %result_path)
+        logging.info('loading cross validation  results from %s' % result_path)
         with open(result_path, 'r') as fh:
             pattern = re.compile(r'Best Result: \[(.*)\]:.*')
             result_list = pattern.findall(fh.read())
             if len(result_list) != 1:
-                raise Exception('parsing cross validation file %s failed' %(result_path))
+                raise Exception('parsing cross validation file %s failed' %
+                                (result_path))
             pattern = re.compile(r'\(\'(\w*)\',\s+(\d+\.\d+)\)')
             return pattern.findall(result_list[0])
 
@@ -119,23 +129,33 @@ class CV(object):
             for param in self.extra_param:
                 params.append(param)
 
-            with Model(model_name = model_name, class_num = self.dataset.class_num, params = params) as model:
-                train_paths = [self.dataset.split_path(i) for i in xrange(self.fold_num) if i != val_fold_id]
-                train_accu = 1 - model.train(train_paths, self.dataset.slice_type, self.dataset.pass_num)
-                val_accu = 1 - model.test(self.dataset.split_path(val_fold_id), self.dataset.slice_type)
+            with Model(
+                    model_name=model_name,
+                    class_num=self.dataset.class_num,
+                    params=params) as model:
+                train_paths = [self.dataset.split_path(i)
+                               for i in xrange(self.fold_num)
+                               if i != val_fold_id]
+                train_accu = 1 - model.train(train_paths,
+                                             self.dataset.slice_type,
+                                             self.dataset.pass_num)
+                val_accu = 1 - model.test(
+                    self.dataset.split_path(val_fold_id),
+                    self.dataset.slice_type)
 
-                print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' %(model_name, self.dataset.name, val_fold_id, self.fold_num)
-                print '\tParameter Setting: %s' %(str(params))
-                print '\tTraining Accuracy: %f' %(train_accu)
-                print '\tValidation Accuracy: %f' %(val_accu)
+                print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' % (
+                    model_name, self.dataset.name, val_fold_id, self.fold_num)
+                print '\tParameter Setting: %s' % (str(params))
+                print '\tTraining Accuracy: %f' % (train_accu)
+                print '\tValidation Accuracy: %f' % (val_accu)
                 train_accu_list.append(train_accu)
                 val_accu_list.append(val_accu)
         return train_accu_list, val_accu_list
 
 if __name__ == '__main__':
-    a1a = DataSet('a1a', data_path = 'a1a')
-    cv = CV(a1a,5,[('eta','0.5:10:12')])
-    cv.train_val('sgd');
+    a1a = DataSet('a1a', data_path='a1a')
+    cv = CV(a1a, 5, [('eta', '0.5:10:12')])
+    cv.train_val('sgd')
     best_param = cv.get_best_param()[0]
     print best_param
     cv_output_path = os.path.join(cv.dataset.work_dir, 'cv-sgd.txt')

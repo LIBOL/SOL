@@ -128,6 +128,7 @@ void Model::BeginTrain() {
   if (this->loss_ == nullptr)
     throw runtime_error("loss function is not set yet!");
   this->update_num_ = 0;
+  cout << "Model Information: \n" << this->model_info() << "\n";
 }
 
 int Model::Save(const string& path) const {
