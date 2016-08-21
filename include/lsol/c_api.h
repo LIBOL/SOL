@@ -18,7 +18,10 @@
 #define LSOL_EXPORTS
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
 /// \brief  create a data iterator
 ///
 /// \param batch_size batch size for data iteration
@@ -113,6 +116,8 @@ LSOL_EXPORTS float lsol_model_sparsity(void* model);
 ///
 /// \return string of log
 LSOL_EXPORTS const char* lsol_model_train_log(void* model);
+#ifdef __cplusplus
 }
+#endif
 
 #endif
