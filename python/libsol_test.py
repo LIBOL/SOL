@@ -67,8 +67,6 @@ if __name__ == '__main__':
 
         start_time = time.time()
         with Model(model_path = args.model, batch_size = args.batch_size, buf_size = args.buf_size) as m:
-            if args.output != None and not os.path.isabs(args.output):
-                args.output = os.path.join(dt.work_dir, args.output)
             logging.info("predicting...")
             accu = 1 - m.test(dt.data_path,dt.dtype, args.output)
             logging.info("test accuracy: %.4f" %(accu))
