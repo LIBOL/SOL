@@ -36,14 +36,12 @@ class LSOL_EXPORTS DataWriter {
   virtual int Open(const std::string& path, const char* mode = "w");
 
   /// \brief Close the reader
-  inline virtual void Close() { this->file_writer_.Close(); }
+  virtual void Close() { this->file_writer_.Close(); }
 
   /// \brief  Check the status of the data handler
   ///
   /// \return True if everything is ok
-  inline virtual bool Good() {
-    return this->is_good_ && this->file_writer_.Good();
-  }
+  virtual bool Good() { return this->is_good_ && this->file_writer_.Good(); }
 
  public:
   /// \brief  Write a new data into the file
@@ -59,7 +57,9 @@ class LSOL_EXPORTS DataWriter {
   /// \param extra_info extra info
   ///
   /// \return Status code,  Status_OK if succeed
-  virtual int SetExtraInfo(const char* extra_info) { return Status_OK; };
+  virtual int SetExtraInfo(const char* extra_info) {
+    return Status_OK;
+  };
 
  protected:
   FileWriter file_writer_;

@@ -44,12 +44,16 @@ void ECCW::SetParameter(const std::string& name, const std::string& value) {
     }
   } else if (name == "phi") {
     this->set_phi(stof(value));
+    this->require_reinit_ = true;
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {
       throw invalid_argument("only hinge-based loss functions are allowed");
     }
     this->hinge_base_ = static_cast<loss::HingeBase*>(this->loss_);
+  } else if (name == "bias_eta") {
+    OnlineLinearModel::SetParameter(name, value);
+    this->require_reinit_ = true;
   } else {
     OnlineLinearModel::SetParameter(name, value);
   }
@@ -89,7 +93,7 @@ void ECCW::Update(const pario::DataPoint& dp, const float*, float loss) {
       0.5f * (-alpha_i * vi_ * phi_ +
               sqrtf(alpha_i * alpha_i * vi_ * vi_ * phi_ * phi_ + 4.f * vi_));
   ui *= ui;
-  //float beta_i = alpha_i * phi_ / (sqrtf(ui) + vi_ * alpha_i * phi_);
+  // float beta_i = alpha_i * phi_ / (sqrtf(ui) + vi_ * alpha_i * phi_);
 
   this->eta_ = alpha_i;
   tmp = alpha_i * phi_ * sqrtf(ui);

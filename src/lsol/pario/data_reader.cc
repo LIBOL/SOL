@@ -22,20 +22,23 @@ DataReader* DataReader::Create(const std::string& type) {
   return create_func == nullptr ? nullptr : create_func();
 }
 
-DataReader::DataReader() {
+DataReader::DataReader() {}
+DataReader::~DataReader() {}
+
+DataFileReader::DataFileReader() {
   this->read_buf_size_ = 4096;
   this->read_buf_ = (char*)malloc(this->read_buf_size_ * sizeof(char));
   this->is_good_ = true;
 }
 
-DataReader::~DataReader() {
+DataFileReader::~DataFileReader() {
   this->Close();
   if (this->read_buf_ != nullptr) {
     free(this->read_buf_);
   }
 }
 
-int DataReader::Open(const string& path, const char* mode) {
+int DataFileReader::Open(const string& path, const char* mode) {
   this->Close();
   this->file_path_ = path;
   int ret = this->file_reader_.Open(path.c_str(), mode);

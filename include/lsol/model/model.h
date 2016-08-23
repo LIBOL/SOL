@@ -66,7 +66,7 @@ class LSOL_EXPORTS Model {
   virtual void BeginTrain();
 
   /// \brief  finalize the model after training
-  virtual void EndTrain() {}
+  virtual void EndTrain() { this->model_updated_ = false; }
 
   /// \brief  predict the label of data
   ///
@@ -101,7 +101,9 @@ class LSOL_EXPORTS Model {
   /// \brief  get model info string
   std::string model_info() const;
 
-  const std::string& train_log() const { return this->train_log_; }
+  /// \brief  get model info in json format
+  void model_info(Json::Value &info) const;
+
  protected:
   /// \brief  serialize model parameters
   ///
@@ -187,7 +189,13 @@ class LSOL_EXPORTS Model {
   size_t update_num_;
 
   std::string name_;
-  std::string train_log_;
+
+ public:
+  bool model_updated() const { return model_updated_; }
+
+ protected:
+  bool require_reinit_;  // whether need to call BeginTrain before Train
+  bool model_updated_;   // wheter need to call EndTrain before Test or Predict
 };
 
 #define RegisterModel(type, name, descr)                                  \

@@ -36,16 +36,19 @@ void ALMA2::SetParameter(const std::string& name, const std::string& value) {
   if (name == "p") {
     this->p_ = stoi(value);
     this->square_p1_ = sqrtf(float(this->p_ - 1));
+    this->require_reinit_ = true;
   } else if (name == "alpha") {
     this->alpha_ = stof(value);
     this->B_ = 1 / this->alpha_;
     Check(alpha_ > 0);
     Check(alpha_ <= 1);
+    this->require_reinit_ = true;
   } else if (name == "C") {
     this->C_ = stof(value);
   } else if (name == "k") {
     this->k_ = stoi(value);
     Check(this->k_ > 0);
+    this->require_reinit_ = true;
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {

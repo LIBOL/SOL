@@ -33,20 +33,47 @@ class LSOL_EXPORTS DataReader {
   /// \param mode open mode, "r" or "rb"
   ///
   /// \return Status code,  Status_OK if succeed
-  virtual int Open(const std::string& path, const char* mode = "r");
+  virtual int Open(const std::string& path, const char* mode = "r") = 0;
 
   /// \brief Close the reader
-  inline virtual void Close() { this->file_reader_.Close(); }
+  virtual void Close() = 0;
 
   /// \brief  Check the status of the data handler
   ///
   /// \return True if everything is ok
-  inline virtual bool Good() {
-    return this->is_good_ && this->file_reader_.Good();
-  }
+  virtual bool Good() = 0;
 
   /// \brief  Rewind the dataset to the beginning of the file
-  inline virtual void Rewind() { this->file_reader_.Rewind(); }
+  virtual void Rewind() = 0;
+
+ public:
+  /// \brief  Read next data point
+  ///
+  /// \param dst_data Destination data point
+  ///
+  /// \return  Status code, Status_OK if everything ok, Status_EndOfFile if
+  /// read to file end
+  virtual int Next(DataPoint& dst_data) = 0;
+};
+
+class LSOL_EXPORTS DataFileReader : public DataReader {
+ public:
+  DataFileReader();
+  virtual ~DataFileReader();
+
+ public:
+  virtual int Open(const std::string& path, const char* mode = "r");
+
+  /// \brief Close the reader
+  virtual void Close() { this->file_reader_.Close(); }
+
+  /// \brief  Check the status of the data handler
+  ///
+  /// \return True if everything is ok
+  virtual bool Good() { return this->is_good_ && this->file_reader_.Good(); }
+
+  /// \brief  Rewind the dataset to the beginning of the file
+  virtual void Rewind() { this->file_reader_.Rewind(); }
 
  public:
   /// \brief  Read next data point

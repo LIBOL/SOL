@@ -83,13 +83,25 @@ LSOL_EXPORTS void lsol_ReleaseModel(void** model);
 /// \return status code, 0 if succeed
 LSOL_EXPORTS int lsol_SetModelParameter(void* model, const char* param_name,
                                         const char* param_val);
-/// \brief  Initialize the model for training
-///
-/// \param model model to be trained
-///
-/// \return status code, 0 if succeed
-LSOL_EXPORTS int lsol_BeginTrain(void* model);
 
+/// \brief  C type of a get parameter function callback
+///
+/// \param user_context flexible place to handle the parameter name and value
+/// \param param_name name of parameter
+/// \param param_val value string of the parameter
+typedef void (*lsol_get_parameter_callback)(void* user_context,
+                                            const char* param_name,
+                                            const char* param_val);
+
+/// \brief  Get Model Parameters
+///
+/// \param model model
+/// \param lsol_get_parameter_callback callback function to handle the
+/// parameters
+/// \param user_context flexible place to handle the parameter name and value
+LSOL_EXPORTS void lsol_GetModelParameters(void* model,
+                                          lsol_get_parameter_callback callback,
+                                          void* user_context);
 /// \brief  train a model
 ///
 /// \param model model to be trained
@@ -97,11 +109,6 @@ LSOL_EXPORTS int lsol_BeginTrain(void* model);
 ///
 /// \return training accuracy
 LSOL_EXPORTS float lsol_Train(void* model, void* data_iter);
-
-/// \brief  Finalize the model after training
-///
-/// \param model the trained model
-LSOL_EXPORTS void lsol_EndTrain(void* model);
 
 /// \brief  test a model
 ///
@@ -114,6 +121,29 @@ LSOL_EXPORTS void lsol_EndTrain(void* model);
 LSOL_EXPORTS float lsol_Test(void* model, void* data_iter,
                              const char* output_path);
 
+/// \brief  C type to predict detailed scores
+///
+/// \param user_context flexible place to handle predicted results
+/// \param label groundtruth label
+/// \param predict predicted label
+/// \param cls_num number of classses
+/// \param scores predicted scores
+typedef void (*lsol_predict_callback)(void* user_context, double label,
+                                      double predict, int cls_num,
+                                      float* scores);
+
+/// \brief  predict the scores on the given data
+///
+/// \param model model to be tested
+/// \param data_iter data iterator
+/// \param callback callback to handle the predicted results
+/// \param user_context flexible place to handle predicted results
+///
+/// \return number of samples processed
+LSOL_EXPORTS int lsol_Predict(void* model, void* data_iter,
+                              lsol_predict_callback callback,
+                              void* user_context);
+
 /// \brief  get the model sparsity
 ///
 /// \param model pretrained model
@@ -121,12 +151,38 @@ LSOL_EXPORTS float lsol_Test(void* model, void* data_iter,
 /// \return model sparsity
 LSOL_EXPORTS float lsol_model_sparsity(void* model);
 
-/// \brief  get the training log of model
+/// \brief  C type to inspect iteration callback
 ///
-/// \param model pretrained model
+/// \param user_context flexible place to handle iteration status
+/// \param data_num number of data processed currently
+/// \param iter_num number of iterations currently
+/// \param update_num number of updates currently
+/// \param err_rate training error rate currently
+typedef void (*lsol_inspect_iterate_callback)(void* user_context,
+                                              long long data_num,
+                                              long long iter_num,
+                                              long long update_num,
+                                              double err_rate);
+
+/// \brief  Get Model Parameters
 ///
-/// \return string of log
-LSOL_EXPORTS const char* lsol_model_train_log(void* model);
+/// \param model model
+/// \param lsol_inspect_iterate_callback callback to handle the iteration status
+/// \param user_context flexible place to handle the parameter name and value
+LSOL_EXPORTS void lsol_InspectOnlineIteration(
+    void* model, lsol_inspect_iterate_callback callback, void* user_context);
+
+#ifdef HAS_NUMPY_DEV
+#include <numpy/arrayobject.h>
+LSOL_EXPORTS int lsol_loadArray(void* data_iter, char* X, char* Y,
+                                npy_intp* dims, npy_intp* strides,
+                                int pass_num);
+
+LSOL_EXPORTS int lsol_loadCsrMatrix(void* data_iter, char* indices,
+                                    char* indptr, char* features, char* y,
+                                    int n_samples, int pass_num);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

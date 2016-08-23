@@ -50,15 +50,24 @@ class StepIterDisplayer : public OnlineModel::IterDisplayer {
   size_t step_;
 };
 
+void DefaultIterateFunction(void* user_context, long long data_num,
+                            long long iter_num, long long update_num,
+                            double err_rate) {
+  cout << data_num << "\t\t" << iter_num << "\t\t" << std::fixed
+       << setprecision(6) << err_rate << "\t" << update_num << "\n";
+}
+
 OnlineModel::OnlineModel(int class_num, const std::string& type)
     : Model(class_num, type),
       bias_eta0_(0),
       dim_(1),
       eta_(1.f),
-      iter_displayer_(nullptr) {
+      iter_displayer_(nullptr),
+      iter_callback_(nullptr) {
   this->set_initial_t(0);
   this->lazy_update_ = false;
   this->iter_displayer_ = new ExpIterDisplayer(2);
+  this->iter_callback_ = DefaultIterateFunction;
   // active learning
   this->active_smoothness_ = 0;
   // cost sensitive learning
@@ -93,6 +102,7 @@ void OnlineModel::SetParameter(const std::string& name,
     this->cost_margin_ = stof(value);
     Check(cost_margin_ > 0);
     this->cost_sensitive_learning_ = true;
+    this->require_reinit_ = true;
   } else if (name == "exp_show") {
     DeletePointer(this->iter_displayer_);
     this->iter_displayer_ = new ExpIterDisplayer(stoi(value));
@@ -118,16 +128,27 @@ void OnlineModel::BeginTrain() {
 }
 
 float OnlineModel::Train(DataIter& data_iter) {
-  ostringstream log_oss;
+  if (this->require_reinit_) {
+    // re-init the model
+    try {
+      this->BeginTrain();
+    }
+    catch (invalid_argument& err) {
+      fprintf(stderr, "%s\n", err.what());
+      return 0;
+    }
+  }
+
   size_t err_num(0);
   size_t data_num = 0;
   size_t next_show_time = size_t(-1);
 
   if (this->iter_displayer_ != nullptr) {
     next_show_time = this->iter_displayer_->next_show_time();
-    cout << "Training Process....\nData No.\tIterate No.\tError Rate\tUpdate "
-            "No.\n";
-    log_oss << "Data No.\tIterate No.\tError No.\tUpdate No.\n";
+    if (this->iter_callback_ == DefaultIterateFunction) {
+      cout << "Training Process....\nData No.\tIterate No.\tError Rate\tUpdate "
+              "No.\n";
+    }
   }
 
   float* predicts = new float[this->clf_num()];
@@ -145,11 +166,11 @@ float OnlineModel::Train(DataIter& data_iter) {
 
       if (data_num >= next_show_time) {
         float err_rate = float(err_num) / data_num;
-        cout << data_num << "\t\t" << this->cur_iter_num() << "\t\t"
-             << std::fixed << setprecision(6) << err_rate << "\t"
-             << this->update_num() << "\n";
-        log_oss << data_num << "\t" << this->cur_iter_num() << "\t" << err_rate
-                << "\t" << this->update_num() << "\n";
+        if (this->iter_callback_ != nullptr) {
+          this->iter_callback_(this->iter_callback_user_context_, data_num,
+                               this->cur_iter_num(), this->update_num(),
+                               err_rate);
+        }
         this->iter_displayer_->next();
         next_show_time = this->iter_displayer_->next_show_time();
       }
@@ -158,13 +179,13 @@ float OnlineModel::Train(DataIter& data_iter) {
 
   if (this->iter_displayer_ != nullptr) {
     float err_rate = float(err_num) / data_num;
-    cout << data_num << "\t\t" << this->cur_iter_num() << "\t\t" << std::fixed
-         << setprecision(6) << err_rate << "\t" << this->update_num() << "\n";
-    log_oss << data_num << "\t" << this->cur_iter_num() << "\t" << err_rate
-            << "\t" << this->update_num() << "\n";
+    if (this->iter_callback_ != nullptr) {
+      this->iter_callback_(this->iter_callback_user_context_, data_num,
+                           this->cur_iter_num(), this->update_num(), err_rate);
+    }
   }
   delete[] predicts;
-  this->train_log_ = log_oss.str();
+  this->model_updated_ = true;
 
   return float(double(err_num) / data_num);
 }
@@ -201,7 +222,8 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
          iter != online_settings.end(); ++iter) {
       this->SetParameter(iter.name(), iter->asString());
     }
-  } catch (std::invalid_argument& err) {
+  }
+  catch (std::invalid_argument& err) {
     cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }

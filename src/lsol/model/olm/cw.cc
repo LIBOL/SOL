@@ -43,12 +43,16 @@ void CW::SetParameter(const std::string& name, const std::string& value) {
     }
   } else if (name == "phi") {
     this->phi_ = stof(value);
+    this->require_reinit_ = true;
   } else if (name == "loss") {
     OnlineLinearModel::SetParameter(name, value);
     if ((this->loss_->type() & loss::Loss::Type::HINGE) == 0) {
       throw invalid_argument("only hinge-based loss functions are allowed");
     }
     this->hinge_base_ = static_cast<loss::HingeBase*>(this->loss_);
+  } else if (name == "bias_eta") {
+    OnlineLinearModel::SetParameter(name, value);
+    this->require_reinit_ = true;
   } else {
     OnlineLinearModel::SetParameter(name, value);
   }

@@ -32,9 +32,10 @@ inline std::vector<std::string> split(const std::string& str,
 }
 
 inline std::string strip(const std::string& str) {
-  auto i =
-      std::find_if_not(str.begin(), str.end(), [](char c) { return c == ' '; });
-  auto j = std::find_if(i, str.end(), [](char c) { return c == ' '; });
+  auto i = std::find_if_not(str.begin(), str.end(),
+                            [](char c) { return c == ' ' || c == '\t'; });
+  auto j =
+      std::find_if(i, str.end(), [](char c) { return c == ' ' || c == '\t'; });
   return std::move(std::string(i, j));
 }
 

@@ -9,7 +9,7 @@ import numpy as np
 
 from dataset import DataSet
 import search_space
-from libsol_core import Model
+from lsol import LSOL
 
 
 class CV(object):
@@ -123,39 +123,39 @@ class CV(object):
         train_accu_list = []
         val_accu_list = []
         #parameters
-        params = []
         for k in range(0, self.search_space.size):
             params = self.search_space.get_param(k)
             for param in self.extra_param:
                 params.append(param)
+            params = dict(params)
+            m = LSOL(
+                algo=model_name, class_num=self.dataset.class_num, **params)
 
-            with Model(
-                    model_name=model_name,
-                    class_num=self.dataset.class_num,
-                    params=params) as model:
-                train_paths = [self.dataset.split_path(i)
+            train_accu = 0.0
+            for train_path in [self.dataset.split_path(i)
                                for i in xrange(self.fold_num)
-                               if i != val_fold_id]
-                train_accu = 1 - model.train(train_paths,
-                                             self.dataset.slice_type,
-                                             self.dataset.pass_num)
-                val_accu = 1 - model.test(
-                    self.dataset.split_path(val_fold_id),
-                    self.dataset.slice_type)
+                               if i != val_fold_id]:
+                train_accu += m.fit(train_path, self.dataset.slice_type,
+                                    self.dataset.pass_num)
 
-                print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' % (
-                    model_name, self.dataset.name, val_fold_id, self.fold_num)
-                print '\tParameter Setting: %s' % (str(params))
-                print '\tTraining Accuracy: %f' % (train_accu)
-                print '\tValidation Accuracy: %f' % (val_accu)
-                train_accu_list.append(train_accu)
-                val_accu_list.append(val_accu)
+            train_accu /= (self.fold_num - 1)
+
+            val_accu = m.score(
+                self.dataset.split_path(val_fold_id), self.dataset.slice_type)
+
+            print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' % (
+                model_name, self.dataset.name, val_fold_id, self.fold_num)
+            print '\tParameter Setting: %s' % (str(params))
+            print '\tTraining Accuracy: %f' % (train_accu)
+            print '\tValidation Accuracy: %f' % (val_accu)
+            train_accu_list.append(train_accu)
+            val_accu_list.append(val_accu)
         return train_accu_list, val_accu_list
 
 if __name__ == '__main__':
-    a1a = DataSet('a1a', data_path='a1a')
+    a1a = DataSet('a1a', data_path='../data/a1a')
     cv = CV(a1a, 5, [('eta', '0.5:10:12')])
-    cv.train_val('sgd')
+    cv.train_val('ogd')
     best_param = cv.get_best_param()[0]
     print best_param
     cv_output_path = os.path.join(cv.dataset.work_dir, 'cv-sgd.txt')

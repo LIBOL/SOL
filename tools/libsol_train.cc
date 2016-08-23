@@ -84,18 +84,9 @@ int train(cmdline::parser& parser) {
                            parser.get<int>("pass"));
   if (ret != Status_OK) return ret;
 
+  cout << "Model Information: \n" << model->model_info() << "\n";
   double start_time = lsol::get_current_time();
-  try {
-    model->BeginTrain();
-  }
-  catch (invalid_argument& err) {
-    fprintf(stderr, "BeginTrain failed: %s\n", err.what());
-    ret = Status_Invalid_Argument;
-  }
-  if (ret != Status_OK) return ret;
-
   float err_rate = model->Train(iter);
-  model->EndTrain();
   double end_time = lsol::get_current_time();
   fprintf(stdout, "training accuracy: %.4f\n", 1.f - err_rate);
   fprintf(stdout, "training time: %.3f seconds\n", end_time - start_time);

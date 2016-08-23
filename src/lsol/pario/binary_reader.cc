@@ -17,7 +17,7 @@ namespace lsol {
 namespace pario {
 
 int BinaryReader::Open(const std::string& path, const char* mode) {
-  return DataReader::Open(path, "rb");
+  return DataFileReader::Open(path, "rb");
 }
 
 int BinaryReader::Next(DataPoint& dst_data) {

@@ -14,7 +14,7 @@
 namespace lsol {
 namespace pario {
 
-class LSOL_EXPORTS SVMReader : public DataReader {
+class LSOL_EXPORTS SVMReader : public DataFileReader {
  public:
   /// \brief  Read next data point
   ///

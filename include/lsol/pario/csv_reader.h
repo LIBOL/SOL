@@ -13,7 +13,7 @@
 namespace lsol {
 namespace pario {
 
-class LSOL_EXPORTS CSVReader : public DataReader {
+class LSOL_EXPORTS CSVReader : public DataFileReader {
  public:
   CSVReader();
 

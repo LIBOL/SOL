@@ -41,6 +41,7 @@
 *.pdf
 *.tar
 *.gz
+python/*.c
 
 #folders
 .vs/

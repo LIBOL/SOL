@@ -9,7 +9,16 @@
 #include <stdexcept>
 #include <fstream>
 
+#ifdef HAS_NUMPY_DEV
+#include <numpy/arrayobject.h>
+#include "lsol/pario/numpy_reader.h"
+#include "lsol/pario/csr_matrix_reader.h"
+#endif
+
+#include <json/json.h>
+
 #include "lsol/lsol.h"
+#include "lsol/model/online_model.h"
 
 using namespace std;
 using namespace lsol;
@@ -62,15 +71,26 @@ int lsol_SetModelParameter(void* model, const char* param_name,
   return Status_OK;
 }
 
-int lsol_BeginTrain(void* model) {
-  try {
-    ((Model*)(model))->EndTrain();
+void GetModelParameters(const Json::Value& model_info,
+                        lsol_get_parameter_callback callback,
+                        void* user_context) {
+  for (Json::Value::const_iterator iter = model_info.begin();
+       iter != model_info.end(); ++iter) {
+    if (iter->type() == Json::objectValue) {
+      GetModelParameters(*iter, callback, user_context);
+    } else {
+      callback(user_context, iter.name().c_str(), iter->asString().c_str());
+    }
   }
-  catch (invalid_argument& err) {
-    fprintf(stderr, "BeginTrain failed: %s\n", err.what());
-    return Status_Invalid_Argument;
-  }
-  return Status_OK;
+}
+void lsol_GetModelParameters(void* model, lsol_get_parameter_callback callback,
+                             void* user_context) {
+  if (callback == nullptr) return;
+
+  Model* m = (Model*)(model);
+  Json::Value model_info;
+  m->model_info(model_info);
+  GetModelParameters(model_info, callback, user_context);
 }
 
 float lsol_Train(void* model, void* data_iter) {
@@ -78,8 +98,6 @@ float lsol_Train(void* model, void* data_iter) {
   DataIter* iter = (DataIter*)(data_iter);
   return m->Train(*iter);
 }
-
-void lsol_EndTrain(void* model) { ((Model*)(model))->EndTrain(); }
 
 float lsol_Test(void* model, void* data_iter, const char* output_path) {
   Model* m = (Model*)(model);
@@ -92,12 +110,59 @@ float lsol_Test(void* model, void* data_iter, const char* output_path) {
   }
 }
 
+int lsol_Predict(void* model, void* data_iter, lsol_predict_callback callback,
+                 void* user_context) {
+  Model* m = (Model*)(model);
+  DataIter* iter = (DataIter*)(data_iter);
+
+  if (m->model_updated()) m->EndTrain();
+
+  float* score_buf = new float[m->clf_num()];
+  MiniBatch* mb = nullptr;
+  int data_num = 0;
+  while (1) {
+    mb = iter->Next(mb);
+    if (mb == nullptr) break;
+    for (int i = 0; i < mb->size(); ++i) {
+      DataPoint& x = (*mb)[i];
+      m->PreProcess(x);
+      // predict
+      label_t label = m->Predict(x, score_buf);
+      callback(user_context, x.label(), label, m->clf_num(), score_buf);
+    }
+    data_num += mb->size();
+  }
+  delete[] score_buf;
+  return data_num;
+}
+
 float lsol_model_sparsity(void* model) {
   Model* m = (Model*)(model);
   return m->model_sparsity();
 }
 
-const char* lsol_model_train_log(void* model) {
-  Model* m = (Model*)(model);
-  return m->train_log().c_str();
+LSOL_EXPORTS void lsol_InspectOnlineIteration(
+    void* model, lsol_inspect_iterate_callback callback, void* user_context) {
+  if (callback == nullptr) return;
+
+  OnlineModel* m = (OnlineModel*)(model);
+  m->set_iterate_callback(callback, user_context);
 }
+
+#ifdef HAS_NUMPY_DEV
+int lsol_loadArray(void* data_iter, char* X, char* Y, npy_intp* dims,
+                   npy_intp* strides, int pass_num) {
+  string path = NumpyReader::GeneratePath((double*)X, (double*)Y, dims[0],
+                                          dims[1], strides[0]);
+  DataIter* iter = (DataIter*)(data_iter);
+  return iter->AddReader(path, "numpy", pass_num);
+}
+
+int lsol_loadCsrMatrix(void* data_iter, char* indices, char* indptr,
+                       char* features, char* y, int n_samples, int pass_num) {
+  string path = CsrMatrixReader::GeneratePath(
+      (int*)indices, (int*)indptr, (double*)features, (double*)y, n_samples);
+  DataIter* iter = (DataIter*)(data_iter);
+  return iter->AddReader(path, "csr_matrix", pass_num);
+}
+#endif

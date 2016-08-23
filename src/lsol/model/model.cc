@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <string>
 
 #include "lsol/util/util.h"
 #include "lsol/util/error_code.h"
@@ -27,7 +28,8 @@ Model* Model::Create(const std::string& name, int class_num) {
   Model* ins = nullptr;
   try {
     if (create_func != nullptr) ins = create_func(class_num);
-  } catch (invalid_argument& err) {
+  }
+  catch (invalid_argument& err) {
     cerr << "create model failed: " << err.what() << "\n";
     ins = nullptr;
   }
@@ -43,12 +45,22 @@ Model::Model(int class_num, const std::string& type)
       regularizer_(nullptr),
       max_index_(0) {
   Check(class_num > 1);
+  this->update_num_ = 0;
+  this->require_reinit_ = true;
+  this->model_updated_ = false;
 }
 
 Model::~Model() { DeletePointer(this->loss_); }
 
 void Model::SetParameter(const std::string& name, const std::string& value) {
-  if (name == "loss") {
+
+  if (name == "model") {
+    Check(value == this->name());
+  } else if (name == "cls_num") {
+    Check(stoi(value) == this->class_num());
+  } else if (name == "clf_num") {
+    Check(stoi(value) == this->clf_num());
+  } else if (name == "loss") {
     DeletePointer(this->loss_);
     this->loss_ = loss::Loss::Create(value);
     Check(this->loss_ != nullptr);
@@ -62,10 +74,24 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
           "onlye multiclass loss function can be used with multiclass "
           "problems");
     }
+    this->require_reinit_ = true;
   } else if (name == "norm") {
-    if (value == "L1") {
+    int norm_val = -1;
+    try {
+      string::size_type sz;
+      norm_val = stoi(value, &sz);
+      if (value[sz] != '\0') {
+        norm_val = -1;
+      }
+    }
+    catch (invalid_argument& err) {
+      norm_val = -1;
+    }
+    if (value == "None" || norm_val == op::OpType::kNone) {
+      this->norm_type_ = op::OpType::kNone;
+    } else if (value == "L1" || norm_val == op::OpType::kL1) {
       this->norm_type_ = op::OpType::kL1;
-    } else if (value == "L2") {
+    } else if (value == "L2" || norm_val == op::OpType::kL2) {
       this->norm_type_ = op::OpType::kL2;
     } else {
       ostringstream oss;
@@ -89,7 +115,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
 }
 
 float Model::Test(DataIter& data_iter, std::ostream* os) {
-  cout << "Model Information: \n" << this->model_info() << "\n";
+  if (this->model_updated_) this->EndTrain();
 
   size_t err_num = 0;
   size_t data_num = 0;
@@ -127,12 +153,11 @@ float Model::Test(DataIter& data_iter, std::ostream* os) {
 void Model::BeginTrain() {
   if (this->loss_ == nullptr)
     throw runtime_error("loss function is not set yet!");
-  this->update_num_ = 0;
-  cout << "Model Information: \n" << this->model_info() << "\n";
+
+  this->require_reinit_ = false;
 }
 
 int Model::Save(const string& path) const {
-  cout << "save model to " << path << "\n";
   ofstream out_file(path.c_str(), ios::out);
   if (!out_file) {
     cerr << "open file " << path << " failed\n";
@@ -188,7 +213,8 @@ Model* Model::Load(const string& path) {
       } else {
         try {
           ret = model->SetModelInfo(root);
-        } catch (invalid_argument& err) {
+        }
+        catch (invalid_argument& err) {
           cerr << "set model parameter failed: " << err.what() << "\n";
           ret = Status_Invalid_Argument;
         }
@@ -225,7 +251,8 @@ int Model::SetModelInfo(const Json::Value& root) {
     Check(root.get("model", "").asString() == this->name());
     Check(root.get("cls_num", "").asInt() == this->class_num());
     Check(root.get("clf_num", "").asInt() == this->clf_num());
-  } catch (invalid_argument& err) {
+  }
+  catch (invalid_argument& err) {
     cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }
@@ -235,7 +262,7 @@ int Model::SetModelInfo(const Json::Value& root) {
     this->SetParameter("loss", root["loss"].asString());
   }
   // norm
-  this->norm_type_ = lsol::math::expr::op::OpType(root["norm"].asInt());
+  this->SetParameter("norm", root["norm"].asString());
 
   // regularizer
   const Json::Value& relu_settings = root["regularizer"];
@@ -260,6 +287,8 @@ string Model::model_info() const {
   Json::StyledWriter writer;
   return writer.write(root);
 }
+
+void Model::model_info(Json::Value& info) const { this->GetModelInfo(info); }
 
 void Model::PreProcess(DataPoint& x) {
   // calibrate label

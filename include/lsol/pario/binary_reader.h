@@ -15,7 +15,7 @@
 namespace lsol {
 namespace pario {
 
-class LSOL_EXPORTS BinaryReader : public DataReader {
+class LSOL_EXPORTS BinaryReader : public DataFileReader {
  public:
   /// \brief  Open a new file
   ///

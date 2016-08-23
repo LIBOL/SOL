@@ -14,10 +14,10 @@
 namespace lsol {
 namespace pario {
 
-CSVReader::CSVReader() : DataReader() { this->feat_dim_ = 0; }
+CSVReader::CSVReader() : DataFileReader() { this->feat_dim_ = 0; }
 
 int CSVReader::Open(const std::string& path, const char* mode) {
-  int ret = DataReader::Open(path);
+  int ret = DataFileReader::Open(path);
   if (ret == Status_OK) {
     ret = this->LoadFeatDim();
   }
@@ -26,7 +26,7 @@ int CSVReader::Open(const std::string& path, const char* mode) {
 }
 
 void CSVReader::Rewind() {
-  DataReader::Rewind();
+  DataFileReader::Rewind();
   // read the first line for csv
   this->file_reader_.ReadLine(this->read_buf_, this->read_buf_size_);
 }
@@ -35,7 +35,7 @@ int CSVReader::Next(DataPoint& dst_data) {
   int ret = this->file_reader_.ReadLine(this->read_buf_, this->read_buf_size_);
   if (ret != Status_OK) return ret;
 
-  char *iter = this->read_buf_, *endptr = nullptr;
+  char* iter = this->read_buf_, *endptr = nullptr;
   if (*iter == '\0') {
     fprintf(stderr, "incorrect line\n");
     return Status_Invalid_Format;

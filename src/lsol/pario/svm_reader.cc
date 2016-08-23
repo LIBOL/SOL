@@ -62,6 +62,7 @@ int SVMReader::Next(DataPoint &dst_data) {
 
     dst_data.AddNewFeat(index, feat);
   }
+  dst_data.Sort();
 
   return ret;
 }
