@@ -11,7 +11,6 @@ from dataset import DataSet
 import search_space
 from lsol import LSOL
 
-
 class CV(object):
     """cross validation class
     """
@@ -131,15 +130,11 @@ class CV(object):
             m = LSOL(
                 algo=model_name, class_num=self.dataset.class_num, **params)
 
-            train_accu = 0.0
             for train_path in [self.dataset.split_path(i)
                                for i in xrange(self.fold_num)
                                if i != val_fold_id]:
-                train_accu += m.fit(train_path, self.dataset.slice_type,
+                train_accu = m.fit(train_path, self.dataset.slice_type,
                                     self.dataset.pass_num)
-
-            train_accu /= (self.fold_num - 1)
-
             val_accu = m.score(
                 self.dataset.split_path(val_fold_id), self.dataset.slice_type)
 

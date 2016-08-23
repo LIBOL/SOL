@@ -92,6 +92,10 @@ class OnlineModel : public Model {
   int initial_t_;
   // current iteration number
   int cur_iter_num_;
+  // current data number
+  size_t cur_data_num_;
+  // current error number
+  size_t cur_err_num_;
 
   // dimension of input feature: can be the same to feature, or with an extra
   // bias

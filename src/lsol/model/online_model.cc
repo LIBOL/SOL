@@ -64,6 +64,8 @@ OnlineModel::OnlineModel(int class_num, const std::string& type)
       eta_(1.f),
       iter_displayer_(nullptr),
       iter_callback_(nullptr) {
+  this->cur_data_num_ = 0;
+  this->cur_err_num_ = 0;
   this->set_initial_t(0);
   this->lazy_update_ = false;
   this->iter_displayer_ = new ExpIterDisplayer(2);
@@ -139,13 +141,12 @@ float OnlineModel::Train(DataIter& data_iter) {
     }
   }
 
-  size_t err_num(0);
-  size_t data_num = 0;
   size_t next_show_time = size_t(-1);
 
   if (this->iter_displayer_ != nullptr) {
     next_show_time = this->iter_displayer_->next_show_time();
-    if (this->iter_callback_ == DefaultIterateFunction) {
+    if (this->iter_callback_ == DefaultIterateFunction &&
+        this->cur_data_num_ == 0) {
       cout << "Training Process....\nData No.\tIterate No.\tError Rate\tUpdate "
               "No.\n";
     }
@@ -161,15 +162,14 @@ float OnlineModel::Train(DataIter& data_iter) {
       DataPoint& x = (*mb)[i];
       this->PreProcess(x);
       // predict
-      if (this->Iterate(x, predicts) != x.label()) err_num++;
-      ++data_num;
+      if (this->Iterate(x, predicts) != x.label()) ++this->cur_err_num_;
 
-      if (data_num >= next_show_time) {
-        float err_rate = float(err_num) / data_num;
+      if (this->cur_data_num_ >= next_show_time) {
+        float err_rate = float(this->cur_err_num_) / this->cur_data_num_;
         if (this->iter_callback_ != nullptr) {
-          this->iter_callback_(this->iter_callback_user_context_, data_num,
-                               this->cur_iter_num(), this->update_num(),
-                               err_rate);
+          this->iter_callback_(this->iter_callback_user_context_,
+                               this->cur_data_num_, this->cur_iter_num(),
+                               this->update_num(), err_rate);
         }
         this->iter_displayer_->next();
         next_show_time = this->iter_displayer_->next_show_time();
@@ -177,22 +177,24 @@ float OnlineModel::Train(DataIter& data_iter) {
     }
   }
 
+  float err_rate = float(this->cur_err_num_) / this->cur_data_num_;
   if (this->iter_displayer_ != nullptr) {
-    float err_rate = float(err_num) / data_num;
     if (this->iter_callback_ != nullptr) {
-      this->iter_callback_(this->iter_callback_user_context_, data_num,
-                           this->cur_iter_num(), this->update_num(), err_rate);
+      this->iter_callback_(this->iter_callback_user_context_,
+                           this->cur_data_num_, this->cur_iter_num(),
+                           this->update_num(), err_rate);
     }
   }
   delete[] predicts;
   this->model_updated_ = true;
 
-  return float(double(err_num) / data_num);
+  return err_rate;
 }
 
 label_t OnlineModel::Iterate(const pario::DataPoint& x, float* predict) {
   this->update_dim(x.dim());
   ++this->cur_iter_num_;
+  ++this->cur_data_num_;
   return 0;
 }
 
