@@ -96,7 +96,7 @@ class LSOL_EXPORTS Model {
   /// \param thresh threshold below which weight is considered zero
   ///
   /// \return sparsity
-  virtual float model_sparsity() const { return 0; }
+  virtual float model_sparsity() { return 0; }
 
   /// \brief  get model info string
   std::string model_info() const;

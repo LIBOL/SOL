@@ -137,12 +137,14 @@ void OnlineLinearModel::update_dim(index_t dim) {
   }
 }
 
-float OnlineLinearModel::model_sparsity() const {
+float OnlineLinearModel::model_sparsity() {
+  if (this->model_updated_) this->EndTrain();
   size_t non_zero_num = 0;
   for (int c = 0; c < this->clf_num_; ++c) {
     w(c).slice_op([&non_zero_num](const real_t& val) {
-      if (val != 0) ++non_zero_num;
-    }, 1);  // ignore bias
+                    if (val != 0) ++non_zero_num;
+                  },
+                  1);  // ignore bias
   }
   return 1.f - float(non_zero_num / double(this->clf_num_ * (this->dim_ - 1)));
 }

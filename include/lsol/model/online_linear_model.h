@@ -48,7 +48,7 @@ class OnlineLinearModel : public OnlineModel {
   virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts);
 
  public:
-  virtual float model_sparsity() const;
+  virtual float model_sparsity();
 
  protected:
   virtual void GetModelParam(std::ostream& os) const;

@@ -28,8 +28,8 @@ ol_opts['erda'] = {'algo':'erda-l1'}
 for k,v in ol_opts.iteritems():
 	ol_opts[k]['params'] = ['step_show=5000']
 
-ol_opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
-ol_opts['vw'] = {'algo':'vw'}
+#ol_opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
+#ol_opts['vw'] = {'algo':'vw'}
 
 sol_opts = {}
 sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-4,-1,5,base=10) }
@@ -39,5 +39,5 @@ sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda': np.lo
 sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda': np.logspace(-4,-1,5,base=10) }
 sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-4,-1,5,base=10) }
 sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-4,-1,5,base=10) }
-sol_opts['vw'] = {'algo':'vw', 'lambda':np.logspace(-6,-2,10, base=10)}
-sol_opts['liblinear'] = {'algo':'liblinear', 'params':{'penalty':'l1'}, 'lambda':np.logspace(-4,8,13, base=2)}
+#sol_opts['vw'] = {'algo':'vw', 'lambda':np.logspace(-6,-2,10, base=10)}
+#sol_opts['liblinear'] = {'algo':'liblinear', 'params':{'penalty':'l1'}, 'lambda':np.logspace(-4,8,13, base=2)}
