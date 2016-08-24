@@ -29,7 +29,7 @@ add_library(lsol SHARED ${lsol_list}
     ${PROJECT_SOURCE_DIR}/src/lsol/c_api.cc
     ${PROJECT_SOURCE_DIR}/src/lsol/tools.cc
     )
-target_link_libraries(lsol)
+target_link_libraries(lsol ${LINK_LIBS})
 list(APPEND TARGET_LIBS lsol)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory

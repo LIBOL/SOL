@@ -84,7 +84,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
         norm_val = -1;
       }
     }
-    catch (invalid_argument& err) {
+    catch (invalid_argument&) {
       norm_val = -1;
     }
     if (value == "None" || norm_val == op::OpType::kNone) {

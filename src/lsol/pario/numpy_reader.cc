@@ -45,7 +45,7 @@ int ParseAddr(T& dst, const std::string& src) {
       return Status_IO_Error;
     }
   }
-  catch (invalid_argument& err) {
+  catch (invalid_argument&) {
     return Status_IO_Error;
   }
   return Status_OK;
@@ -85,7 +85,7 @@ int NumpyReader::Next(DataPoint& dst_data) {
   double* ptr = (double*)((char*)this->X_ + this->x_idx_ * this->stride_);
   for (int j = 0; j < this->n_features_; ++j, ++ptr) {
     if (*ptr != 0) {
-      dst_data.AddNewFeat(j + 1, *ptr);
+      dst_data.AddNewFeat(j + 1, static_cast<real_t>(*ptr));
     }
   }
   ++this->x_idx_;

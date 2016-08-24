@@ -47,7 +47,7 @@ int ParseAddr(T& dst, const std::string& src) {
       return Status_IO_Error;
     }
   }
-  catch (invalid_argument& err) {
+  catch (invalid_argument&) {
     return Status_IO_Error;
   }
   return Status_OK;
@@ -92,7 +92,7 @@ int CsrMatrixReader::Next(DataPoint& dst_data) {
   int* indice_ptr = this->indices_ + offset;
 
   for (int j = 0; j < feat_num; ++j, ++feat_ptr, ++indice_ptr) {
-    dst_data.AddNewFeat(*indice_ptr + 1, *feat_ptr);
+    dst_data.AddNewFeat(*indice_ptr + 1, static_cast<real_t>(*feat_ptr));
   }
   dst_data.Sort();
   ++this->x_idx_;

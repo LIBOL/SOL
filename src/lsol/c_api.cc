@@ -153,8 +153,8 @@ LSOL_EXPORTS void lsol_InspectOnlineIteration(
 #ifdef HAS_NUMPY_DEV
 int lsol_loadArray(void* data_iter, char* X, char* Y, npy_intp* dims,
                    npy_intp* strides, int pass_num) {
-  string path = NumpyReader::GeneratePath((double*)X, (double*)Y, dims[0],
-                                          dims[1], strides[0]);
+  string path = NumpyReader::GeneratePath((double*)X, (double*)Y, int(dims[0]),
+                                          int(dims[1]), int(strides[0]));
   DataIter* iter = (DataIter*)(data_iter);
   return iter->AddReader(path, "numpy", pass_num);
 }

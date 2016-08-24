@@ -105,11 +105,11 @@ ENDIF()
 
 #detect python
 if (WITH_PYTHON)
-  find_package(NumPy REQUIRED)
-else()
-  find_package(NumPy QUIET)
-endif()
-if (PYTHON_NUMPY_FOUND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAS_NUMPY_DEV -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
-  include_directories(${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+    find_package(NumPy REQUIRED)
+
+    if (PYTHON_NUMPY_FOUND)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAS_NUMPY_DEV -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+        include_directories(${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+        list(APPEND LINK_LIBS ${PYTHON_LIBRARIES})
+    endif()
 endif()
