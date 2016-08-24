@@ -2,8 +2,6 @@
 
 import os.path as osp
 import sys
-pylibsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
-sys.path.insert(0, pylibsol_dir)
 
 import argparse
 import logging
@@ -13,9 +11,9 @@ import importlib
 import cPickle
 import numpy as np
 
-from dataset import DataSet
+from lsol.dataset import DataSet
+from lsol.cv import CV
 from pylsol import LSOL
-from cv import CV
 import liblinear
 import fig
 vw = None

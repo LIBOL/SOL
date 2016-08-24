@@ -91,7 +91,7 @@ class DataSet(object):
         output_path = os.path.join(self.work_dir, self.data_name + '.shuffle.' + tgt_type)
         if os.path.exists(output_path) and force == False:
             return output_path
-        logging.info('convert data %s to ' %(self.data_path, cache_path))
+        logging.info('convert data %s to %s' %(self.data_path, output_path))
         pylsol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type)
         return output_path
 
