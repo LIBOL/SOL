@@ -9,7 +9,7 @@ import numpy as np
 
 from dataset import DataSet
 import search_space
-from lsol import LSOL
+from pylsol import LSOL
 
 class CV(object):
     """cross validation class

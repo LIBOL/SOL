@@ -8,7 +8,7 @@ import time
 
 from dataset import DataSet
 from cv import CV
-from lsol import LSOL
+from pylsol import LSOL
 
 DESCRIPTION = 'Large Scale Online Learning Test Scripts'
 

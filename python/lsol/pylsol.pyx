@@ -1,5 +1,5 @@
 cimport numpy as np
-cimport lsol
+cimport pylsol
 from libc.stdlib cimport malloc,free
 
 import numpy as np

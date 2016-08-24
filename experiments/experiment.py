@@ -14,7 +14,7 @@ import cPickle
 import numpy as np
 
 from dataset import DataSet
-from lsol import LSOL
+from pylsol import LSOL
 from cv import CV
 import liblinear
 import fig
