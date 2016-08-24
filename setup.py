@@ -2,7 +2,7 @@
 #################################################################################
 #     File Name           :     lsol/setup.py.in
 #     Created By          :     yuewu
-#     Description         :      
+#     Description         :
 #################################################################################
 
 from distutils.core import setup
@@ -20,7 +20,9 @@ def get_source_files(root_dir):
     for pathname in os.listdir(root_dir):
         path = os.path.join(root_dir, pathname)
         if os.path.isfile(path):
-            src_files.append(path)
+            ext = os.path.splitext(path)[1]
+            if ext in ['.cc','.cpp','.c']:
+                src_files.append(path)
         elif os.path.isdir(path):
             src_files = src_files + get_source_files(path)
     return src_files
@@ -28,7 +30,7 @@ def get_source_files(root_dir):
 ext_modules = [
     Extension(
         "pylsol",
-        sources=["python/lsol/pylsol.pyx"] + get_source_files('src/lsol'),
+        sources=["python/lsol/pylsol.pyx"] + get_source_files('src/lsol') + get_source_files('external/json'),
         language='c++',
         include_dirs=[np.get_include(), "include", "external"],
         extra_compile_args = ['-DHAS_NUMPY_DEV','-DUSE_STD_THREAD', '-std=c++11']
@@ -44,7 +46,11 @@ setup(name='lsol',
         maintainer_email='yuewu@outlook.com',
         url='http://libsol.stevenhoi.org',
         license='Apache 2.0',
-        packages=['lsol'],
+        packages=[''],
         package_dir={'':'python'},
         package_data={},
+        scripts=[
+            'python/libsol_train.py',
+            'python/libsol_test.py'
+            ],
         ext_modules=cythonize(ext_modules))

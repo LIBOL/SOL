@@ -6,8 +6,8 @@ import argparse
 import logging
 import time
 
-from dataset import DataSet
-from cv import CV
+from lsol.dataset import DataSet
+from lsol.cv import CV
 from pylsol import LSOL
 
 DESCRIPTION = 'Large Scale Online Learning Test Scripts'
