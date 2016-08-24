@@ -11,7 +11,6 @@ except ImportError:
     from distutils.core import setup, Extension
 
 from Cython.Build import cythonize
-import numpy as np
 
 import sys
 import os
@@ -30,7 +29,9 @@ def get_source_files(root_dir):
         elif os.path.isdir(path):
             src_files = src_files + get_source_files(path)
     return src_files
-
+def get_include_dirs():
+    import numpy as np
+    return [np.get_include(), "include", "external"]
 
 ext_modules = [
     Extension(
@@ -38,7 +39,7 @@ ext_modules = [
         sources=["python/lsol/pylsol.pyx"] + get_source_files('src/lsol') +
         get_source_files('external/json'),
         language='c++',
-        include_dirs=[np.get_include(), "include", "external"],
+        include_dirs=get_include_dirs(),
         extra_compile_args=['-DHAS_NUMPY_DEV', '-DUSE_STD_THREAD', '-std=c++11'
                             ])
 ]
@@ -61,5 +62,7 @@ setup(
     ext_modules=cythonize(ext_modules),
     install_requires=[
         "numpy      >= 1.7.0",
-        "cython     >= 0.24.0"
+        "cython     >= 0.24.0",
+        "scipy      >= 0.13.0",
+        "setuptools"
     ])
