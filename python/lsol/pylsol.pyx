@@ -21,7 +21,8 @@ cdef void desicion_function_callback(void* user_context,
         float* scores):
     handler = <object>user_context
     handler[0].append(label)
-    handler[1].append([scores[i] for i in xrange(cls_num)])
+    handler[1].append(predict)
+    handler[2].append([scores[i] for i in xrange(cls_num)])
 
 cdef void predict_callback(void* user_context,
         double label,
@@ -97,6 +98,10 @@ cdef class LSOL:
     @property
     def name(self):
         return <bytes>self.algo
+
+    @property
+    def n_classes(self):
+        return self.class_num
 
     @property
     def sparsity(self):
@@ -240,22 +245,23 @@ cdef class LSOL:
         Returns
         -------
         C: array, shape = [n_samples, n_classifiers]
+        predicts: array, shape = [n_samples] (dependes on get_labels)
         labels: array, shape = [n_samples] (dependes on get_labels)
         """
         assert self._c_model is not NULL, "model is not initialized"
 
         self.__load_data(param1, param2, 1)
-        result = [[],[]]
+        result = [[],[], []]
 
         lsol_Predict(self._c_model, self._c_data_iter,
                 desicion_function_callback, <void*>result)
 
-        scores = np.array(result[1])
+        scores = np.array(result[2])
         if scores.shape[1] == 1:
             scores = scores.reshape(scores.shape[0])
 
         if get_labels:
-            return scores, np.array(result[0])
+            return scores, np.array(result[1]), np.array(result[0])
         else:
             return scores
 

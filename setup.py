@@ -62,7 +62,7 @@ setup(
     ext_modules=cythonize(ext_modules),
     install_requires=[
         "numpy      >= 1.7.0",
-        "cython     >= 0.24.0",
+        "cython     >= 0.23.0",
         "scipy      >= 0.13.0",
         "setuptools"
     ])

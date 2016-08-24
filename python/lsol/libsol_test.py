@@ -5,6 +5,7 @@ import sys
 import argparse
 import logging
 import time
+import numpy as np
 
 from lsol.dataset import DataSet
 from lsol.cv import CV
@@ -90,9 +91,23 @@ if __name__ == '__main__':
 
         algo = m.name
         logging.info("testing algorithm %s ..." % (algo))
-        accu = m.score(dt.data_path, dt.dtype)
+        if args.output == None:
+            accu = m.score(dt.data_path, dt.dtype)
+        else:
+            scores, predicts, labels = m.decision_function(dt.data_path, dt.dtype,get_labels=True)
+            accu = np.sum(predicts == labels, dtype=np.float64) / predicts.shape[0]
         logging.info("test accuracy of %s: %.4f" % (algo, accu))
         logging.info("test time of %s: %.4f seconds" %
                      (algo, time.time() - start_time))
+
+        if args.output != None:
+            logging.info("write prediction results to %s" %(args.output))
+            with open(args.output, 'w') as fh:
+                if m.n_classes == 2:
+                    for i in xrange(scores.shape[0]):
+                        fh.write('%d\t%d\t%f\n' %(int(labels[i]), int(predicts[i]), scores[i]))
+                else:
+                    for i in xrange(scores.shape[0]):
+                        fh.write('%d\t%d\t%s\n' %(int(labels[i]), int(predicts[i]), '\t'.join([str(v) for v in scores[i,:]])))
     except Exception as err:
         print 'test failed %s' % (err.message)
