@@ -323,3 +323,17 @@ cdef class LSOL:
             return self
         else:
             return None
+
+def analyze_data(const char* data_path, const char* data_type, const char* output_path):
+  return lsol_analyze_data(data_path, data_type, output_path)
+
+def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+  return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+
+def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+  return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+
+def split_data(const char* src_path, const char* src_type,
+    int fold, const char* output_prefix, const char* dst_type,
+    bint shuffle):
+  return lsol_split_data(src_path, src_type, fold, output_prefix, dst_type, shuffle)

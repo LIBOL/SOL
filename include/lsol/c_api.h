@@ -183,6 +183,51 @@ LSOL_EXPORTS int lsol_loadCsrMatrix(void* data_iter, char* indices,
                                     int n_samples, int pass_num);
 #endif
 
+/// \brief  analyze the information of data
+///
+/// \param data_path path to the data
+/// \param data_type type of the data ('svm', 'csv', etc.)
+/// \param output_path output path to save the information
+///
+/// \return status code, 0 if succeed
+LSOL_EXPORTS int lsol_analyze_data(const char* data_path, const char* data_type,
+                                   const char* output_path);
+
+/// \brief  convert data format
+///
+/// \param src_path path to the source data
+/// \param src_type type of the source data
+/// \param dst_path path to the destination data
+/// \param dst_type type of the destination data
+///
+/// \return status code, 0 if succeed
+LSOL_EXPORTS int lsol_convert_data(const char* src_path, const char* src_type,
+                                   const char* dst_path, const char* dst_type);
+/// \brief  shuffle data
+///
+/// \param src_path path to the source data
+/// \param src_type type of the source data
+/// \param dst_path path to the destination data
+/// \param dst_type type of the destination data, if NULL, use src_type
+///
+/// \return status code, 0 if succeed
+LSOL_EXPORTS int lsol_shuffle_data(const char* src_path, const char* src_type,
+                                   const char* dst_path, const char* dst_type);
+
+/// \brief  split data into parts
+///
+/// \param src_path path to the source data
+/// \param src_type type of the source data
+/// \param fold number of splits
+/// \param output_prefix prefix of the output file
+/// \param dst_type type of the destination data, if NULL, use src_type
+/// \param shuffle whether shuffling th data before splitting, default false
+///
+/// \return status code, 0 if succeed
+LSOL_EXPORTS int lsol_split_data(const char* src_path, const char* src_type,
+                                 int fold, const char* output_prefix,
+                                 const char* dst_type, bool shuffle);
+
 #ifdef __cplusplus
 }
 #endif

@@ -18,6 +18,7 @@
 #include <json/json.h>
 
 #include "lsol/lsol.h"
+#include "lsol/tools.h"
 #include "lsol/model/online_model.h"
 
 using namespace std;
@@ -166,3 +167,25 @@ int lsol_loadCsrMatrix(void* data_iter, char* indices, char* indptr,
   return iter->AddReader(path, "csr_matrix", pass_num);
 }
 #endif
+
+int lsol_analyze_data(const char* data_path, const char* data_type,
+                      const char* output_path) {
+  return analyze(data_path, data_type, output_path);
+}
+
+int lsol_convert_data(const char* src_path, const char* src_type,
+                      const char* dst_path, const char* dst_type) {
+  return convert(src_path, src_type, dst_path, dst_type);
+}
+
+int lsol_shuffle_data(const char* src_path, const char* src_type,
+                      const char* dst_path, const char* dst_type) {
+  return shuffle(src_path, src_type, dst_path,
+                 dst_type == NULL ? "" : dst_type);
+}
+
+int lsol_split_data(const char* src_path, const char* src_type, int fold,
+                    const char* output_prefix, const char* dst_type,
+                    bool shuffle) {
+  return split(src_path, src_type, fold, output_prefix, dst_type, shuffle);
+}

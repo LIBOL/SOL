@@ -149,7 +149,6 @@ if __name__ == '__main__':
         model_params = dict(model_params)
 
         start_time = time.time()
-        print model_params
         m = LSOL(
             args.algo,
             dt.class_num,

@@ -21,3 +21,7 @@ cdef extern from "lsol/c_api.h":
     void lsol_InspectOnlineIteration(void* model, inspect_iterate_callback callback, void* user_context)
     int lsol_loadArray(void* data_iter, char* X, char* Y, np.npy_intp* dims, np.npy_intp* strides, int pass_num)
     int lsol_loadCsrMatrix(void* data_iter, char* indices, char* indptr, char* features, char* Y, int n_samples, int pass_num)
+    int lsol_analyze_data(const char* data_path, const char* data_type, const char* output_path)
+    int lsol_convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type)
+    int lsol_shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type)
+    int lsol_split_data(const char* src_path, const char* src_type, int fold, const char* output_prefix, const char* dst_type, bint shuffle)

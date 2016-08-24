@@ -6,23 +6,19 @@
         "depends": [
             "/home/yuewu/pyenv/local/lib/python2.7/site-packages/numpy/core/include/numpy/arrayobject.h", 
             "/home/yuewu/pyenv/local/lib/python2.7/site-packages/numpy/core/include/numpy/ufuncobject.h", 
-            "/home/yuewu/work/libsol/include/lsol/c_api.h"
+            "include/lsol/c_api.h"
         ], 
         "extra_compile_args": [
-            "-DHAS_NUMPY_DEV"
+            "-DHAS_NUMPY_DEV", 
+            "-DUSE_STD_THREAD", 
+            "-std=c++11"
         ], 
         "include_dirs": [
             "/home/yuewu/pyenv/local/lib/python2.7/site-packages/numpy/core/include", 
-            "/usr/include/python2.7;/usr/include/x86_64-linux-gnu/python2.7", 
-            "/home/yuewu/work/libsol/include"
+            "include", 
+            "external"
         ], 
-        "language": "c++", 
-        "libraries": [
-            "lsol"
-        ], 
-        "library_dirs": [
-            "/home/yuewu/work/libsol/build/bin"
-        ]
+        "language": "c++"
     }, 
     "module_name": "pylsol"
 }
@@ -1316,6 +1312,7 @@ static PyObject *__pyx_builtin_range;
 static const char __pyx_k_np[] = "np";
 static const char __pyx_k_algo[] = "algo";
 static const char __pyx_k_data[] = "data";
+static const char __pyx_k_fold[] = "fold";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_array[] = "array";
@@ -1335,11 +1332,18 @@ static const char __pyx_k_cls_num[] = "cls_num";
 static const char __pyx_k_float64[] = "float64";
 static const char __pyx_k_indices[] = "indices";
 static const char __pyx_k_reshape[] = "reshape";
+static const char __pyx_k_shuffle[] = "shuffle";
 static const char __pyx_k_verbose[] = "verbose";
 static const char __pyx_k_buf_size[] = "buf_size";
+static const char __pyx_k_dst_path[] = "dst_path";
+static const char __pyx_k_dst_type[] = "dst_type";
 static const char __pyx_k_pass_num[] = "pass_num";
+static const char __pyx_k_src_path[] = "src_path";
+static const char __pyx_k_src_type[] = "src_type";
 static const char __pyx_k_TypeError[] = "TypeError";
 static const char __pyx_k_class_num[] = "class_num";
+static const char __pyx_k_data_path[] = "data_path";
+static const char __pyx_k_data_type[] = "data_type";
 static const char __pyx_k_iteritems[] = "iteritems";
 static const char __pyx_k_load_data[] = "__load_data";
 static const char __pyx_k_ValueError[] = "ValueError";
@@ -1348,15 +1352,23 @@ static const char __pyx_k_csr_matrix[] = "csr_matrix";
 static const char __pyx_k_get_labels[] = "get_labels";
 static const char __pyx_k_get_params[] = "get_params";
 static const char __pyx_k_set_params[] = "set_params";
+static const char __pyx_k_split_data[] = "split_data";
 static const char __pyx_k_MemoryError[] = "MemoryError";
+static const char __pyx_k_lsol_pylsol[] = "lsol.pylsol";
+static const char __pyx_k_output_path[] = "output_path";
 static const char __pyx_k_RuntimeError[] = "RuntimeError";
+static const char __pyx_k_analyze_data[] = "analyze_data";
+static const char __pyx_k_convert_data[] = "convert_data";
 static const char __pyx_k_scipy_sparse[] = "scipy.sparse";
+static const char __pyx_k_shuffle_data[] = "shuffle_data";
+static const char __pyx_k_output_prefix[] = "output_prefix";
 static const char __pyx_k_inspect_learning[] = "inspect_learning";
 static const char __pyx_k_load_data_failed[] = "load data failed";
 static const char __pyx_k_model_is_not_initialized[] = "model is not initialized";
 static const char __pyx_k_set_parameter_s_s_failed[] = "set parameter %s=%s failed";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_only_float64_data_are_allowed[] = "only float64 data are allowed";
+static const char __pyx_k_home_yuewu_work_libsol_python_l[] = "/home/yuewu/work/libsol/python/lsol/pylsol.pyx";
 static const char __pyx_k_only_data_path_or_numpy_ndarray[] = "only data path or numpy.ndarray or csr_matrix are allowed";
 static const char __pyx_k_only_float64_labels_are_allowed[] = "only float64 labels are allowed";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
@@ -1372,18 +1384,26 @@ static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_n_s_TypeError;
 static PyObject *__pyx_n_s_ValueError;
 static PyObject *__pyx_n_s_algo;
+static PyObject *__pyx_n_s_analyze_data;
 static PyObject *__pyx_n_s_append;
 static PyObject *__pyx_n_s_array;
 static PyObject *__pyx_n_s_batch_size;
 static PyObject *__pyx_n_s_buf_size;
 static PyObject *__pyx_n_s_class_num;
 static PyObject *__pyx_n_s_cls_num;
+static PyObject *__pyx_n_s_convert_data;
 static PyObject *__pyx_n_s_csr_matrix;
 static PyObject *__pyx_n_s_data;
+static PyObject *__pyx_n_s_data_path;
+static PyObject *__pyx_n_s_data_type;
+static PyObject *__pyx_n_s_dst_path;
+static PyObject *__pyx_n_s_dst_type;
 static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_float64;
+static PyObject *__pyx_n_s_fold;
 static PyObject *__pyx_n_s_get_labels;
 static PyObject *__pyx_n_s_get_params;
+static PyObject *__pyx_kp_s_home_yuewu_work_libsol_python_l;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_indices;
 static PyObject *__pyx_n_s_indptr;
@@ -1391,6 +1411,7 @@ static PyObject *__pyx_n_s_inspect_learning;
 static PyObject *__pyx_n_s_iteritems;
 static PyObject *__pyx_n_s_load_data;
 static PyObject *__pyx_kp_s_load_data_failed;
+static PyObject *__pyx_n_s_lsol_pylsol;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_model;
 static PyObject *__pyx_kp_s_model_is_not_initialized;
@@ -1401,6 +1422,8 @@ static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_kp_s_only_data_path_or_numpy_ndarray;
 static PyObject *__pyx_kp_s_only_float64_data_are_allowed;
 static PyObject *__pyx_kp_s_only_float64_labels_are_allowed;
+static PyObject *__pyx_n_s_output_path;
+static PyObject *__pyx_n_s_output_prefix;
 static PyObject *__pyx_n_s_param1;
 static PyObject *__pyx_n_s_param2;
 static PyObject *__pyx_n_s_pass_num;
@@ -1410,6 +1433,11 @@ static PyObject *__pyx_n_s_scipy_sparse;
 static PyObject *__pyx_kp_s_set_parameter_s_s_failed;
 static PyObject *__pyx_n_s_set_params;
 static PyObject *__pyx_n_s_shape;
+static PyObject *__pyx_n_s_shuffle;
+static PyObject *__pyx_n_s_shuffle_data;
+static PyObject *__pyx_n_s_split_data;
+static PyObject *__pyx_n_s_src_path;
+static PyObject *__pyx_n_s_src_type;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_verbose;
@@ -1429,6 +1457,10 @@ static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_16decision_function(struct __pyx_o
 static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_18predict(struct __pyx_obj_4lsol_6pylsol_LSOL *__pyx_v_self, PyObject *__pyx_v_param1, PyObject *__pyx_v_param2, PyObject *__pyx_v_get_labels); /* proto */
 static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_20save(struct __pyx_obj_4lsol_6pylsol_LSOL *__pyx_v_self, char const *__pyx_v_model_path); /* proto */
 static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_22load(struct __pyx_obj_4lsol_6pylsol_LSOL *__pyx_v_self, char const *__pyx_v_model_path); /* proto */
+static PyObject *__pyx_pf_4lsol_6pylsol_analyze_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_data_path, char const *__pyx_v_data_type, char const *__pyx_v_output_path); /* proto */
+static PyObject *__pyx_pf_4lsol_6pylsol_2convert_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, char const *__pyx_v_dst_path, char const *__pyx_v_dst_type); /* proto */
+static PyObject *__pyx_pf_4lsol_6pylsol_4shuffle_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, char const *__pyx_v_dst_path, char const *__pyx_v_dst_type); /* proto */
+static PyObject *__pyx_pf_4lsol_6pylsol_6split_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, int __pyx_v_fold, char const *__pyx_v_output_prefix, char const *__pyx_v_dst_type, int __pyx_v_shuffle); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_tp_new_4lsol_6pylsol_LSOL(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1444,6 +1476,14 @@ static PyObject *__pyx_tuple__7;
 static PyObject *__pyx_tuple__8;
 static PyObject *__pyx_tuple__9;
 static PyObject *__pyx_tuple__10;
+static PyObject *__pyx_tuple__11;
+static PyObject *__pyx_tuple__13;
+static PyObject *__pyx_tuple__15;
+static PyObject *__pyx_tuple__17;
+static PyObject *__pyx_codeobj__12;
+static PyObject *__pyx_codeobj__14;
+static PyObject *__pyx_codeobj__16;
+static PyObject *__pyx_codeobj__18;
 
 /* "lsol/pylsol.pyx":10
  * np.import_array()
@@ -4616,6 +4656,8 @@ static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_22load(struct __pyx_obj_4lsol_6pyl
  *             return self
  *         else:
  *             return None             # <<<<<<<<<<<<<<
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):
  */
   /*else*/ {
     __Pyx_XDECREF(__pyx_r);
@@ -4641,6 +4683,509 @@ static PyObject *__pyx_pf_4lsol_6pylsol_4LSOL_22load(struct __pyx_obj_4lsol_6pyl
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_params);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "lsol/pylsol.pyx":327
+ *             return None
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):             # <<<<<<<<<<<<<<
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_4lsol_6pylsol_1analyze_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_4lsol_6pylsol_1analyze_data = {"analyze_data", (PyCFunction)__pyx_pw_4lsol_6pylsol_1analyze_data, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_4lsol_6pylsol_1analyze_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  char const *__pyx_v_data_path;
+  char const *__pyx_v_data_type;
+  char const *__pyx_v_output_path;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("analyze_data (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_data_path,&__pyx_n_s_data_type,&__pyx_n_s_output_path,0};
+    PyObject* values[3] = {0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_data_path)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_data_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("analyze_data", 1, 3, 3, 1); __PYX_ERR(0, 327, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_output_path)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("analyze_data", 1, 3, 3, 2); __PYX_ERR(0, 327, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "analyze_data") < 0)) __PYX_ERR(0, 327, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+    }
+    __pyx_v_data_path = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_data_path) && PyErr_Occurred())) __PYX_ERR(0, 327, __pyx_L3_error)
+    __pyx_v_data_type = __Pyx_PyObject_AsString(values[1]); if (unlikely((!__pyx_v_data_type) && PyErr_Occurred())) __PYX_ERR(0, 327, __pyx_L3_error)
+    __pyx_v_output_path = __Pyx_PyObject_AsString(values[2]); if (unlikely((!__pyx_v_output_path) && PyErr_Occurred())) __PYX_ERR(0, 327, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("analyze_data", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 327, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("lsol.pylsol.analyze_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_4lsol_6pylsol_analyze_data(__pyx_self, __pyx_v_data_path, __pyx_v_data_type, __pyx_v_output_path);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_4lsol_6pylsol_analyze_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_data_path, char const *__pyx_v_data_type, char const *__pyx_v_output_path) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("analyze_data", 0);
+
+  /* "lsol/pylsol.pyx":328
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):
+ *   return lsol_analyze_data(data_path, data_type, output_path)             # <<<<<<<<<<<<<<
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(lsol_analyze_data(__pyx_v_data_path, __pyx_v_data_type, __pyx_v_output_path)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "lsol/pylsol.pyx":327
+ *             return None
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):             # <<<<<<<<<<<<<<
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lsol.pylsol.analyze_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "lsol/pylsol.pyx":330
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_4lsol_6pylsol_3convert_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_4lsol_6pylsol_3convert_data = {"convert_data", (PyCFunction)__pyx_pw_4lsol_6pylsol_3convert_data, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_4lsol_6pylsol_3convert_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  char const *__pyx_v_src_path;
+  char const *__pyx_v_src_type;
+  char const *__pyx_v_dst_path;
+  char const *__pyx_v_dst_type;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("convert_data (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_src_path,&__pyx_n_s_src_type,&__pyx_n_s_dst_path,&__pyx_n_s_dst_type,0};
+    PyObject* values[4] = {0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_path)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("convert_data", 1, 4, 4, 1); __PYX_ERR(0, 330, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dst_path)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("convert_data", 1, 4, 4, 2); __PYX_ERR(0, 330, __pyx_L3_error)
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dst_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("convert_data", 1, 4, 4, 3); __PYX_ERR(0, 330, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "convert_data") < 0)) __PYX_ERR(0, 330, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+    }
+    __pyx_v_src_path = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_src_path) && PyErr_Occurred())) __PYX_ERR(0, 330, __pyx_L3_error)
+    __pyx_v_src_type = __Pyx_PyObject_AsString(values[1]); if (unlikely((!__pyx_v_src_type) && PyErr_Occurred())) __PYX_ERR(0, 330, __pyx_L3_error)
+    __pyx_v_dst_path = __Pyx_PyObject_AsString(values[2]); if (unlikely((!__pyx_v_dst_path) && PyErr_Occurred())) __PYX_ERR(0, 330, __pyx_L3_error)
+    __pyx_v_dst_type = __Pyx_PyObject_AsString(values[3]); if (unlikely((!__pyx_v_dst_type) && PyErr_Occurred())) __PYX_ERR(0, 330, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("convert_data", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 330, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("lsol.pylsol.convert_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_4lsol_6pylsol_2convert_data(__pyx_self, __pyx_v_src_path, __pyx_v_src_type, __pyx_v_dst_path, __pyx_v_dst_type);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_4lsol_6pylsol_2convert_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, char const *__pyx_v_dst_path, char const *__pyx_v_dst_type) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("convert_data", 0);
+
+  /* "lsol/pylsol.pyx":331
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)             # <<<<<<<<<<<<<<
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(lsol_convert_data(__pyx_v_src_path, __pyx_v_src_type, __pyx_v_dst_path, __pyx_v_dst_type)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 331, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "lsol/pylsol.pyx":330
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lsol.pylsol.convert_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "lsol/pylsol.pyx":333
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_4lsol_6pylsol_5shuffle_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_4lsol_6pylsol_5shuffle_data = {"shuffle_data", (PyCFunction)__pyx_pw_4lsol_6pylsol_5shuffle_data, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_4lsol_6pylsol_5shuffle_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  char const *__pyx_v_src_path;
+  char const *__pyx_v_src_type;
+  char const *__pyx_v_dst_path;
+  char const *__pyx_v_dst_type;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("shuffle_data (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_src_path,&__pyx_n_s_src_type,&__pyx_n_s_dst_path,&__pyx_n_s_dst_type,0};
+    PyObject* values[4] = {0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_path)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("shuffle_data", 1, 4, 4, 1); __PYX_ERR(0, 333, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dst_path)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("shuffle_data", 1, 4, 4, 2); __PYX_ERR(0, 333, __pyx_L3_error)
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dst_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("shuffle_data", 1, 4, 4, 3); __PYX_ERR(0, 333, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "shuffle_data") < 0)) __PYX_ERR(0, 333, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+    }
+    __pyx_v_src_path = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_src_path) && PyErr_Occurred())) __PYX_ERR(0, 333, __pyx_L3_error)
+    __pyx_v_src_type = __Pyx_PyObject_AsString(values[1]); if (unlikely((!__pyx_v_src_type) && PyErr_Occurred())) __PYX_ERR(0, 333, __pyx_L3_error)
+    __pyx_v_dst_path = __Pyx_PyObject_AsString(values[2]); if (unlikely((!__pyx_v_dst_path) && PyErr_Occurred())) __PYX_ERR(0, 333, __pyx_L3_error)
+    __pyx_v_dst_type = __Pyx_PyObject_AsString(values[3]); if (unlikely((!__pyx_v_dst_type) && PyErr_Occurred())) __PYX_ERR(0, 333, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("shuffle_data", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 333, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("lsol.pylsol.shuffle_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_4lsol_6pylsol_4shuffle_data(__pyx_self, __pyx_v_src_path, __pyx_v_src_type, __pyx_v_dst_path, __pyx_v_dst_type);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_4lsol_6pylsol_4shuffle_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, char const *__pyx_v_dst_path, char const *__pyx_v_dst_type) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("shuffle_data", 0);
+
+  /* "lsol/pylsol.pyx":334
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)             # <<<<<<<<<<<<<<
+ * 
+ * def split_data(const char* src_path, const char* src_type,
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(lsol_shuffle_data(__pyx_v_src_path, __pyx_v_src_type, __pyx_v_dst_path, __pyx_v_dst_type)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "lsol/pylsol.pyx":333
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lsol.pylsol.shuffle_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "lsol/pylsol.pyx":336
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def split_data(const char* src_path, const char* src_type,             # <<<<<<<<<<<<<<
+ *     int fold, const char* output_prefix, const char* dst_type,
+ *     bint shuffle):
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_4lsol_6pylsol_7split_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_4lsol_6pylsol_7split_data = {"split_data", (PyCFunction)__pyx_pw_4lsol_6pylsol_7split_data, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_4lsol_6pylsol_7split_data(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  char const *__pyx_v_src_path;
+  char const *__pyx_v_src_type;
+  int __pyx_v_fold;
+  char const *__pyx_v_output_prefix;
+  char const *__pyx_v_dst_type;
+  int __pyx_v_shuffle;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("split_data (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_src_path,&__pyx_n_s_src_type,&__pyx_n_s_fold,&__pyx_n_s_output_prefix,&__pyx_n_s_dst_type,&__pyx_n_s_shuffle,0};
+    PyObject* values[6] = {0,0,0,0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  6: values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
+        case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_path)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_src_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, 1); __PYX_ERR(0, 336, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_fold)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, 2); __PYX_ERR(0, 336, __pyx_L3_error)
+        }
+        case  3:
+        if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_output_prefix)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, 3); __PYX_ERR(0, 336, __pyx_L3_error)
+        }
+        case  4:
+        if (likely((values[4] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_dst_type)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, 4); __PYX_ERR(0, 336, __pyx_L3_error)
+        }
+        case  5:
+        if (likely((values[5] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_shuffle)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, 5); __PYX_ERR(0, 336, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "split_data") < 0)) __PYX_ERR(0, 336, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 6) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+      values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
+      values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
+      values[5] = PyTuple_GET_ITEM(__pyx_args, 5);
+    }
+    __pyx_v_src_path = __Pyx_PyObject_AsString(values[0]); if (unlikely((!__pyx_v_src_path) && PyErr_Occurred())) __PYX_ERR(0, 336, __pyx_L3_error)
+    __pyx_v_src_type = __Pyx_PyObject_AsString(values[1]); if (unlikely((!__pyx_v_src_type) && PyErr_Occurred())) __PYX_ERR(0, 336, __pyx_L3_error)
+    __pyx_v_fold = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_fold == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 337, __pyx_L3_error)
+    __pyx_v_output_prefix = __Pyx_PyObject_AsString(values[3]); if (unlikely((!__pyx_v_output_prefix) && PyErr_Occurred())) __PYX_ERR(0, 337, __pyx_L3_error)
+    __pyx_v_dst_type = __Pyx_PyObject_AsString(values[4]); if (unlikely((!__pyx_v_dst_type) && PyErr_Occurred())) __PYX_ERR(0, 337, __pyx_L3_error)
+    __pyx_v_shuffle = __Pyx_PyObject_IsTrue(values[5]); if (unlikely((__pyx_v_shuffle == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 338, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("split_data", 1, 6, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 336, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("lsol.pylsol.split_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_4lsol_6pylsol_6split_data(__pyx_self, __pyx_v_src_path, __pyx_v_src_type, __pyx_v_fold, __pyx_v_output_prefix, __pyx_v_dst_type, __pyx_v_shuffle);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_4lsol_6pylsol_6split_data(CYTHON_UNUSED PyObject *__pyx_self, char const *__pyx_v_src_path, char const *__pyx_v_src_type, int __pyx_v_fold, char const *__pyx_v_output_prefix, char const *__pyx_v_dst_type, int __pyx_v_shuffle) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("split_data", 0);
+
+  /* "lsol/pylsol.pyx":339
+ *     int fold, const char* output_prefix, const char* dst_type,
+ *     bint shuffle):
+ *   return lsol_split_data(src_path, src_type, fold, output_prefix, dst_type, shuffle)             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(lsol_split_data(__pyx_v_src_path, __pyx_v_src_type, __pyx_v_fold, __pyx_v_output_prefix, __pyx_v_dst_type, __pyx_v_shuffle)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 339, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "lsol/pylsol.pyx":336
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def split_data(const char* src_path, const char* src_type,             # <<<<<<<<<<<<<<
+ *     int fold, const char* output_prefix, const char* dst_type,
+ *     bint shuffle):
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("lsol.pylsol.split_data", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -6916,18 +7461,26 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_TypeError, __pyx_k_TypeError, sizeof(__pyx_k_TypeError), 0, 0, 1, 1},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
   {&__pyx_n_s_algo, __pyx_k_algo, sizeof(__pyx_k_algo), 0, 0, 1, 1},
+  {&__pyx_n_s_analyze_data, __pyx_k_analyze_data, sizeof(__pyx_k_analyze_data), 0, 0, 1, 1},
   {&__pyx_n_s_append, __pyx_k_append, sizeof(__pyx_k_append), 0, 0, 1, 1},
   {&__pyx_n_s_array, __pyx_k_array, sizeof(__pyx_k_array), 0, 0, 1, 1},
   {&__pyx_n_s_batch_size, __pyx_k_batch_size, sizeof(__pyx_k_batch_size), 0, 0, 1, 1},
   {&__pyx_n_s_buf_size, __pyx_k_buf_size, sizeof(__pyx_k_buf_size), 0, 0, 1, 1},
   {&__pyx_n_s_class_num, __pyx_k_class_num, sizeof(__pyx_k_class_num), 0, 0, 1, 1},
   {&__pyx_n_s_cls_num, __pyx_k_cls_num, sizeof(__pyx_k_cls_num), 0, 0, 1, 1},
+  {&__pyx_n_s_convert_data, __pyx_k_convert_data, sizeof(__pyx_k_convert_data), 0, 0, 1, 1},
   {&__pyx_n_s_csr_matrix, __pyx_k_csr_matrix, sizeof(__pyx_k_csr_matrix), 0, 0, 1, 1},
   {&__pyx_n_s_data, __pyx_k_data, sizeof(__pyx_k_data), 0, 0, 1, 1},
+  {&__pyx_n_s_data_path, __pyx_k_data_path, sizeof(__pyx_k_data_path), 0, 0, 1, 1},
+  {&__pyx_n_s_data_type, __pyx_k_data_type, sizeof(__pyx_k_data_type), 0, 0, 1, 1},
+  {&__pyx_n_s_dst_path, __pyx_k_dst_path, sizeof(__pyx_k_dst_path), 0, 0, 1, 1},
+  {&__pyx_n_s_dst_type, __pyx_k_dst_type, sizeof(__pyx_k_dst_type), 0, 0, 1, 1},
   {&__pyx_n_s_dtype, __pyx_k_dtype, sizeof(__pyx_k_dtype), 0, 0, 1, 1},
   {&__pyx_n_s_float64, __pyx_k_float64, sizeof(__pyx_k_float64), 0, 0, 1, 1},
+  {&__pyx_n_s_fold, __pyx_k_fold, sizeof(__pyx_k_fold), 0, 0, 1, 1},
   {&__pyx_n_s_get_labels, __pyx_k_get_labels, sizeof(__pyx_k_get_labels), 0, 0, 1, 1},
   {&__pyx_n_s_get_params, __pyx_k_get_params, sizeof(__pyx_k_get_params), 0, 0, 1, 1},
+  {&__pyx_kp_s_home_yuewu_work_libsol_python_l, __pyx_k_home_yuewu_work_libsol_python_l, sizeof(__pyx_k_home_yuewu_work_libsol_python_l), 0, 0, 1, 0},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_indices, __pyx_k_indices, sizeof(__pyx_k_indices), 0, 0, 1, 1},
   {&__pyx_n_s_indptr, __pyx_k_indptr, sizeof(__pyx_k_indptr), 0, 0, 1, 1},
@@ -6935,6 +7488,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_iteritems, __pyx_k_iteritems, sizeof(__pyx_k_iteritems), 0, 0, 1, 1},
   {&__pyx_n_s_load_data, __pyx_k_load_data, sizeof(__pyx_k_load_data), 0, 0, 1, 1},
   {&__pyx_kp_s_load_data_failed, __pyx_k_load_data_failed, sizeof(__pyx_k_load_data_failed), 0, 0, 1, 0},
+  {&__pyx_n_s_lsol_pylsol, __pyx_k_lsol_pylsol, sizeof(__pyx_k_lsol_pylsol), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_model, __pyx_k_model, sizeof(__pyx_k_model), 0, 0, 1, 1},
   {&__pyx_kp_s_model_is_not_initialized, __pyx_k_model_is_not_initialized, sizeof(__pyx_k_model_is_not_initialized), 0, 0, 1, 0},
@@ -6945,6 +7499,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_only_data_path_or_numpy_ndarray, __pyx_k_only_data_path_or_numpy_ndarray, sizeof(__pyx_k_only_data_path_or_numpy_ndarray), 0, 0, 1, 0},
   {&__pyx_kp_s_only_float64_data_are_allowed, __pyx_k_only_float64_data_are_allowed, sizeof(__pyx_k_only_float64_data_are_allowed), 0, 0, 1, 0},
   {&__pyx_kp_s_only_float64_labels_are_allowed, __pyx_k_only_float64_labels_are_allowed, sizeof(__pyx_k_only_float64_labels_are_allowed), 0, 0, 1, 0},
+  {&__pyx_n_s_output_path, __pyx_k_output_path, sizeof(__pyx_k_output_path), 0, 0, 1, 1},
+  {&__pyx_n_s_output_prefix, __pyx_k_output_prefix, sizeof(__pyx_k_output_prefix), 0, 0, 1, 1},
   {&__pyx_n_s_param1, __pyx_k_param1, sizeof(__pyx_k_param1), 0, 0, 1, 1},
   {&__pyx_n_s_param2, __pyx_k_param2, sizeof(__pyx_k_param2), 0, 0, 1, 1},
   {&__pyx_n_s_pass_num, __pyx_k_pass_num, sizeof(__pyx_k_pass_num), 0, 0, 1, 1},
@@ -6954,6 +7510,11 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_set_parameter_s_s_failed, __pyx_k_set_parameter_s_s_failed, sizeof(__pyx_k_set_parameter_s_s_failed), 0, 0, 1, 0},
   {&__pyx_n_s_set_params, __pyx_k_set_params, sizeof(__pyx_k_set_params), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
+  {&__pyx_n_s_shuffle, __pyx_k_shuffle, sizeof(__pyx_k_shuffle), 0, 0, 1, 1},
+  {&__pyx_n_s_shuffle_data, __pyx_k_shuffle_data, sizeof(__pyx_k_shuffle_data), 0, 0, 1, 1},
+  {&__pyx_n_s_split_data, __pyx_k_split_data, sizeof(__pyx_k_split_data), 0, 0, 1, 1},
+  {&__pyx_n_s_src_path, __pyx_k_src_path, sizeof(__pyx_k_src_path), 0, 0, 1, 1},
+  {&__pyx_n_s_src_type, __pyx_k_src_type, sizeof(__pyx_k_src_type), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_verbose, __pyx_k_verbose, sizeof(__pyx_k_verbose), 0, 0, 1, 1},
@@ -7090,6 +7651,54 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__10 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor_2); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(1, 823, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
+
+  /* "lsol/pylsol.pyx":327
+ *             return None
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):             # <<<<<<<<<<<<<<
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ */
+  __pyx_tuple__11 = PyTuple_Pack(3, __pyx_n_s_data_path, __pyx_n_s_data_type, __pyx_n_s_output_path); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 327, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__11);
+  __Pyx_GIVEREF(__pyx_tuple__11);
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_yuewu_work_libsol_python_l, __pyx_n_s_analyze_data, 327, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 327, __pyx_L1_error)
+
+  /* "lsol/pylsol.pyx":330
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+  __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_src_path, __pyx_n_s_src_type, __pyx_n_s_dst_path, __pyx_n_s_dst_type); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__13);
+  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(4, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_yuewu_work_libsol_python_l, __pyx_n_s_convert_data, 330, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 330, __pyx_L1_error)
+
+  /* "lsol/pylsol.pyx":333
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+  __pyx_tuple__15 = PyTuple_Pack(4, __pyx_n_s_src_path, __pyx_n_s_src_type, __pyx_n_s_dst_path, __pyx_n_s_dst_type); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 333, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__15);
+  __Pyx_GIVEREF(__pyx_tuple__15);
+  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(4, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_yuewu_work_libsol_python_l, __pyx_n_s_shuffle_data, 333, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 333, __pyx_L1_error)
+
+  /* "lsol/pylsol.pyx":336
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def split_data(const char* src_path, const char* src_type,             # <<<<<<<<<<<<<<
+ *     int fold, const char* output_prefix, const char* dst_type,
+ *     bint shuffle):
+ */
+  __pyx_tuple__17 = PyTuple_Pack(6, __pyx_n_s_src_path, __pyx_n_s_src_type, __pyx_n_s_fold, __pyx_n_s_output_prefix, __pyx_n_s_dst_type, __pyx_n_s_shuffle); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__17);
+  __Pyx_GIVEREF(__pyx_tuple__17);
+  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(6, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_yuewu_work_libsol_python_l, __pyx_n_s_split_data, 336, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 336, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -7256,6 +7865,54 @@ PyMODINIT_FUNC PyInit_pylsol(void)
  * cdef void get_parameter(void* user_context,
  */
   import_array();
+
+  /* "lsol/pylsol.pyx":327
+ *             return None
+ * 
+ * def analyze_data(const char* data_path, const char* data_type, const char* output_path):             # <<<<<<<<<<<<<<
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4lsol_6pylsol_1analyze_data, NULL, __pyx_n_s_lsol_pylsol); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 327, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_analyze_data, __pyx_t_2) < 0) __PYX_ERR(0, 327, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "lsol/pylsol.pyx":330
+ *   return lsol_analyze_data(data_path, data_type, output_path)
+ * 
+ * def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4lsol_6pylsol_3convert_data, NULL, __pyx_n_s_lsol_pylsol); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 330, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_convert_data, __pyx_t_2) < 0) __PYX_ERR(0, 330, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "lsol/pylsol.pyx":333
+ *   return lsol_convert_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):             # <<<<<<<<<<<<<<
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4lsol_6pylsol_5shuffle_data, NULL, __pyx_n_s_lsol_pylsol); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 333, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_shuffle_data, __pyx_t_2) < 0) __PYX_ERR(0, 333, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+  /* "lsol/pylsol.pyx":336
+ *   return lsol_shuffle_data(src_path, src_type, dst_path, dst_type)
+ * 
+ * def split_data(const char* src_path, const char* src_type,             # <<<<<<<<<<<<<<
+ *     int fold, const char* output_prefix, const char* dst_type,
+ *     bint shuffle):
+ */
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_4lsol_6pylsol_7split_data, NULL, __pyx_n_s_lsol_pylsol); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 336, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_split_data, __pyx_t_2) < 0) __PYX_ERR(0, 336, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "lsol/pylsol.pyx":1
  * cimport numpy as np             # <<<<<<<<<<<<<<

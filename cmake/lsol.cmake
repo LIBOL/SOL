@@ -25,7 +25,9 @@ list(APPEND lsol_list ${json_files})
 add_library(lsol SHARED ${lsol_list}
     ${PROJECT_SOURCE_DIR}/include/lsol/lsol.h
     ${PROJECT_SOURCE_DIR}/include/lsol/c_api.h
+    ${PROJECT_SOURCE_DIR}/include/lsol/tools.h
     ${PROJECT_SOURCE_DIR}/src/lsol/c_api.cc
+    ${PROJECT_SOURCE_DIR}/src/lsol/tools.cc
     )
 target_link_libraries(lsol)
 list(APPEND TARGET_LIBS lsol)
