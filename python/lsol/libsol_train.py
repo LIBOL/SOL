@@ -119,8 +119,7 @@ def getargs():
     set_logging(args)
     return args
 
-
-if __name__ == '__main__':
+def main():
     args = getargs()
     try:
         dt_name = os.path.basename(args.input)
@@ -167,3 +166,6 @@ if __name__ == '__main__':
 
     except Exception as err:
         print 'train failed: %s' % (err.message)
+
+if __name__ == '__main__':
+    main()

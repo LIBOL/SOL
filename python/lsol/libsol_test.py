@@ -78,7 +78,7 @@ def getargs():
     return args
 
 
-if __name__ == '__main__':
+def main():
     args = getargs()
 
     try:
@@ -111,3 +111,6 @@ if __name__ == '__main__':
                         fh.write('%d\t%d\t%s\n' %(int(labels[i]), int(predicts[i]), '\t'.join([str(v) for v in scores[i,:]])))
     except Exception as err:
         print 'test failed %s' % (err.message)
+
+if __name__ == '__main__':
+    main()

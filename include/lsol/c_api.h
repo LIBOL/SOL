@@ -6,12 +6,17 @@
 #ifndef LSOL_C_API_H__
 #define LSOL_C_API_H__
 
+#ifndef LSOL_EMBED_PACKAGE
 #if (defined WIN32 || defined _WIN32 || defined WINCE)
 #ifdef LSOL_EXPORTS
 #undef LSOL_EXPORTS
 #define LSOL_EXPORTS __declspec(dllexport)
 #else
 #define LSOL_EXPORTS __declspec(dllimport)
+#endif
+#else
+#undef LSOL_EXPORTS
+#define LSOL_EXPORTS
 #endif
 #else
 #undef LSOL_EXPORTS

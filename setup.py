@@ -33,6 +33,19 @@ def get_include_dirs():
     import numpy as np
     return [np.get_include(), "include", "external"]
 
+if os.name == 'nt':
+    extra_flags = ['/wd4251','/wd4275', '/EHsc','-DLSOL_EMBED_PACKAGE']
+    dependencies = []
+else:
+    extra_flags = ['-std=c++11']
+    dependencies = [
+        "numpy      >= 1.7.0",
+        "cython     >= 0.23.0",
+        "scipy      >= 0.13.0",
+        "setuptools"
+        ]
+
+
 ext_modules = [
     Extension(
         "pylsol",
@@ -40,9 +53,9 @@ ext_modules = [
         get_source_files('external/json'),
         language='c++',
         include_dirs=get_include_dirs(),
-        extra_compile_args=['-DHAS_NUMPY_DEV', '-DUSE_STD_THREAD', '-std=c++11'
-                            ])
+        extra_compile_args=['-DHAS_NUMPY_DEV', '-DUSE_STD_THREAD'] + extra_flags)
 ]
+
 
 setup(
     name='lsol',
@@ -56,13 +69,12 @@ setup(
     license='Apache 2.0',
     packages=['', 'lsol'],
     package_dir={'': 'python'},
-    scripts=[
-        'python/lsol/libsol_train.py', 'python/lsol/libsol_test.py'
-    ],
+    entry_points = {
+        'console_scripts':[
+            'libsol_train=lsol.libsol_train:main',
+            'libsol_test=lsol.libsol_test:main',
+            ],
+        },
     ext_modules=cythonize(ext_modules),
-    install_requires=[
-        "numpy      >= 1.7.0",
-        "cython     >= 0.23.0",
-        "scipy      >= 0.13.0",
-        "setuptools"
-    ])
+    install_requires=dependencies
+    )
