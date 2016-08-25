@@ -136,7 +136,7 @@ We highly recommend users to install python packages in a virtual enviroment.
 2. For Windows Users
 
     Windows Users still need **Visual Studio** to compile the codes. Besides,
-    we high recommend to install [Anaconda](https://www.continuum.io/) as the
+    we highly recommend to install [Anaconda](https://www.continuum.io/) as the
     python environment. If you are a [Canopy](https://www.enthought.com/) user,
     the procedures are similar except for the creation of virtual environment.
 
@@ -153,7 +153,7 @@ We highly recommend users to install python packages in a virtual enviroment.
 
         By default, Anaconda requires the Visual C++ 9.0 (Visual Studio 2008) to compile the native
         codes. However, this is a very old compiler. We recommend to use the
-        following tricks  to user new visual studio compilers.
+        following tricks  to use new visual studio compilers.
 
             $ cd <Anaconda>\Lib\distutils
             $ backup msvc9compiler.py

@@ -15,7 +15,20 @@ from Cython.Build import cythonize
 import sys
 import os
 
-sys.path.append("python/lsol")
+try:
+    from pypandoc import convert
+
+    def read_md(fpath):
+        return convert(fpath, 'rst')
+
+except ImportError:
+    print("warning: pypandoc module not found, DONOT convert Markdown to RST")
+
+    def read_md(fpath):
+        with open(fpath, 'r') as fp:
+            return fp.read()
+
+sys.path.append("python")
 
 
 def get_source_files(root_dir):
@@ -49,7 +62,7 @@ else:
 ext_modules = [
     Extension(
         "pylsol",
-        sources=["python/lsol/pylsol.pyx"] + get_source_files('src/lsol') +
+        sources=["python/pylsol.pyx"] + get_source_files('src/lsol') +
         get_source_files('external/json'),
         language='c++',
         include_dirs=get_include_dirs(),
@@ -61,14 +74,16 @@ setup(
     name='lsol',
     version='1.1.0',
     description='Library for Scalable Online Learning',
+    long_description=read_md('README.md'),
     author='Yue Wu, Chenghao Liu, Steven C.H. Hoi',
     author_email='yuewu@outlook.com',
     maintainer='Yue Wu, Chenghao Liu',
     maintainer_email='yuewu@outlook.com',
     url='http://libsol.stevenhoi.org',
     license='Apache 2.0',
-    packages=['', 'lsol'],
-    package_dir={'': 'python'},
+    keywords='Scalable Online Learning',
+    packages=['lsol'],
+    package_dir={'lsol': 'python'},
     entry_points = {
         'console_scripts':[
             'libsol_train=lsol.libsol_train:main',
