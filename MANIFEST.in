@@ -1,0 +1,6 @@
+# Include license file
+include LICENSE
+
+#Include include files
+recursive-include include  *
+recursive-include external/json *.h 
