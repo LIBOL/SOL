@@ -45,19 +45,26 @@ Table of Contents
 
 Installation
 ======================
-LIBSOL features a very simple installation procedure. The project is managed by Cmake. There exists a `CMakeLists.txt` in the root directory.
 
-##Prerequisites
+Users can either install the C++ executables or python scripts. They provide similar interfaces (**libsol_train** for training and **libsol_test** for testing). To choose the best method:
 
-+ CMake  2.8.12 or higher
-+ Git
-+ C++11 Compiler:
-    - g++(>4.8.2) or clang++(>3.3) on Unix/Linux/MinGW/Cygwin
-    - Visual Studio 2013 or higher on Windows
-+ Python2.7 (required if you want to use the python wrappers)
++ If you are working on C/C++ or other non-python languages, you should choose the C++
+  executables and dynamic libraries.
 
-##Getting the code
++ If you are a python worker, then just try the python scripts.
 
+**NOTE**:
+
+Both the python scripts and C++ executables & Libraries are dependent on the same C++ codes.
+
+## Install from Source
+
+LIBSOL features a very simple installation procedure. The project is managed by `CMake` for C++ and `setuptools` for python.
+
+
+###Getting the code
+
+ There exists a `CMakeLists.txt` in the root directory.
 The latest version of LIBSOL is always available via 'github' by invoking one
 of the following:
 
@@ -67,13 +74,21 @@ of the following:
     ## For HTTP-based Git interaction
     $ git clone https://github.com/LIBOL/LIBSOL.git
 
-##Compiling
+###Build C++ Executables and Dynamic Libraries
 
-1. Make a folder to store project files:
+1. Prerequisites
+
+    + CMake  2.8.12 or higher
+    + Git
+    + C++11 Compiler:
+        - g++(>4.8.2) or clang++(>3.3) on Unix/Linux/MinGW/Cygwin
+        - Visual Studio 2013 or higher on Windows
+
+2. Make a folder to store project files:
 
         $ cd LIBSOL && mkdir build && cd build
 
-2. Generate and build the project files
+3. Generate and build the project files
 
     + For Unix/Linux/MacOS users
 
@@ -93,23 +108,77 @@ of the following:
         Open the project ``LIBSOL.sln``, Rebuild the `ALL_BUILD` project and then build the `INSTALL` project
 
 
-3. The generated package will be copied to $LIBSOL/dist
+4. The generated package will be copied to $LIBSOL/dist
 
-4. Install python  wrapper. [optional]
+### Build Python Scripts
 
-        $ cd python && pip install -r requirements.txt
+We highly recommend users to install python packages in a virtual enviroment.
 
-	**Known Issues of Python Wrappers**:
-	
-	- The wrappers are tested on Windows with Anaconda python distribution.
-	
-	- On MacOS, the default python is not a framework build.  Seems matplotlib does not work properly. See [here](http://matplotlib.org/faq/virtualenv_faq.html) for more details. We recommend the Anaconda python distribution.
-	
-	- On MacOS, if you met the 'Value Error: unknown locale: UTF-8' error, fix by:
-	
-	        $ export LC_ALL=en_US.UTF-8
-	        $ export LANG=en_US.UTF-8
-	
+1. Prerequisites
+
+    + C++11 Compiler:
+        - g++(>4.8.2) or clang++(>3.3) on Unix/Linux/MinGW/Cygwin
+        - Visual Studio 2013 or higher on Windows
+    + Python2.7 (Anaconda is highly recommend on Windows)
+
+1. For on Unix/Linux/MacOS Users
+
+    + Create and Activate a new virtual environment
+
+            $ virtualenv --system-site-packages pyenv
+            $ source pyenv/bin/activate
+
+    + Build and install the python scripts
+
+            $ python setup.py build
+            $ python setup.py install
+
+2. For Windows Users
+
+    Windows Users still need **Visual Studio** to compile the codes. Besides,
+    we high recommend to install [Anaconda](https://www.continuum.io/) as the
+    python environment. If you are a [Canopy](https://www.enthought.com/) user,
+    the procedures are similar except for the creation of virtual environment.
+
+    + Open a Command Prompt and go to the source directory
+
+            $ cd <LIBSOL>
+
+    + Create and Activate a new virtual enviroment
+
+            $ virtualenv --system-site-packages pyenv
+            $ pyenv/Scripts/activate
+
+    + Set up the build environment
+
+        By default, Anaconda requires the Visual C++ 9.0 (Visual Studio 2008) to compile the native
+        codes. However, this is a very old compiler. We recommend to use the
+        following tricks  to user new visual studio compilers.
+
+            $ cd <Anaconda>\Lib\distutils
+            $ backup msvc9compiler.py
+            $ open msvc9compiler.py
+            $ find the line 'majorVersion=int(s[:2]) - 6'
+            $ change the line to 'majorVersion=12' for Visual Studio 2013 or
+            $ change the line to 'majorVersion=14' for Visual Studio 2015 or
+
+    + Build and install the python scripts
+
+            $ python setup.py build
+            $ python setup.py install
+
+    + Revert the changes to Anaconda if you are not sure its influences in the
+      future.
+
+## Known Issues of Python Wrappers
+
+- On MacOS, the default python is not a framework build.  Seems matplotlib does not work properly. See [here](http://matplotlib.org/faq/virtualenv_faq.html) for more details. We recommend the Anaconda python distribution.
+
+- On MacOS, if you met the 'Value Error: unknown locale: UTF-8' error, fix by:
+
+        $ export LC_ALL=en_US.UTF-8
+        $ export LANG=en_US.UTF-8
+
 
 **Note**: Both 32-bit and 64-bit programs are ok to build and run. But if users want to use the python wrapper, it's required that the architectures of ``python`` and LIBSOL are the same, i.e., 64-bit ``python`` can only use 64-bit LIBSOL, 32-bit ``python`` can only use 32-bit LIBSOL.
 
@@ -127,58 +196,46 @@ The command for training wit default algorithm is as the following shows.
     training time: 0.000 seconds
     model sparsity: 15.1260%
 
-Users can use the python wrapper to do the same thing. But make sure that the
-software is compiled with the same architecure of python (32-bit or 64-bit).
-
-    $ python python/libsol_train.py data/a1a
-
 The learned model can be saved to a file (``a1a.model`` for example) by:
 
-    $ #using executable
     $ libsol_train data/a1a a1a.model
-    $ #using python
-    $ python python/libsol_train.py data/a1a a1a.model
 
 By default, LIBSOL use ``OGD`` to learn a model. If users want to try another
 algorithm (``AROW`` for example) and save to another file (``arow.model``):
 
-    $ #using executable
     $ libsol_train -a arow data/a1a arow.model
-    $ #using python
-    $ python python/libsol_train.py -a arow data/a1a a1a.model
 
 Each algorithm may have its own parameters. The following command changes the
 default value of parameter ``r`` to ``2.0``:
 
-    $ #using executable
-    $ libsol_train -a arow --params r=2.0 data/a1a arow.model
-    $ #using python
-    $ python python/libsol_train.py --params r=2.0 -a arow data/a1a arow.model
+    $ libsol_train --params r=2.0 -a arow data/a1a arow.model
 
-The python wrapper also provides the cross validation ability. For example, if
+The python scripts also provides the cross validation ability. For example, if
 users want to do a 5-fold GridSearch Cross Validation in the range [2^-5,2^-4,...,2^4, 2^5] for
 parameter ``r`` of AROW, the command will be:
 
-    $ python python/libsol_train.py -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
+    $ libsol_train -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
     cross validation parameters: [('r', 2.0)]
 
 In some cases we want to finetune from a pretrained model,
 
-    $ #using executable
     $ libsol_train -m arow.model data/a1a arow2.model
-    $ #using python
-    $ python python/libsol_train.py -m arow.model data/a1a arow2.model
 
 We can test with the learned model:
 
-    $ #using executable
     $ libsol_test arow.model data/a1a.t predict.txt
-    $ #using python
-    $ python python/libsol_test.py arow.model data/a1a.t
     test accuracy: 0.8437
     test time: 0.016 seconds
 
+**NOTES**
 
++  They python scripts will analyze the dataset (number of classes, dimension
+   of the data) before training.
+
++ The C++ executable needs to be specified with number of classes for
+  multi-class problems.
+
+        $ libsol_train -c 10 mnist.scale
 
 Comparison of Online Learning Algorithms
 ========================================
@@ -225,21 +282,21 @@ The output is:
 
     algorithm   train           train           test            test
                 accuracy        time(s)         accuracy        time(s)
-    pa1         0.9857+/-0.0003 1.4516+/-0.0254 0.9903+/-0.0040 0.2372+/-0.0025
-    pa2         0.9855+/-0.0003 1.4216+/-0.0182 0.9901+/-0.0038 0.2379+/-0.0038
-    eccw        0.8640+/-0.0817 1.4180+/-0.0194 0.8673+/-0.0856 0.2386+/-0.0052
-    arow        0.9906+/-0.0002 1.4110+/-0.0205 0.9945+/-0.0003 0.2366+/-0.0048
-    perceptron  0.9832+/-0.0003 1.4166+/-0.0207 0.9890+/-0.0042 0.2383+/-0.0051
-    ada-rda     0.9904+/-0.0002 1.4178+/-0.0207 0.9943+/-0.0003 0.2392+/-0.0054
-    ada-fobos   0.9906+/-0.0001 1.4213+/-0.0167 0.9944+/-0.0004 0.2380+/-0.0042
-    sop         0.9857+/-0.0003 1.4205+/-0.0212 0.9905+/-0.0042 0.2392+/-0.0021
-    pa          0.9853+/-0.0003 1.4077+/-0.0292 0.9900+/-0.0041 0.2384+/-0.0026
-    rda         0.9525+/-0.0007 1.4109+/-0.0108 0.9514+/-0.0015 0.2408+/-0.0062
-    cw          0.9878+/-0.0002 1.4162+/-0.0170 0.9906+/-0.0031 0.2367+/-0.0033
+    pa1         0.8553+/-0.0009 1.4840+/-0.0163 0.8753+/-0.0164 0.2474+/-0.0018
+    pa2         0.8585+/-0.0008 1.4804+/-0.0228 0.8811+/-0.0131 0.2469+/-0.0040
+    eccw        0.8764+/-0.0210 1.4825+/-0.0167 0.8688+/-0.0493 0.2468+/-0.0030
+    arow        0.9051+/-0.0004 1.4680+/-0.0136 0.9226+/-0.0014 0.2458+/-0.0038
+    perceptron  0.8460+/-0.0008 1.4752+/-0.0151 0.8671+/-0.0164 0.2483+/-0.0052
+    ada-rda     0.8999+/-0.0005 1.4736+/-0.0090 0.9201+/-0.0022 0.2467+/-0.0047
+    ada-fobos   0.9055+/-0.0007 1.4807+/-0.0196 0.9239+/-0.0020 0.2468+/-0.0027
+    pa          0.8553+/-0.0009 1.4667+/-0.0210 0.8753+/-0.0164 0.2465+/-0.0023
+    sop         0.8552+/-0.0007 1.4751+/-0.0149 0.8811+/-0.0099 0.2481+/-0.0054
+    rda         0.7868+/-0.0009 1.4630+/-0.0166 0.8027+/-0.0027 0.2483+/-0.0018
+    cw          0.8784+/-0.0008 1.4784+/-0.0240 0.8861+/-0.0034 0.2459+/-0.0044
     vw          0.9138+/-0.0023 1.8747+/-0.0743 0.9125+/-0.0019 0.3252+/-0.0121
-    ogd         0.9884+/-0.0004 1.4165+/-0.0222 0.9930+/-0.0008 0.2359+/-0.0036
-    alma2       0.9890+/-0.0002 1.4134+/-0.0101 0.9933+/-0.0005 0.2353+/-0.0041
-    erda        0.9888+/-0.0002 1.4137+/-0.0214 0.9934+/-0.0009 0.2383+/-0.0055
+    ogd         0.8943+/-0.0009 1.4724+/-0.0192 0.9171+/-0.0008 0.2481+/-0.0039
+    alma2       0.8972+/-0.0008 1.4723+/-0.0134 0.9188+/-0.0022 0.2498+/-0.0118
+    erda        0.8839+/-0.0005 1.4707+/-0.0120 0.9132+/-0.0042 0.2474+/-0.0017
     liblinear   0.9263+/-0.0001 145.5023+/-17.7614 0.9183+/-0.0001 2.0172+/-0.0164
 
 The tables and figures in our paper description are obtained with the following
@@ -251,7 +308,7 @@ command:
 License and Citation
 ======================
 
-LIBSOL is released under the Apache 2.0 open source license. 
+LIBSOL is released under the Apache 2.0 open source license.
 
 Please cite LIBSOL in your publications if it helps your research:
 
