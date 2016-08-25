@@ -38,7 +38,8 @@ class DataSet(object):
         #if not analyzed before, analyze
         if os.path.exists(info_file) == False :
             logging.info('analyze data %s' %(self.data_path))
-            pylsol.analyze_data(self.data_path, self.dtype, info_file)
+            if pylsol.analyze_data(self.data_path, self.dtype, info_file) != 0:
+                sys.exit()
 
         #parse data num
         pattern = re.compile(r'data number\s*:\s*(\d+)')
@@ -83,7 +84,8 @@ class DataSet(object):
             if os.path.exists(cache_path):
                 return cache_path
             logging.info('convert data %s to ' %(self.data_path, cache_path))
-            pylsol.convert_data(self.data_path, self.dtype, cache_path, 'bin')
+            if pylsol.convert_data(self.data_path, self.dtype, cache_path, 'bin') != 0:
+                sys.exit()
             return cache_path
 
     def rand_path(self, tgt_type = None, force=False):
@@ -92,7 +94,8 @@ class DataSet(object):
         if os.path.exists(output_path) and force == False:
             return output_path
         logging.info('convert data %s to %s' %(self.data_path, output_path))
-        pylsol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type)
+        if pylsol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type) != 0:
+            sys.exit()
         return output_path
 
     def split_file(self, split_num, tgt_type = None):
@@ -120,7 +123,8 @@ class DataSet(object):
             return None
 
         logging.info('split %s to %d folds' %(self.data_path, split_num))
-        pylsol.split_data(self.data_path, self.dtype, split_num, output_prefix, self.slice_type, True)
+        if pylsol.split_data(self.data_path, self.dtype, split_num, output_prefix, self.slice_type, True) != 0:
+            sys.exit()
 
 if __name__ == '__main__':
     a1a = DataSet('a1a', data_path = 'a1a')
