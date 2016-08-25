@@ -53,10 +53,8 @@ else:
     extra_flags = ['-std=c++11','-pthread']
     dependencies = [
         "numpy      >= 1.7.0",
-        "cython     >= 0.23.0",
-        "scipy      >= 0.13.0",
-        "setuptools"
-        ]
+        "scipy      >= 0.13.0"
+    ]
 
 
 ext_modules = [
