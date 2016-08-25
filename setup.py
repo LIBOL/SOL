@@ -50,7 +50,7 @@ if os.name == 'nt':
     extra_flags = ['/wd4251','/wd4275', '/EHsc','-DLSOL_EMBED_PACKAGE']
     dependencies = []
 else:
-    extra_flags = ['-std=c++11']
+    extra_flags = ['-std=c++11','-pthread']
     dependencies = [
         "numpy      >= 1.7.0",
         "cython     >= 0.23.0",
