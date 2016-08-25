@@ -180,7 +180,6 @@ We highly recommend users to install python packages in a virtual enviroment.
         $ export LANG=en_US.UTF-8
 
 
-**Note**: Both 32-bit and 64-bit programs are ok to build and run. But if users want to use the python wrapper, it's required that the architectures of ``python`` and LIBSOL are the same, i.e., 64-bit ``python`` can only use 64-bit LIBSOL, 32-bit ``python`` can only use 32-bit LIBSOL.
 
 Quick Start
 ===========
