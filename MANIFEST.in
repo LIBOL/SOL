@@ -1,6 +1,9 @@
 # Include license file
 include LICENSE
 
+#include python extension file
+include python/pylsol.pyx
+
 #Include include files
 recursive-include include  *
 recursive-include external/json *.h 
