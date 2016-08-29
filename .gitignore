@@ -39,6 +39,7 @@
 *.sln
 *.txt
 *.pdf
+*.png
 *.tar
 *.gz
 python/*.c
@@ -52,3 +53,5 @@ temp/
 dist/
 cache/
 data/
+*.wiki/
+*.egg-info/
