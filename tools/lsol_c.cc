@@ -1,23 +1,23 @@
 /*********************************************************************************
-*     File Name           :     lsol_c.cc
+*     File Name           :     sol_c.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-03-09 15:17]
 *     Last Modified       :     [2016-03-09 17:36]
-*     Description         :     lsol using c_api
+*     Description         :     sol using c_api
 **********************************************************************************/
 
 #include <string>
 #include <cstdlib>
 #include <memory>
 
-#include <lsol/c_api.h>
-#include <lsol/util/str_util.h>
-#include <lsol/util/reflector.h>
-#include <lsol/util/error_code.h>
+#include <sol/c_api.h>
+#include <sol/util/str_util.h>
+#include <sol/util/reflector.h>
+#include <sol/util/error_code.h>
 #include <cmdline/cmdline.h>
 
 using namespace std;
-using namespace lsol;
+using namespace sol;
 
 void getparser(int argc, char** argv, cmdline::parser&);
 int train(cmdline::parser& parser);
@@ -52,10 +52,10 @@ int train(cmdline::parser& parser) {
   void* model = nullptr;
   void* data_iter = nullptr;
   if (parser.exist("model")) {
-    model = lsol_RestoreModel(parser.get<string>("model").c_str());
+    model = sol_RestoreModel(parser.get<string>("model").c_str());
   } else if (parser.get<string>("algo").length()) {
-    model = lsol_CreateModel(parser.get<string>("algo").c_str(),
-                             parser.get<int>("classes"));
+    model = sol_CreateModel(parser.get<string>("algo").c_str(),
+                            parser.get<int>("classes"));
   } else {
     fprintf(stderr, "either --model or --algo should be specified!\n");
     return Status_Invalid_Argument;
@@ -71,8 +71,8 @@ int train(cmdline::parser& parser) {
           fprintf(stderr, "invalid params: %s\n", opt.c_str());
           return Status_Invalid_Argument;
         }
-        if ((ret = lsol_SetModelParameter(model, strip(opt_pair[0]).c_str(),
-                                          strip(opt_pair[1]).c_str())) !=
+        if ((ret = sol_SetModelParameter(model, strip(opt_pair[0]).c_str(),
+                                         strip(opt_pair[1]).c_str())) !=
             Status_OK) {
           break;
         }
@@ -82,25 +82,25 @@ int train(cmdline::parser& parser) {
 
   // load data
   if (ret == Status_OK) {
-    data_iter = lsol_CreateDataIter(parser.get<int>("batchsize"),
-                                    parser.get<int>("bufsize"));
-    ret = lsol_LoadData(data_iter, parser.get<string>("input").c_str(),
-                        parser.get<string>("format").c_str(),
-                        parser.get<int>("pass"));
+    data_iter = sol_CreateDataIter(parser.get<int>("batchsize"),
+                                   parser.get<int>("bufsize"));
+    ret = sol_LoadData(data_iter, parser.get<string>("input").c_str(),
+                       parser.get<string>("format").c_str(),
+                       parser.get<int>("pass"));
   }
 
   if (ret == Status_OK) {
-    float accu = lsol_Train(model, data_iter);
+    float accu = sol_Train(model, data_iter);
     fprintf(stdout, "training accuracy: %.4f\n", accu);
 
     // save model
     if (parser.exist("output")) {
-      ret = lsol_SaveModel(model, parser.get<string>("output").c_str());
+      ret = sol_SaveModel(model, parser.get<string>("output").c_str());
     }
   }
 
-  lsol_ReleaseModel(&model);
-  lsol_ReleaseDataIter(&data_iter);
+  sol_ReleaseModel(&model);
+  sol_ReleaseDataIter(&data_iter);
   return ret;
 }
 
@@ -109,7 +109,7 @@ int test(cmdline::parser& parser) {
   void* model = nullptr;
   void* data_iter = nullptr;
   if (parser.exist("model")) {
-    model = lsol_RestoreModel(parser.get<string>("model").c_str());
+    model = sol_RestoreModel(parser.get<string>("model").c_str());
   } else {
     fprintf(stderr, "either --model or --algo should be specified!\n");
     return Status_Invalid_Argument;
@@ -117,16 +117,16 @@ int test(cmdline::parser& parser) {
   if (model == nullptr) ret = Status_Invalid_Argument;
 
   if (parser.exist("filter")) {
-    ret = lsol_SetModelParameter(model, "filter",
-                                 parser.get<string>("filter").c_str());
+    ret = sol_SetModelParameter(model, "filter",
+                                parser.get<string>("filter").c_str());
   }
 
   // load data
   if (ret == Status_OK) {
-    data_iter = lsol_CreateDataIter(parser.get<int>("batchsize"),
-                                    parser.get<int>("bufsize"));
-    ret = lsol_LoadData(data_iter, parser.get<string>("input").c_str(),
-                        parser.get<string>("format").c_str(), 1);
+    data_iter = sol_CreateDataIter(parser.get<int>("batchsize"),
+                                   parser.get<int>("bufsize"));
+    ret = sol_LoadData(data_iter, parser.get<string>("input").c_str(),
+                       parser.get<string>("format").c_str(), 1);
   }
   if (ret == Status_OK) {
     const char* output_path = nullptr;
@@ -134,12 +134,12 @@ int test(cmdline::parser& parser) {
       output_path = parser.get<string>("output").c_str();
     }
 
-    float accu = lsol_Test(model, data_iter, output_path);
+    float accu = sol_Test(model, data_iter, output_path);
     fprintf(stdout, "test accuracy: %.4f\n", accu);
   }
 
-  lsol_ReleaseModel(&model);
-  lsol_ReleaseDataIter(&data_iter);
+  sol_ReleaseModel(&model);
+  sol_ReleaseDataIter(&data_iter);
   return ret;
 }
 

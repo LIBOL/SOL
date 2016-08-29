@@ -1,13 +1,13 @@
 ==========================================================
-LIBSOL - A Library for Scalable Online Learning Algorithms
+SOL - A Library for Scalable Online Learning Algorithms
 =========================================================
 
 
-About LIBSOL
+About SOL
 ===========================================================================
-LIBSOL is an open-source library for scalable online learning with high-dimensional data. The library provides a family of regular and sparse online learning algorithms for large-scale binary and multi-class classification tasks with high efficiency, scalability, portability, and extensibility. We provide easy-to-use command-line tools, python wrappers and library calls for users and developers, and comprehensive documents for both beginners and advanced users. LIBSOL is not only a machine learning toolbox, but also a comprehensive experimental platform for online learning research. Experiments demonstrate that LIBSOL is highly efficient and scalable for large-scale learning with high-dimensional data.
+SOL is an open-source library for scalable online learning with high-dimensional data. The library provides a family of regular and sparse online learning algorithms for large-scale binary and multi-class classification tasks with high efficiency, scalability, portability, and extensibility. We provide easy-to-use command-line tools, python wrappers and library calls for users and developers, and comprehensive documents for both beginners and advanced users. SOL is not only a machine learning toolbox, but also a comprehensive experimental platform for online learning research. Experiments demonstrate that SOL is highly efficient and scalable for large-scale learning with high-dimensional data.
 
-Specifically, LIBSOL consists of a family of:
+Specifically, SOL consists of a family of:
 + First-order Online Learning algorithms:
     - Perceptron: The Perceptron Algorithm(Rosenblatt, 1958)
     - OGD: Online Gradient Descent(Zinkevich, 2003)
@@ -32,8 +32,8 @@ Specifically, LIBSOL consists of a family of:
     - Ada-FOBOS-L1: Ada-FOBOS with l1 regularization
     - Ada-RDA-L1: Ada-RDA with l1 regularization
 
-This document briefly explains the usage of LIBSOL. A more detailed manual for users and developers can be
-found in the documentation of LIBSOL.
+This document briefly explains the usage of SOL. A more detailed manual for users and developers can be
+found in the documentation of SOL.
 
 To get started, please read the ``Quick Start'' section first.
 
@@ -46,7 +46,7 @@ Table of Contents
 Installation
 ======================
 
-Users can either install the C++ executables or python scripts. They provide similar interfaces (**lsol_train** for training and **lsol_test** for testing). To choose the best method:
+Users can either install the C++ executables or python scripts. They provide similar interfaces (**sol_train** for training and **sol_test** for testing). To choose the best method:
 
 + If you are working on C/C++ or other non-python languages, you should choose the C++
   executables and dynamic libraries.
@@ -59,20 +59,20 @@ Both the python scripts and C++ executables & Libraries are dependent on the sam
 
 ## Install from Source
 
-LIBSOL features a very simple installation procedure. The project is managed by `CMake` for C++ and `setuptools` for python.
+SOL features a very simple installation procedure. The project is managed by `CMake` for C++ and `setuptools` for python.
 
 
 ###Getting the code
 
  There exists a `CMakeLists.txt` in the root directory.
-The latest version of LIBSOL is always available via 'github' by invoking one
+The latest version of SOL is always available via 'github' by invoking one
 of the following:
 
     ## For the traditional ssh-based Git interaction:
-    $ git clone git://github.com/LIBOL/LIBSOL.git
+    $ git clone git://github.com/LIBOL/SOL.git
 
     ## For HTTP-based Git interaction
-    $ git clone https://github.com/LIBOL/LIBSOL.git
+    $ git clone https://github.com/LIBOL/SOL.git
 
 ###Build C++ Executables and Dynamic Libraries
 
@@ -86,7 +86,7 @@ of the following:
 
 2. Make a folder to store project files:
 
-        $ cd LIBSOL && mkdir build && cd build
+        $ cd SOL && mkdir build && cd build
 
 3. Generate and build the project files
 
@@ -105,10 +105,10 @@ of the following:
 
             $ cmake -G "Visual Studio 14 2015 Win64" ..
 
-        Open the project ``LIBSOL.sln``, Rebuild the `ALL_BUILD` project and then build the `INSTALL` project
+        Open the project ``SOL.sln``, Rebuild the `ALL_BUILD` project and then build the `INSTALL` project
 
 
-4. The generated package will be copied to $LIBSOL/dist
+4. The generated package will be copied to $SOL/dist
 
 ### Build Python Scripts
 
@@ -142,7 +142,7 @@ We highly recommend users to install python packages in a virtual enviroment.
 
     + Open a Command Prompt and go to the source directory
 
-            $ cd <LIBSOL>
+            $ cd <SOL>
 
     + Create and Activate a new virtual enviroment
 
@@ -183,46 +183,46 @@ We highly recommend users to install python packages in a virtual enviroment.
 
 Quick Start
 ===========
-Running LIBSOL without any arguments or with '--help' will produce a message which briefly explains the arguments.
+Running SOL without any arguments or with '--help' will produce a message which briefly explains the arguments.
 
-We provide an example to show how to use LIBSOL and explain the details of how LIBSOL works.
+We provide an example to show how to use SOL and explain the details of how SOL works.
 The dataset we use will be `a1a` provided in the ``data`` folder.
 
 The command for training wit default algorithm is as the following shows.
 
-    $ lsol_train data/a1a
+    $ sol_train data/a1a
     training accuracy: 0.8125
     training time: 0.000 seconds
     model sparsity: 15.1260%
 
 The learned model can be saved to a file (``a1a.model`` for example) by:
 
-    $ lsol_train data/a1a a1a.model
+    $ sol_train data/a1a a1a.model
 
-By default, LIBSOL use ``OGD`` to learn a model. If users want to try another
+By default, SOL use ``OGD`` to learn a model. If users want to try another
 algorithm (``AROW`` for example) and save to another file (``arow.model``):
 
-    $ lsol_train -a arow data/a1a arow.model
+    $ sol_train -a arow data/a1a arow.model
 
 Each algorithm may have its own parameters. The following command changes the
 default value of parameter ``r`` to ``2.0``:
 
-    $ lsol_train --params r=2.0 -a arow data/a1a arow.model
+    $ sol_train --params r=2.0 -a arow data/a1a arow.model
 
 The python scripts also provides the cross validation ability. For example, if
 users want to do a 5-fold GridSearch Cross Validation in the range [2^-5,2^-4,...,2^4, 2^5] for
 parameter ``r`` of AROW, the command will be:
 
-    $ lsol_train -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
+    $ sol_train -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
     cross validation parameters: [('r', 2.0)]
 
 In some cases we want to finetune from a pretrained model,
 
-    $ lsol_train -m arow.model data/a1a arow2.model
+    $ sol_train -m arow.model data/a1a arow2.model
 
 We can test with the learned model:
 
-    $ lsol_test arow.model data/a1a.t predict.txt
+    $ sol_test arow.model data/a1a.t predict.txt
     test accuracy: 0.8437
     test time: 0.016 seconds
 
@@ -234,7 +234,7 @@ We can test with the learned model:
 + The C++ executable needs to be specified with number of classes for
   multi-class problems.
 
-        $ lsol_train -c 10 mnist.scale
+        $ sol_train -c 10 mnist.scale
 
 Comparison of Online Learning Algorithms
 ========================================
@@ -307,13 +307,13 @@ command:
 License and Citation
 ======================
 
-LIBSOL is released under the Apache 2.0 open source license.
+SOL is released under the Apache 2.0 open source license.
 
-Please cite LIBSOL in your publications if it helps your research:
+Please cite SOL in your publications if it helps your research:
 
 ```
 @article{libsol2016,
-  title={LIBSOL: A Library for Scalable Online Learning Algorithms},
+  title={SOL: A Library for Scalable Online Learning Algorithms},
   author={Wu, Yue and Hoi, Steven C.H. and Yu, Nenghai},
   journal={SMU Technical Report (SMU-TR-2016-07-25)},
   year={2016}

@@ -7,13 +7,13 @@
 #include <map>
 #include <fstream>
 #include <cmath>
-#include <lsol/lsol.h>
-#include <lsol/util/str_util.h>
+#include <sol/sol.h>
+#include <sol/util/str_util.h>
 
 using namespace std;
-using namespace lsol;
-using namespace lsol::pario;
-using namespace lsol::model;
+using namespace sol;
+using namespace sol::pario;
+using namespace sol::model;
 
 struct Result {
   float accu;
@@ -111,7 +111,8 @@ int test_algo(const std::string& algo, const std::string& train_path,
   for (const auto& param : params) {
     try {
       model->SetParameter(param.first, param.second);
-    } catch (invalid_argument& err) {
+    }
+    catch (invalid_argument& err) {
       fprintf(stderr, "%s\n", err.what());
       return Status_Invalid_Argument;
     }
@@ -122,10 +123,10 @@ int test_algo(const std::string& algo, const std::string& train_path,
   int ret = iter.AddReader(train_path, dtype);
   if (ret != Status_OK) return ret;
 
-  double start_time = lsol::get_current_time();
+  double start_time = sol::get_current_time();
   accu = roundp(model->Train(iter), 4);
   update_num = model->update_num();
-  double end_time = lsol::get_current_time();
+  double end_time = sol::get_current_time();
   fprintf(stdout, "Test algorithm: %s\n", algo.c_str());
   fprintf(stdout, "training accuracy: %.4f\n", accu);
   fprintf(stdout, "training time: %.3f seconds\n", end_time - start_time);

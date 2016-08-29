@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #################################################################################
-#     File Name           :     lsol/setup.py.in
+#     File Name           :     setup.py
 #     Created By          :     yuewu
 #     Description         :
 #################################################################################
@@ -47,7 +47,7 @@ def get_include_dirs():
     return [np.get_include(), "include", "external"]
 
 if os.name == 'nt':
-    extra_flags = ['/wd4251','/wd4275', '/EHsc','-DLSOL_EMBED_PACKAGE']
+    extra_flags = ['/wd4251','/wd4275', '/EHsc','-DSOL_EMBED_PACKAGE']
     dependencies = []
 else:
     extra_flags = ['-std=c++11','-pthread']
@@ -59,8 +59,8 @@ else:
 
 ext_modules = [
     Extension(
-        "pylsol",
-        sources=["python/pylsol.pyx"] + get_source_files('src/lsol') +
+        "pysol",
+        sources=["python/pysol.pyx"] + get_source_files('src/sol') +
         get_source_files('external/json'),
         language='c++',
         include_dirs=get_include_dirs(),
@@ -69,7 +69,7 @@ ext_modules = [
 
 
 setup(
-    name='lsol',
+    name='sol',
     version='1.1.0',
     description='Library for Scalable Online Learning',
     #long_description=read_md('README.md'),
@@ -80,12 +80,12 @@ setup(
     url='http://libsol.stevenhoi.org',
     license='Apache 2.0',
     keywords='Scalable Online Learning',
-    packages=['lsol'],
-    package_dir={'lsol': 'python'},
+    packages=['sol'],
+    package_dir={'sol': 'python'},
     entry_points = {
         'console_scripts':[
-            'lsol_train=lsol.lsol_train:main',
-            'lsol_test=lsol.lsol_test:main',
+            'sol_train=sol.sol_train:main',
+            'sol_test=sol.sol_test:main',
             ],
         },
     ext_modules=cythonize(ext_modules),

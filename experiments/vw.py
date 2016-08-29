@@ -12,10 +12,6 @@ from sklearn.grid_search import GridSearchCV
 from  sklearn import datasets
 from operator import itemgetter
 
-#pylsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
-#sys.path.insert(0, pylsol_dir)
-#from dataset import DataSet
-
 def vw_exe():
     if sys.platform == 'win32':
         return 'vw.exe'

@@ -11,9 +11,9 @@ import importlib
 import cPickle
 import numpy as np
 
-from lsol.dataset import DataSet
-from lsol.cv import CV
-from pylsol import LSOL
+from sol.dataset import DataSet
+from sol.cv import CV
+from pysol import SOL
 import liblinear
 import fig
 vw = None
@@ -49,7 +49,7 @@ def run_ol(dtrain, dtest, opts, retrain=False, fold_num = 5):
             model_params.append([k,v])
 
     model_params = dict(model_params)
-    m = LSOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
+    m = SOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
     train_log = []
     def record_training_process(data_num, iter_num, update_num, err_rate, stat=train_log):
         train_log.append([data_num, iter_num, update_num, err_rate])
@@ -104,7 +104,7 @@ def run_sol(dtrain, dtest, opts):
     test_accu_list = []
     for l1 in opts['lambda']:
         model_params['lambda'] = l1
-        m = LSOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
+        m = SOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
 
         logging.info("train %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
 

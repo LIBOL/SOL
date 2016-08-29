@@ -5,4 +5,4 @@
 #     Description         :      
 #################################################################################
 
-from pylsol import LSOL
+from pysol import SOL

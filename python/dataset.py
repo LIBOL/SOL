@@ -6,7 +6,7 @@ import os
 import re
 import random
 import logging
-import pylsol
+import pysol
 
 class DataSet(object):
     def __init__(self, name, data_path = '', dtype = 'svm', pass_num = 1):
@@ -38,7 +38,7 @@ class DataSet(object):
         #if not analyzed before, analyze
         if os.path.exists(info_file) == False :
             logging.info('analyze data %s' %(self.data_path))
-            if pylsol.analyze_data(self.data_path, self.dtype, info_file) != 0:
+            if pysol.analyze_data(self.data_path, self.dtype, info_file) != 0:
                 sys.exit()
 
         #parse data num
@@ -84,7 +84,7 @@ class DataSet(object):
             if os.path.exists(cache_path):
                 return cache_path
             logging.info('convert data %s to ' %(self.data_path, cache_path))
-            if pylsol.convert_data(self.data_path, self.dtype, cache_path, 'bin') != 0:
+            if pysol.convert_data(self.data_path, self.dtype, cache_path, 'bin') != 0:
                 sys.exit()
             return cache_path
 
@@ -94,7 +94,7 @@ class DataSet(object):
         if os.path.exists(output_path) and force == False:
             return output_path
         logging.info('convert data %s to %s' %(self.data_path, output_path))
-        if pylsol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type) != 0:
+        if pysol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type) != 0:
             sys.exit()
         return output_path
 
@@ -123,7 +123,7 @@ class DataSet(object):
             return None
 
         logging.info('split %s to %d folds' %(self.data_path, split_num))
-        if pylsol.split_data(self.data_path, self.dtype, split_num, output_prefix, self.slice_type, True) != 0:
+        if pysol.split_data(self.data_path, self.dtype, split_num, output_prefix, self.slice_type, True) != 0:
             sys.exit()
 
 if __name__ == '__main__':

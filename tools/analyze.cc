@@ -3,10 +3,10 @@
 *     Created By          :     yuewu
 *     Description         :     analyze data
 **********************************************************************************/
-#include <lsol/tools.h>
+#include <sol/tools.h>
 #include <cmdline/cmdline.h>
 
-using namespace lsol;
+using namespace sol;
 using namespace std;
 
 int main(int argc, char** argv) {

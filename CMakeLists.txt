@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-project(LSOL)
+project(SOL)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
@@ -22,7 +22,7 @@ include_directories(
 
 #include(util)
 #include(pario)
-include(lsol)
+include(sol)
 
 include(tools)
 include(test)

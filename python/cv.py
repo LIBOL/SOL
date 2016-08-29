@@ -9,7 +9,7 @@ import numpy as np
 
 from dataset import DataSet
 import search_space
-from pylsol import LSOL
+from pysol import SOL
 
 class CV(object):
     """cross validation class
@@ -127,7 +127,7 @@ class CV(object):
             for param in self.extra_param:
                 params.append(param)
             params = dict(params)
-            m = LSOL(
+            m = SOL(
                 algo=model_name, class_num=self.dataset.class_num, **params)
 
             for train_path in [self.dataset.split_path(i)

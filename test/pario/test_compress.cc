@@ -11,10 +11,10 @@
 #include <algorithm>
 #include <time.h>
 
-#include "lsol/pario/compress.h"
+#include "sol/pario/compress.h"
 
-using namespace lsol::pario;
-using namespace lsol::math;
+using namespace sol::pario;
+using namespace sol::math;
 using namespace std;
 
 template <typename T>

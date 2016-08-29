@@ -2,7 +2,7 @@
 include LICENSE
 
 #include python extension file
-include python/pylsol.pyx
+include python/pysol.pyx
 
 #Include include files
 recursive-include include  *

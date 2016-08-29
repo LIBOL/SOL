@@ -7,12 +7,12 @@
 #include <iostream>
 #include <vector>
 
-#include <lsol/math/matrix.h>
-#include <lsol/math/vector.h>
-#include <lsol/math/sparse_vector.h>
+#include <sol/math/matrix.h>
+#include <sol/math/vector.h>
+#include <sol/math/sparse_vector.h>
 
-using namespace lsol::math;
-using namespace lsol::math::expr;
+using namespace sol::math;
+using namespace sol::math::expr;
 
 using namespace std;
 
