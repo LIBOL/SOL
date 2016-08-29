@@ -84,8 +84,8 @@ setup(
     package_dir={'lsol': 'python'},
     entry_points = {
         'console_scripts':[
-            'libsol_train=lsol.libsol_train:main',
-            'libsol_test=lsol.libsol_test:main',
+            'lsol_train=lsol.lsol_train:main',
+            'lsol_test=lsol.lsol_test:main',
             ],
         },
     ext_modules=cythonize(ext_modules),

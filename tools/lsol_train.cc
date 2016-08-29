@@ -1,5 +1,5 @@
 /*********************************************************************************
-*     File Name           :     libsol_train.cc
+*     File Name           :     lsol_train.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-03-09 15:17]
 *     Last Modified       :     [2016-03-09 17:36]
@@ -70,8 +70,7 @@ int train(cmdline::parser& parser) {
       }
       try {
         model->SetParameter(strip(opt_pair[0]), strip(opt_pair[1]));
-      }
-      catch (invalid_argument& err) {
+      } catch (invalid_argument& err) {
         fprintf(stderr, "%s\n", err.what());
         return Status_Invalid_Argument;
       }

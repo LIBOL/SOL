@@ -46,7 +46,7 @@ Table of Contents
 Installation
 ======================
 
-Users can either install the C++ executables or python scripts. They provide similar interfaces (**libsol_train** for training and **libsol_test** for testing). To choose the best method:
+Users can either install the C++ executables or python scripts. They provide similar interfaces (**lsol_train** for training and **lsol_test** for testing). To choose the best method:
 
 + If you are working on C/C++ or other non-python languages, you should choose the C++
   executables and dynamic libraries.
@@ -190,39 +190,39 @@ The dataset we use will be `a1a` provided in the ``data`` folder.
 
 The command for training wit default algorithm is as the following shows.
 
-    $ libsol_train data/a1a
+    $ lsol_train data/a1a
     training accuracy: 0.8125
     training time: 0.000 seconds
     model sparsity: 15.1260%
 
 The learned model can be saved to a file (``a1a.model`` for example) by:
 
-    $ libsol_train data/a1a a1a.model
+    $ lsol_train data/a1a a1a.model
 
 By default, LIBSOL use ``OGD`` to learn a model. If users want to try another
 algorithm (``AROW`` for example) and save to another file (``arow.model``):
 
-    $ libsol_train -a arow data/a1a arow.model
+    $ lsol_train -a arow data/a1a arow.model
 
 Each algorithm may have its own parameters. The following command changes the
 default value of parameter ``r`` to ``2.0``:
 
-    $ libsol_train --params r=2.0 -a arow data/a1a arow.model
+    $ lsol_train --params r=2.0 -a arow data/a1a arow.model
 
 The python scripts also provides the cross validation ability. For example, if
 users want to do a 5-fold GridSearch Cross Validation in the range [2^-5,2^-4,...,2^4, 2^5] for
 parameter ``r`` of AROW, the command will be:
 
-    $ libsol_train -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
+    $ lsol_train -a arow --cv r=0.03125:2:32 -f 5 data/a1a arow.model
     cross validation parameters: [('r', 2.0)]
 
 In some cases we want to finetune from a pretrained model,
 
-    $ libsol_train -m arow.model data/a1a arow2.model
+    $ lsol_train -m arow.model data/a1a arow2.model
 
 We can test with the learned model:
 
-    $ libsol_test arow.model data/a1a.t predict.txt
+    $ lsol_test arow.model data/a1a.t predict.txt
     test accuracy: 0.8437
     test time: 0.016 seconds
 
@@ -234,7 +234,7 @@ We can test with the learned model:
 + The C++ executable needs to be specified with number of classes for
   multi-class problems.
 
-        $ libsol_train -c 10 mnist.scale
+        $ lsol_train -c 10 mnist.scale
 
 Comparison of Online Learning Algorithms
 ========================================
