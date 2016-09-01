@@ -13,10 +13,10 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         cmake_policy(SET CMP0042 NEW)
     ENDIF()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    IF ("${CMAKE_SYSTEM}" MATCHES "Linux")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
-    ENDIF()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pthread")
+    #IF ("${CMAKE_SYSTEM}" MATCHES "Linux")
+    #    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+    #ENDIF()
     if (NOT USE_STD_THREAD)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_PTHREAD")
     endif()
@@ -103,4 +103,13 @@ IF(MSVC)
     ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4275) # non dll-interface class 'std::XXX' used as base for dll-interface 
 ENDIF()
 
+#detect python
+if (WITH_PYTHON)
+    find_package(NumPy REQUIRED)
 
+    if (PYTHON_NUMPY_FOUND)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAS_NUMPY_DEV -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+        include_directories(${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+        list(APPEND LINK_LIBS ${PYTHON_LIBRARIES})
+    endif()
+endif()

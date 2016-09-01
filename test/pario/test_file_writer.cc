@@ -11,12 +11,12 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "lsol/pario/file_writer.h"
-#include "lsol/pario/file_reader.h"
-#include "lsol/util/error_code.h"
+#include "sol/pario/file_writer.h"
+#include "sol/pario/file_reader.h"
+#include "sol/util/error_code.h"
 
-using namespace lsol;
-using namespace lsol::pario;
+using namespace sol;
+using namespace sol::pario;
 using namespace std;
 
 int main(int argc, char** args) {

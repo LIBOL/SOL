@@ -10,10 +10,10 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <lsol/pario/data_point.h>
+#include <sol/pario/data_point.h>
 
-using namespace lsol;
-using namespace lsol::pario;
+using namespace sol;
+using namespace sol::pario;
 using namespace std;
 
 int main() {

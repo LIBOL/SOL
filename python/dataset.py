@@ -5,27 +5,10 @@ import sys
 import os
 import re
 import random
-import ConfigParser
 import logging
+import pysol
 
 class DataSet(object):
-    curr_path = os.path.dirname(os.path.abspath(os.path.expanduser(__file__)))
-    config = ConfigParser.ConfigParser()
-    config_path = os.path.join(curr_path, 'defaults.cfg') 
-
-    env_paths = os.environ['PATH']
-    env_sep = ';' if sys.platform == 'win32' else ':'
-    if os.path.exists(config_path):
-        config.read(config_path)
-        bin_dir = config.get('env', 'BIN_DIR', '.')
-        cache_dir = config.get('data', 'CACHE_DIR', 'cache')
-    else:
-        bin_dir = os.path.join(curr_path, '../dist/bin')
-        cache_dir = os.path.join(curr_path, '../cache')
-
-    if bin_dir not in env_paths.split('env_sep'):
-        os.environ['PATH'] = bin_dir + env_sep + env_paths;
-
     def __init__(self, name, data_path = '', dtype = 'svm', pass_num = 1):
         self.name = name
         self.dtype = dtype
@@ -38,7 +21,7 @@ class DataSet(object):
             raise Exception('file %s not found' %(self.data_path))
         self.data_name = os.path.splitext(os.path.basename(self.data_path))[0]
 
-        self.work_dir = os.path.join(self.cache_dir, self.name)
+        self.work_dir = os.path.join('./cache/', self.name)
         if os.path.exists(self.work_dir) == False:
             os.makedirs(self.work_dir)
 
@@ -47,11 +30,6 @@ class DataSet(object):
         #prepare the dataset
         self.__analyze_dataset()
 
-    def __get_cmd_path(self, cmd_name):
-        if sys.platform == 'win32':
-            cmd_name += ".exe"
-        return cmd_name
-
     def __analyze_dataset(self):
         """analyze the dataset to obtain dim and class number
         """
@@ -59,12 +37,9 @@ class DataSet(object):
 
         #if not analyzed before, analyze
         if os.path.exists(info_file) == False :
-            exe_path = self.__get_cmd_path('analyze')
-            logging.info('analyze dataset of %s' %self.name)
-            cmd = '{0} -i \"{1}\" -s {2} -o {3} '.format(exe_path, self.data_path, self.dtype, info_file)
-            print cmd
-            if os.system(cmd) != 0:
-                raise Exception('analysis of %s failed' %(self.data_path))
+            logging.info('analyze data %s' %(self.data_path))
+            if pysol.analyze_data(self.data_path, self.dtype, info_file) != 0:
+                sys.exit()
 
         #parse data num
         pattern = re.compile(r'data number\s*:\s*(\d+)')
@@ -108,12 +83,9 @@ class DataSet(object):
             cache_path = os.path.join(self.work_dir, self.data_name + '.bin')
             if os.path.exists(cache_path):
                 return cache_path
-            exe_path = self.__get_cmd_path('converter')
-            logging.info('cache file  %s to %s' %(self.data_path, cache_path))
-            cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\" -d bin'.format(exe_path, self.data_path, self.dtype, cache_path)
-            print cmd
-            if os.system(cmd) != 0:
-                raise Exception('convert data %s to %s format failed' %(self.data_path, self.dtype))
+            logging.info('convert data %s to ' %(self.data_path, cache_path))
+            if pysol.convert_data(self.data_path, self.dtype, cache_path, 'bin') != 0:
+                sys.exit()
             return cache_path
 
     def rand_path(self, tgt_type = None, force=False):
@@ -121,12 +93,9 @@ class DataSet(object):
         output_path = os.path.join(self.work_dir, self.data_name + '.shuffle.' + tgt_type)
         if os.path.exists(output_path) and force == False:
             return output_path
-        exe_path = self.__get_cmd_path('shuffle')
-        logging.info('shuffle file  %s to %s' %(self.data_path, output_path))
-        cmd = '{0} -i \"{1}\" -s {2} -o \"{3}\" -d {4}'.format(exe_path, self.data_path, self.dtype, output_path, tgt_type)
-        print cmd
-        if os.system(cmd) != 0:
-            raise Exception('shuffle data %s failed' %(self.data_path))
+        logging.info('convert data %s to %s' %(self.data_path, output_path))
+        if pysol.shuffle_data(self.data_path, self.dtype, output_path, tgt_type) != 0:
+            sys.exit()
         return output_path
 
     def split_file(self, split_num, tgt_type = None):
@@ -153,11 +122,9 @@ class DataSet(object):
         if is_exist == True:
             return None
 
-        exe_path = self.__get_cmd_path('split')
-        logging.info('split file  %s to %d slices' %(self.data_path, split_num))
-        cmd = '{0} -i \"{1}\" -s {2} -n {3} -o \"{4}\" -d {5} -r'.format(exe_path, self.data_path, self.dtype, split_num, output_prefix, self.slice_type)
-        if os.system(cmd) != 0:
-            raise Exception('split data %s failed' %(self.data_path))
+        logging.info('split %s to %d folds' %(self.data_path, split_num))
+        if pysol.split_data(self.data_path, self.dtype, split_num, output_prefix, self.slice_type, True) != 0:
+            sys.exit()
 
 if __name__ == '__main__':
     a1a = DataSet('a1a', data_path = 'a1a')

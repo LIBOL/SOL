@@ -10,12 +10,12 @@
 #include <cmath>
 #include <iostream>
 
-#include <lsol/lsol.h>
-#include <lsol/util/str_util.h>
+#include <sol/sol.h>
+#include <sol/util/str_util.h>
 #include <cmdline/cmdline.h>
 
-using namespace lsol;
-using namespace lsol::pario;
+using namespace sol;
+using namespace sol::pario;
 using namespace std;
 
 int main(int argc, char** argv) {

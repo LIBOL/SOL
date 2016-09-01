@@ -7,12 +7,12 @@
 #include <iostream>
 #include <vector>
 
-#include <lsol/math/matrix.h>
-#include <lsol/math/vector.h>
-#include <lsol/math/sparse_vector.h>
+#include <sol/math/matrix.h>
+#include <sol/math/vector.h>
+#include <sol/math/sparse_vector.h>
 
-using namespace lsol::math;
-using namespace lsol::math::expr;
+using namespace sol::math;
+using namespace sol::math::expr;
 
 using namespace std;
 
@@ -111,6 +111,9 @@ int main() {
   cout << "sv2 : " << endl << sv2 << endl;
   v2 = v2 * 0.1f * sv2;
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
+  sv.push_back(8, 3);
+  cout << "v2 : " << endl << v2 << endl;
+  cout << "sv2 : " << endl << sv2 << endl;
   v2 *= 0.1f * sv2;
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;

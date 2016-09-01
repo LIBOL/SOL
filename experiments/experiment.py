@@ -2,8 +2,6 @@
 
 import os.path as osp
 import sys
-pylibsol_dir = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.expanduser(__file__)))), 'python')
-sys.path.insert(0, pylibsol_dir)
 
 import argparse
 import logging
@@ -13,14 +11,14 @@ import importlib
 import cPickle
 import numpy as np
 
-from dataset import DataSet
-from libsol_core import Model
-from cv import CV
+from sol.dataset import DataSet
+from sol.cv import CV
+from pysol import SOL
 import liblinear
 import fig
 vw = None
 
-DESCRIPTION='Large Scale Online Learning RCV1 Experiment Scripts'
+DESCRIPTION='Large Scale Online Learning Experiment Scripts'
 
 def run_ol(dtrain, dtest, opts, retrain=False, fold_num = 5):
     logging.info('run ol: %s' %(opts['algo']))
@@ -50,32 +48,34 @@ def run_ol(dtrain, dtest, opts, retrain=False, fold_num = 5):
         for k,v in best_params:
             model_params.append([k,v])
 
-    with Model(model_name = opts['algo'], class_num = 2, params = model_params) as m:
-        output_path = osp.join(dtrain.work_dir, opts['algo'] + '.model')
+    model_params = dict(model_params)
+    m = SOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
+    train_log = []
+    def record_training_process(data_num, iter_num, update_num, err_rate, stat=train_log):
+        train_log.append([data_num, iter_num, update_num, err_rate])
+    m.inspect_learning(record_training_process)
 
-        logging.info("train %s on %s..." %(opts['algo'], dtrain.name))
-        start_time = time.time()
-        train_accu = 1 - m.train(dtrain.rand_path(), dtrain.dtype,
-                model_path=output_path)
-        end_time = time.time()
-        train_time = end_time - start_time
+    output_path = osp.join(dtrain.work_dir, opts['algo'] + '.model')
 
-        logging.info("training accuracy: %.4f" %(train_accu))
-        logging.info("training time: %.4f seconds" %(train_time))
+    logging.info("train %s on %s..." %(opts['algo'], dtrain.name))
+    start_time = time.time()
+    train_accu = m.fit(dtrain.rand_path(), dtrain.dtype)
+    end_time = time.time()
+    train_time = end_time - start_time
 
-        train_log = m.train_log()
+    logging.info("training accuracy: %.4f" %(train_accu))
+    logging.info("training time: %.4f seconds" %(train_time))
 
-        logging.info("test %s on %s..." %(opts['algo'], dtrain.name))
-        start_time = time.time()
-        test_accu = 1 - m.test(dtest.data_path,dtest.dtype)
-        end_time = time.time()
-        test_time = end_time - start_time
+    logging.info("test %s on %s..." %(opts['algo'], dtrain.name))
+    start_time = time.time()
+    test_accu = m.score(dtest.data_path,dtest.dtype)
+    end_time = time.time()
+    test_time = end_time - start_time
 
-        logging.info("test accuracy: %.4f" %(test_accu))
-        logging.info("test time: %.4f seconds" %(test_time))
+    logging.info("test accuracy: %.4f" %(test_accu))
+    logging.info("test time: %.4f seconds" %(test_time))
 
-    return train_accu, train_time, test_accu, test_time, train_log
-
+    return train_accu, train_time, test_accu, test_time, np.array(train_log)
 
 def run_sol(dtrain, dtest, opts):
     logging.info('run sol: %s' %(opts['algo']))
@@ -99,32 +99,34 @@ def run_sol(dtrain, dtest, opts):
         for k,v in best_params:
             model_params.append([k,v])
 
+    model_params = dict(model_params)
     sparsity_list = []
     test_accu_list = []
     for l1 in opts['lambda']:
-        with Model(model_name = opts['algo'], class_num = 2, params = model_params + [('lambda', l1)]) as m:
-            logging.info("train %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
-            start_time = time.time()
-            train_accu = 1 - m.train(dtrain.rand_path('bin'), 'bin')
-            end_time = time.time()
-            train_time = end_time - start_time
-            sparsity = m.sparsity()
-            sparsity_list.append(sparsity)
+        model_params['lambda'] = l1
+        m = SOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
 
-            logging.info("training accuracy: %.4f" %(train_accu))
-            logging.info("training time: %.4f seconds" %(train_time))
-            logging.info("model sparsity: %.4f seconds" %(sparsity))
+        logging.info("train %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
 
-            logging.info("test %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
-            start_time = time.time()
-            test_accu = 1 - m.test(dtest.rand_path('bin'), 'bin')
-            end_time = time.time()
-            test_time = end_time - start_time
+        start_time = time.time()
+        train_accu = m.fit(dtrain.rand_path('bin'), 'bin')
+        end_time = time.time()
 
-            logging.info("test accuracy: %.4f" %(test_accu))
-            logging.info("test time: %.4f seconds" %(test_time))
+        sparsity_list.append(m.sparsity)
 
-            test_accu_list.append(test_accu)
+        logging.info("training accuracy: %.4f" %(train_accu))
+        logging.info("training time: %.4f seconds" %(end_time - start_time))
+        logging.info("model sparsity: %.4f seconds" %(m.sparsity))
+
+        logging.info("test %s on %s with l1=%f ..." %(opts['algo'], dtrain.name, l1))
+        start_time = time.time()
+        test_accu = m.score(dtest.rand_path('bin'), 'bin')
+        end_time = time.time()
+
+        logging.info("test accuracy: %.4f" %(test_accu))
+        logging.info("test time: %.4f seconds" %(end_time - start_time))
+
+        test_accu_list.append(test_accu)
 
     return np.array(sparsity_list), np.array(test_accu_list)
 
@@ -234,11 +236,11 @@ def exp_online(args, dt_train, dt_test, opts, cache_data_path):
     for algo, log in res_log.iteritems():
         algo_list.append(algo)
         xs.append(log[0][:,0].astype(np.int))
-        ave_error_rates = np.zeros(log[0][:,1].shape)
         ave_update_nums = np.zeros(log[0][:,2].shape)
+        ave_error_rates = np.zeros(log[0][:,3].shape)
         for rid in xrange(args.shuffle):
-            ave_error_rates = ave_error_rates + log[rid][:,1]
             ave_update_nums = ave_update_nums + log[rid][:,2]
+            ave_error_rates = ave_error_rates + log[rid][:,3]
         error_rates.append(ave_error_rates / args.shuffle)
         update_nums.append(ave_update_nums / args.shuffle)
 

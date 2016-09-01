@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <vector>
 
-#include "lsol/pario/data_reader.h"
-#include "lsol/pario/data_writer.h"
-#include "lsol/util/util.h"
+#include "sol/pario/data_reader.h"
+#include "sol/pario/data_writer.h"
+#include "sol/util/util.h"
 
-using namespace lsol;
-using namespace lsol::pario;
+using namespace sol;
+using namespace sol::pario;
 using namespace std;
 
 #define CHECK_EQ(x, y) assert(std::abs((x) - (y)) < 1e-6)
