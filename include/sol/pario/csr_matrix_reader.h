@@ -9,6 +9,7 @@
 #define SOL_PARIO_CSR_MATRIX_READER_H__
 
 #include <sol/pario/data_reader.h>
+#include <Python.h>
 #include <numpy/arrayobject.h>
 
 namespace sol {

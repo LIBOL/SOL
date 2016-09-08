@@ -28,7 +28,7 @@ inline std::vector<std::string> split(const std::string& str,
     res.push_back(std::string(i, j));
     i = j;
   }
-  return std::move(res);
+  return res;
 }
 
 inline std::string strip(const std::string& str) {
@@ -36,7 +36,7 @@ inline std::string strip(const std::string& str) {
                             [](char c) { return c == ' ' || c == '\t'; });
   auto j =
       std::find_if(i, str.end(), [](char c) { return c == ' ' || c == '\t'; });
-  return std::move(std::string(i, j));
+  return std::string(i, j);
 }
 
 inline std::string lower(const std::string& str) {
@@ -44,7 +44,7 @@ inline std::string lower(const std::string& str) {
   for (char& c : res) {
     c = tolower(c);
   }
-  return std::move(res);
+  return res;
 }
 
 }  // namespace std

@@ -177,6 +177,7 @@ SOL_EXPORTS void sol_InspectOnlineIteration(
     void* model, sol_inspect_iterate_callback callback, void* user_context);
 
 #ifdef HAS_NUMPY_DEV
+#include <Python.h>
 #include <numpy/arrayobject.h>
 SOL_EXPORTS int sol_loadArray(void* data_iter, char* X, char* Y, npy_intp* dims,
                               npy_intp* strides, int pass_num);
