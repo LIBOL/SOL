@@ -10,6 +10,7 @@
 #define SOL_MODEL_OLM_OGD_H__
 
 #include <sol/model/online_linear_model.h>
+#include <sol/util/heap.h>
 
 namespace sol {
 namespace model {
@@ -72,6 +73,25 @@ class FOBOS_L1 : public OGD {
  protected:
   LazyOnlineL1Regularizer l1_;
 };  // class STG
+
+/// \brief  Perceptron with Truncation
+class PET : public OGD {
+ public:
+  PET(int class_num);
+  virtual ~PET();
+
+  virtual void BeginTrain();
+
+ protected:
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
+                      float loss);
+  virtual void update_dim(index_t dim);
+
+ protected:
+  math::Vector<real_t>* abs_weights_;
+  OnlineRegularizer l0_;
+  MinHeap* min_heap_;
+};
 
 }  // namespace model
 }  // namespace sol

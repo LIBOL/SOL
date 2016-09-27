@@ -7,9 +7,11 @@
 **********************************************************************************/
 
 #include "sol/model/olm/ogd.h"
+
 #include <cmath>
 
 using namespace std;
+using namespace sol::math;
 using namespace sol::math::expr;
 
 namespace sol {
@@ -167,5 +169,70 @@ void FOBOS_L1::EndTrain() {
 RegisterModel(FOBOS_L1, "fobos-l1",
               "Forward Backward Splitting l1 regularization");
 
+PET::PET(int class_num) : OGD(class_num) {
+  this->regularizer_ = &(this->l0_);
+  this->abs_weights_ = new Vector<real_t>[this->clf_num_];
+  this->min_heap_ = new MinHeap[this->clf_num_];
+
+  for (int i = 0; i < this->clf_num_; ++i) {
+    this->abs_weights_[i].resize(this->dim_);
+    this->abs_weights_[i] = 0;
+  }
+}
+
+PET::~PET() {
+  DeleteArray(this->abs_weights_);
+  DeleteArray(this->min_heap_);
+}
+
+void PET::BeginTrain() {
+  OGD::BeginTrain();
+  index_t B = static_cast<index_t>(this->l0_.lambda());
+  if (B > 0) {
+    if (this->dim_ < B) this->update_dim(B);
+    for (int i = 0; i < this->clf_num_; ++i) {
+      this->min_heap_[i].Init(this->dim_, B, this->abs_weights_[i].data() + 1);
+    }
+  }
+}
+
+void PET::Update(const pario::DataPoint& dp, const float* predict, float loss) {
+  OGD::Update(dp, predict, loss);
+
+  // number of features to select
+  index_t B = static_cast<index_t>(this->l0_.lambda());
+  if (B > 0) {
+    for (int c = 0; c < this->clf_num_; ++c) {
+      // update abosulte weights
+      this->abs_weights_[c] = L2(w(c).slice(dp.data()));
+
+      // update heap
+      this->min_heap_[c].BuildHeap();
+      index_t valid_dim = this->dim_ - 1;  // ignore bias
+      for (index_t i = 0; i < valid_dim; ++i) {
+        index_t ret_idx = this->min_heap_[c].UpdateHeap(i);
+        if (ret_idx != invalid_index) {
+          ++ret_idx;
+          w(c)[ret_idx] = 0;
+          this->abs_weights_[c][ret_idx] = 0;
+        }
+      }
+    }
+  }
+}
+
+void PET::update_dim(index_t dim) {
+  if (dim > this->dim_) {
+    for (int c = 0; c < this->clf_num_; ++c) {
+      math::Vector<real_t>& abs_w = this->abs_weights_[c];
+      abs_w.resize(dim);
+      abs_w.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
+      this->min_heap_[c].set_N(dim, abs_w.data() + 1);
+    }
+    OGD::update_dim(dim);
+  }
+}
+
+RegisterModel(PET, "pet", "Perceptron with Truncation");
 }  // namespace model
 }  // namespace sol
