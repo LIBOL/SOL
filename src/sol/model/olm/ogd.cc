@@ -185,13 +185,24 @@ PET::~PET() {
   DeleteArray(this->min_heap_);
 }
 
+void PET::SetParameter(const std::string& name, const std::string& value) {
+  if (name == "B") {
+    OGD::SetParameter("lambda", value);
+  } else {
+    OGD::SetParameter(name, value);
+  }
+}
+
 void PET::BeginTrain() {
   OGD::BeginTrain();
   index_t B = static_cast<index_t>(this->l0_.lambda());
   if (B > 0) {
-    if (this->dim_ < B) this->update_dim(B);
+    if (this->dim_ < B + 1) this->update_dim(B + 1);
+
     for (int i = 0; i < this->clf_num_; ++i) {
-      this->min_heap_[i].Init(this->dim_, B, this->abs_weights_[i].data() + 1);
+      this->abs_weights_[i] = L1(w(i));
+      this->min_heap_[i].Init(this->dim_ - 1, B,
+                              this->abs_weights_[i].data() + 1);
     }
   }
 }
@@ -204,7 +215,7 @@ void PET::Update(const pario::DataPoint& dp, const float* predict, float loss) {
   if (B > 0) {
     for (int c = 0; c < this->clf_num_; ++c) {
       // update abosulte weights
-      this->abs_weights_[c] = L2(w(c).slice(dp.data()));
+      this->abs_weights_[c] = L1(w(c).slice(dp.data()));
 
       // update heap
       this->min_heap_[c].BuildHeap();
@@ -227,7 +238,7 @@ void PET::update_dim(index_t dim) {
       math::Vector<real_t>& abs_w = this->abs_weights_[c];
       abs_w.resize(dim);
       abs_w.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
-      this->min_heap_[c].set_N(dim, abs_w.data() + 1);
+      this->min_heap_[c].set_N(dim - 1, abs_w.data() + 1);
     }
     OGD::update_dim(dim);
   }

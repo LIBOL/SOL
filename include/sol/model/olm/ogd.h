@@ -80,6 +80,7 @@ class PET : public OGD {
   PET(int class_num);
   virtual ~PET();
 
+  virtual void SetParameter(const std::string& name, const std::string& value);
   virtual void BeginTrain();
 
  protected:
