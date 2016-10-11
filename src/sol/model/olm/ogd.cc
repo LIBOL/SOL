@@ -2,7 +2,7 @@
 *     File Name           :     ogd.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 21:37]
-*     Last Modified       :     [2016-03-09 19:22]
+*     Last Modified       :     [2016-10-11 22:49]
 *     Description         :     Stochastic Gradient Descent
 **********************************************************************************/
 
@@ -169,21 +169,9 @@ void FOBOS_L1::EndTrain() {
 RegisterModel(FOBOS_L1, "fobos-l1",
               "Forward Backward Splitting l1 regularization");
 
-PET::PET(int class_num) : OGD(class_num) {
-  this->regularizer_ = &(this->l0_);
-  this->abs_weights_ = new Vector<real_t>[this->clf_num_];
-  this->min_heap_ = new MinHeap[this->clf_num_];
+PET::PET(int class_num) : OGD(class_num) { this->regularizer_ = &(this->l0_); }
 
-  for (int i = 0; i < this->clf_num_; ++i) {
-    this->abs_weights_[i].resize(this->dim_);
-    this->abs_weights_[i] = 0;
-  }
-}
-
-PET::~PET() {
-  DeleteArray(this->abs_weights_);
-  DeleteArray(this->min_heap_);
-}
+PET::~PET() {}
 
 void PET::SetParameter(const std::string& name, const std::string& value) {
   if (name == "B") {
@@ -197,13 +185,18 @@ void PET::BeginTrain() {
   OGD::BeginTrain();
   index_t B = static_cast<index_t>(this->l0_.lambda());
   if (B > 0) {
+    math::Vector<real_t>& abs_w = this->abs_weights_;
+    // make sure abs_w is of the same dimension of w
+    abs_w.resize(this->dim_);
+
     if (this->dim_ < B + 1) this->update_dim(B + 1);
 
+    abs_w = 0;
+
     for (int i = 0; i < this->clf_num_; ++i) {
-      this->abs_weights_[i] = L1(w(i));
-      this->min_heap_[i].Init(this->dim_ - 1, B,
-                              this->abs_weights_[i].data() + 1);
+      abs_w += L1(w(i));
     }
+    this->min_heap_.Init(this->dim_ - 1, B, abs_w.data() + 1);
   }
 }
 
@@ -213,20 +206,24 @@ void PET::Update(const pario::DataPoint& dp, const float* predict, float loss) {
   // number of features to select
   index_t B = static_cast<index_t>(this->l0_.lambda());
   if (B > 0) {
-    for (int c = 0; c < this->clf_num_; ++c) {
-      // update abosulte weights
-      this->abs_weights_[c] = L1(w(c).slice(dp.data()));
+    math::Vector<real_t>& abs_w = this->abs_weights_;
+    // update abosulte weights
+    abs_w = L1(w(0).slice(dp.data()));
+    for (int c = 1; c < this->clf_num_; ++c) {
+      abs_w += L1(w(c).slice(dp.data()));
+    }
 
-      // update heap
-      this->min_heap_[c].BuildHeap();
-      index_t valid_dim = this->dim_ - 1;  // ignore bias
-      for (index_t i = 0; i < valid_dim; ++i) {
-        index_t ret_idx = this->min_heap_[c].UpdateHeap(i);
-        if (ret_idx != invalid_index) {
-          ++ret_idx;
+    // update heap
+    this->min_heap_.BuildHeap();
+    index_t valid_dim = this->dim_ - 1;  // ignore bias
+    for (index_t i = 0; i < valid_dim; ++i) {
+      index_t ret_idx = this->min_heap_.UpdateHeap(i);
+      if (ret_idx != invalid_index) {
+        ++ret_idx;
+        for (int c = 0; c < this->clf_num_; ++c) {
           w(c)[ret_idx] = 0;
-          this->abs_weights_[c][ret_idx] = 0;
         }
+        abs_w[ret_idx] = 0;
       }
     }
   }
@@ -234,12 +231,11 @@ void PET::Update(const pario::DataPoint& dp, const float* predict, float loss) {
 
 void PET::update_dim(index_t dim) {
   if (dim > this->dim_) {
-    for (int c = 0; c < this->clf_num_; ++c) {
-      math::Vector<real_t>& abs_w = this->abs_weights_[c];
-      abs_w.resize(dim);
-      abs_w.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
-      this->min_heap_[c].set_N(dim - 1, abs_w.data() + 1);
-    }
+    math::Vector<real_t>& abs_w = this->abs_weights_;
+    abs_w.resize(dim);
+    abs_w.slice_op([](real_t& val) { val = 0.f; }, this->dim_);
+    this->min_heap_.set_N(dim - 1, abs_w.data() + 1);
+
     OGD::update_dim(dim);
   }
 }

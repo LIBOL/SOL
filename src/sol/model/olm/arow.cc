@@ -112,5 +112,95 @@ int AROW::SetModelParam(std::istream& is) {
 
 RegisterModel(AROW, "arow", "Adaptive Regularization of Weight Vectors");
 
+SOFS::SOFS(int class_num) : AROW(class_num) {
+  this->regularizer_ = &(this->l0_);
+
+  if (this->clf_num_ > 1) {
+    this->Sigma_sum_ = new Vector<real_t>;
+  } else {
+    this->Sigma_sum_ = this->Sigmas_;
+  }
+}
+
+SOFS::~SOFS() {
+  if (this->clf_num_ > 1) DeletePointer(this->Sigma_sum_);
+}
+
+void SOFS::SetParameter(const std::string& name, const std::string& value) {
+  if (name == "B") {
+    AROW::SetParameter("lambda", value);
+  } else {
+    AROW::SetParameter(name, value);
+  }
+}
+
+void SOFS::BeginTrain() {
+  AROW::BeginTrain();
+  index_t B = static_cast<index_t>(this->l0_.lambda());
+  if (B > 0) {
+    if (this->clf_num_ > 1) {
+      this->Sigma_sum_->resize(this->dim_);
+    }
+
+    if (this->dim_ < B + 1) this->update_dim(B + 1);
+
+    if (this->clf_num_ > 1) {
+      (*this->Sigma_sum_) = 0;
+      for (int i = 0; i < this->clf_num_; ++i) {
+        (*this->Sigma_sum_) += Sigma(i);
+      }
+    }
+    this->max_heap_.Init(this->dim_ - 1, B, this->Sigma_sum_->data() + 1);
+  }
+}
+
+void SOFS::Update(const pario::DataPoint& dp, const float* predict,
+                  float loss) {
+  AROW::Update(dp, predict, loss);
+
+  // number of features to select
+  index_t B = static_cast<index_t>(this->l0_.lambda());
+  if (B > 0) {
+    math::Vector<real_t>& sigma_sum = (*this->Sigma_sum_);
+    // update sigma sum
+    if (this->clf_num_ > 1) {
+      sigma_sum = Sigma(0).slice(dp.data());
+      for (int i = 1; i < this->clf_num_; ++i) {
+        sigma_sum += Sigma(i).slice(dp.data());
+      }
+    }
+
+    // update heap
+    this->max_heap_.BuildHeap();
+    for (index_t idx : dp.indexes()) {
+      index_t ret_idx = this->max_heap_.UpdateHeap(idx - 1);
+      if (ret_idx != invalid_index) {
+        ++ret_idx;
+        for (int c = 0; c < this->clf_num_; ++c) {
+          w(c)[ret_idx] = 0;
+        }
+      }
+    }
+  }
+}
+
+void SOFS::update_dim(index_t dim) {
+  if (dim > this->dim_) {
+    math::Vector<real_t>& sigma_sum = (*this->Sigma_sum_);
+    if (this->clf_num_ > 1) {
+      sigma_sum.resize(dim);
+      float class_num = float(this->clf_num_);
+      sigma_sum.slice_op([class_num](real_t& val) { val = class_num; },
+                         this->dim_);
+    }
+
+    AROW::update_dim(dim);
+    this->max_heap_.set_N(dim - 1, sigma_sum.data() + 1);
+  }
+}
+
+RegisterModel(SOFS, "sofs", "Second Order Online Feature Selection");
+
 }  // namespace model
+
 }  // namespace sol

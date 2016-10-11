@@ -2,7 +2,7 @@
 *     File Name           :     sgd.h
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 21:33]
-*     Last Modified       :     [2016-03-09 19:22]
+*     Last Modified       :     [2016-10-11 22:49]
 *     Description         :     Online Gradient Descent
 **********************************************************************************/
 
@@ -89,9 +89,9 @@ class PET : public OGD {
   virtual void update_dim(index_t dim);
 
  protected:
-  math::Vector<real_t>* abs_weights_;
+  math::Vector<real_t> abs_weights_;
   OnlineRegularizer l0_;
-  MinHeap* min_heap_;
+  MinHeap min_heap_;
 };
 
 }  // namespace model

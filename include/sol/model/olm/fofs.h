@@ -31,8 +31,8 @@ class FOFS : public OnlineLinearModel {
  protected:
   float lambda_;
   index_t B_;
-  math::Vector<real_t>* abs_weights_;
-  MinHeap* min_heap_;
+  math::Vector<real_t> abs_weights_;
+  MinHeap min_heap_;
 
   float norm_coeff_;
   float momentum_;
