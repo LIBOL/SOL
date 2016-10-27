@@ -314,8 +314,8 @@ Please cite SOL in your publications if it helps your research:
 ```
 @article{libsol2016,
   title={SOL: A Library for Scalable Online Learning Algorithms},
-  author={Wu, Yue and Hoi, Steven C.H. and Yu, Nenghai},
-  journal={SMU Technical Report (SMU-TR-2016-07-25)},
+  author={Yue Wu, Steven C.H. Hoi, Chenghao Liu, Jing Lu, Doyen Sahoo, Nenghai Yu},
+  journal={SMU Technical Report (SMU-TR-2016-10-27)},
   year={2016}
 }
 ```
