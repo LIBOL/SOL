@@ -156,29 +156,80 @@ void SOFS::BeginTrain() {
 
 void SOFS::Update(const pario::DataPoint& dp, const float* predict,
                   float loss) {
-  AROW::Update(dp, predict, loss);
-
   // number of features to select
   index_t B = static_cast<index_t>(this->l0_.lambda());
-  if (B > 0) {
-    math::Vector<real_t>& sigma_sum = (*this->Sigma_sum_);
-    // update sigma sum
-    if (this->clf_num_ > 1) {
-      sigma_sum = Sigma(0).slice(dp.data());
-      for (int i = 1; i < this->clf_num_; ++i) {
-        sigma_sum += Sigma(i).slice(dp.data());
+  if (B == 0) return AROW::Update(dp, predict, loss);
+
+  const auto& x = dp.data();
+  float beta_t = 0.f;
+  //(\delta \psi)(x,i) = -g(i) * x
+  for (int c = 0; c < this->clf_num_; ++c) {
+    if (g(c) == 0) continue;
+    float gc2 = g(c) * g(c);
+    beta_t += expr::dotmul(this->Sigmas_[c], L2(x)) * gc2;
+    if (this->bias_eta0_ != 0) beta_t += this->Sigmas_[c][0] * gc2;
+  }
+  beta_t = 1.f / (beta_t + r_);
+  float alpha_t = loss * beta_t;
+  this->eta_ = alpha_t;
+
+  // update weights
+  for (int c = 0; c < this->clf_num_; ++c) {
+    if (g(c) == 0) continue;
+    math::Vector<real_t>& Sigma = this->Sigmas_[c];
+    w(c) -= this->eta_ * g(c) * Sigma * x;
+    // update bias
+    w(c)[0] -= this->bias_eta() * g(c) * Sigma[0];
+  }
+  // update sigma and heap
+  size_t feat_num = x.indexes().size();
+  if (this->clf_num_ == 1) {
+    if (g(0) == 0) return;
+    math::Vector<real_t>& Sigma = this->Sigmas_[0];
+    float r1 = g(0) * g(0) / r_;
+    Sigma[0] /= (1.f + Sigma[0] * r1);
+    for (size_t i = 0; i < feat_num; ++i) {
+      index_t idx = x.index(i);
+      // update sigma
+      Sigma[idx] /= (1.f + Sigma[idx] * x.value(i) * x.value(i) * r1);
+      // update heap
+      index_t pos = this->max_heap_.get_pos(idx - 1);
+      if (pos < B) {
+        this->max_heap_.AdjustHeap(pos, B - 1);
       }
     }
+  } else {
+    // update sigma
+    for (int c = 0; c < this->clf_num_; ++c) {
+      if (g(c) == 0) continue;
+      math::Vector<real_t>& Sigma = this->Sigmas_[c];
+      float r1 = g(c) * g(c) / r_;
+      Sigma /= (1.f + Sigma * L2(x) * r1);
+      Sigma[0] /= (1.f + Sigma[0] * r1);
+    }
 
-    // update heap
-    this->max_heap_.BuildHeap();
-    for (index_t idx : dp.indexes()) {
-      index_t ret_idx = this->max_heap_.UpdateHeap(idx - 1);
-      if (ret_idx != invalid_index) {
-        ++ret_idx;
-        for (int c = 0; c < this->clf_num_; ++c) {
-          w(c)[ret_idx] = 0;
-        }
+    auto& sigma_sum = (*this->Sigma_sum_);
+    for (size_t i = 0; i < feat_num; ++i) {
+      index_t idx = x.index(i);
+      sigma_sum[idx] = 0;
+      for (int c = 0; c < this->clf_num_; ++c) {
+        sigma_sum[idx] += this->Sigmas_[c][idx];
+      }
+
+      index_t pos = this->max_heap_.get_pos(idx - 1);
+      if (pos < B) {
+        this->max_heap_.AdjustHeap(pos, B - 1);
+      }
+    }
+  }
+
+  for (size_t i = 0; i < feat_num; ++i) {
+    index_t idx = x.index(i);
+    index_t ret_idx = this->max_heap_.UpdateHeap(idx - 1);
+    if (ret_idx != invalid_index) {
+      ++ret_idx;
+      for (int c = 0; c < this->clf_num_; ++c) {
+        w(c)[ret_idx] = 0;
       }
     }
   }

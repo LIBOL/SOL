@@ -55,13 +55,13 @@ class Heap {
   /// \return element index that is moved out-of the heap
   index_t UpdateHeap(index_t idx);
 
- protected:
   /// \brief  adjust the heap to satisfy heap properties
   ///
   /// \param s r[s+1,...,m] is heap, adjust the heap so that r[s,..,m] is heap
   /// \param m <++>
   void AdjustHeap(index_t s, index_t m);
 
+ protected:
   /// \brief  release memory, for Init or destructor
   void Release();
 
