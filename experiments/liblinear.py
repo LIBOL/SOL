@@ -28,16 +28,21 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
         #l1-svm
         test_accu_list = []
         sparsity_list = []
-        x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+        train_time_list = []
         x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
         for l1 in opts['lambda']:
-            C = 1 / l1
+            C = 1.0 / l1
             clf = svm.LinearSVC(penalty=penalty, C=C, dual=False)
 
-            logging.info("train model...")
+            start_time = time.time()
+            x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+            logging.info("train liblinear with C=%f..." %(C))
             clf.fit(x_train, y_train)
+            end_time = time.time()
 
-            logging.info("test model...")
+            train_time_list.append(end_time - start_time)
+
+            logging.info("test liblinear with C=%f..." %(C))
             test_accu = clf.score(x_test, y_test)
             sparsity = 1 - np.count_nonzero(clf.coef_) / float(clf.coef_.size)
 
@@ -47,7 +52,7 @@ def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
             logging.info("test accuracy: %.4f" %(test_accu))
             logging.info("model sparsity: %.4f" %(sparsity))
 
-        return sparsity_list, test_accu_list
+        return sparsity_list, test_accu_list, train_time_list
     else:
         if 'cv' in opts:
             cv_output_path  = osp.join(dtrain.work_dir, 'cv-liblinear.txt')
