@@ -65,4 +65,4 @@ def plot(xs, labels, ys, x_label, y_label, output_path,
 
     plt.savefig(output_path,bbox_inches='tight')
     logging.info('figure saved to %s' %(output_path))
-    plt.show()
+    #plt.show()

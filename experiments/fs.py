@@ -15,147 +15,152 @@ import numpy as np
 
 from sol.dataset import DataSet
 from sol.cv import CV
-from pysol import SOL
+from sol import sol_train
 import liblinear
 import fgm
 import fig
+import mrmr
 
 DESCRIPTION='Feature Selection  Experiment Scripts'
 
-def cv(dtrain, dtest, algo, model_params, cv_params, fold_num = 5,
-       retrain=False):
-    cv_output_path  = osp.join(dtrain.work_dir, 'cv-%s.txt' %(algo))
-    if osp.exists(cv_output_path) and retrain == False:
-        best_params = CV.load_results(cv_output_path)
-    else:
-        #cross validation
-        logging.info("cross validation on dataset %s with parameters %s" %(dtrain.name, str(cv_params)))
-        cv = CV(dtrain, fold_num, cv_params, model_params)
-        cv.train_val(algo)
-        best_params = cv.get_best_param()[0]
-        cv.save_results(cv_output_path)
+def run_fs(dtrain, dtest, algo, opts):
+    """
+    Run Feature Selection Algorithm
 
-    logging.info('cross validation parameters: %s' %(str(best_params)))
-    return best_params
+    Parameter
+    ---------
+    dtrain: DataSet
+        training dataset
+    dtest: DataSet
+        test dataset
+    algo: str
+        name of the algorithm to use
+    opts: dict
+        options to train the model
+    """
 
-def run_fs(dtrain, dtest, opts, fold_num = 5, retrain=False):
-    logging.info('run sol: %s' %(opts['algo']))
-    if opts['algo'] == 'liblinear':
-        if 'params' not in opts:
-            opts['params'] = {}
-        opts['params']['penalty'] = 'l1'
+    logging.info('run sol: %s' %(algo))
 
-        sparsity_list, test_accu_list, train_time_list = liblinear.run(dt_train, dt_test, opts)
-        feat_num_list = [((1-val) * dtrain.dim) for val in sparsity_list]
-        return np.array(feat_num_list), np.array(test_accu_list), np.array(train_time_list)
-    elif opts['algo'] == 'fgm':
-        return fgm.run(dtrain, dtest, opts)
-
-    model_params = {}
-    if 'params' in opts:
-        model_params = opts['params']
-
-    if 'cv' in opts:
-        best_params = cv(dtrain, dtest, opts['algo'], model_params, opts['cv'], fold_num, retrain)
-        for k,v in best_params:
-            model_params[k] = v
+    model_params = opts['params'] if 'params' in opts else {}
+    cv_params = opts['cv'] if 'cv' in opts else None
 
     feat_num_list = []
     test_accu_list = []
     train_time_list = []
-    print opts['B']
-    for B in opts['B']:
-        model_params['B'] = B
-        m = SOL(algo=opts['algo'], class_num = dtrain.class_num, **model_params)
 
-        logging.info("train %s on %s with B=%d ..." %(opts['algo'],
-                                                      dtrain.name, B))
+    for val in opts['lambda']:
+        if algo == 'liblinear':
+            model_params['C'] = val
+            feat_num, test_accu, test_time, train_accu, train_time = \
+                    liblinear.train_test_l1(dtrain, dtest, **model_params)
+        elif algo == 'fgm':
+            model_params['B'] = val
+            feat_num, test_accu, test_time, train_accu, train_time = \
+                    fgm.train_test(dtrain, dtest, **model_params)
+        elif algo == 'mrmr':
+            model_params['B'] = val
+            feat_num, test_accu, test_time, train_accu, train_time = \
+                    mrmr.train_test(dtrain, dtest, **model_params)
+        else:
+            model_params['B'] = val
+            test_accu, test_time, train_accu, train_time, m = sol_train.train_test(
+                dtrain, dtest,
+                model_name = algo,
+                model_params = model_params,
+                cv_params = cv_params)
 
-        start_time = time.time()
-        train_accu = m.fit(dtrain.rand_path('svm'), 'svm')
-        end_time = time.time()
+            feat_num = int((1-m.sparsity) * dtrain.dim)
 
-        feat_num_list.append((1-m.sparsity) * dtrain.dim)
-        train_time_list.append(end_time - start_time)
+        logging.info("non-zero feature number: %d" %(feat_num))
 
-        logging.info("training accuracy: %.4f" %(train_accu))
-        logging.info("training time: %.4f seconds" %(end_time - start_time))
-        logging.info("model sparsity: %.4f seconds" %(m.sparsity))
-
-        logging.info("test %s on %s with B=%d ..." %(opts['algo'], dtrain.name,
-                                                    B))
-        start_time = time.time()
-        test_accu = m.score(dtest.rand_path('svm'), 'svm')
-        end_time = time.time()
-
-        logging.info("test accuracy: %.4f" %(test_accu))
-        logging.info("test time: %.4f seconds" %(end_time - start_time))
-
+        feat_num_list.append(feat_num)
         test_accu_list.append(test_accu)
+        train_time_list.append(train_time)
 
-    return np.array(feat_num_list), np.array(test_accu_list), np.array(train_time_list)
+    return np.array(feat_num_list), \
+            np.array(test_accu_list), \
+            np.array(train_time_list)
 
-def exp_fs(args, dt_train, dt_test, opts, cache_data_path):
-    res = {}
-    if args.retrain == True or osp.exists(cache_data_path) == False:
-        for algo, opt in opts.iteritems():
-            res_len = 0
-            if 'B' in opt:
-                opt['B'] = [int(v * dt_train.dim) if v <= 1 else v for v in opt['B']]
-                res_len = len(opt['B'])
-            elif 'lambda' in opt:
-                res_len = len(opt['lambda'])
+def exp_fs(dtrain, dtest,
+           opts,
+           output_path,
+           repeat = 1,
+           retrains = None):
+    """
+    Experiment to run all algorithms
 
-            res[algo] = [np.zeros((args.shuffle, res_len)),
-                         np.zeros((args.shuffle, res_len)),
-                         np.zeros((args.shuffle, res_len))]
+    Parameters
+    ----------
+    dtrain: DataSet
+        traning dataset
+    dtest: DataSet
+        test dataset
+    opts: dict
+        options for each algorithm
+    output_path: str
+        output path to save the results
+    repeat: int
+        number of repeats to run the algorithms
+    retrains: list[str]
+        which algorithm should be retrained, even it has been trained before
+    """
 
-        for rid in xrange(args.shuffle):
-            logging.info('random pass %d' %(rid))
-            rand_path = dt_train.rand_path(tgt_type='svm', force=True)
-            for algo, opt in opts.iteritems():
-                algo_res = run_fs(dt_train, dt_test, opt)
-                res[algo][0][rid,:] = algo_res[0]
-                res[algo][1][rid,:] = algo_res[1]
-                res[algo][2][rid,:] = algo_res[2]
-
-    #load & save results
-    if osp.exists(cache_data_path) == False:
-        with open(cache_data_path, 'wb') as fh:
-            cPickle.dump(res, fh)
-    elif args.retrain == False:
-        with open(cache_data_path,'rb') as fh:
+    if osp.exists(output_path) == True:
+        with open(output_path,'rb') as fh:
             res = cPickle.load( fh)
+    else:
+        res = {}
+
+    retrains = [] if retrains == None else retrains
+    if len(retrains) == 1 and retrains[0].lower() == 'all':
+        retrains = opts.keys()
+
+    for algo, opt in opts.iteritems():
+        if (algo in res) and (algo not in retrains):
+            continue
+
+        res_len = len(opt['lambda'])
+
+        res[algo] = [np.zeros((repeat, res_len)) for i in xrange(3)]
+
+        for rid in xrange(repeat):
+            if rid > 0 and (algo.lower() == 'liblinear' or algo.lower() == 'fgm'):
+                for i in xrange(3):
+                    res[algo][i][rid,:] = res[algo][i][rid - 1,:]
+            else:
+                logging.info('random pass %d' %(rid))
+                rand_path = dtrain.rand_path(tgt_type='svm', force=True)
+                algo_res = run_fs(dtrain, dt_test, algo.lower(), opt)
+                for i in xrange(3):
+                    res[algo][i][rid,:] = algo_res[i]
+
+    #save results
+    with open(output_path, 'wb') as fh:
+        cPickle.dump(res, fh)
 
     algo_list = []
-    ave_feat_num_list = []
-    ave_test_accu_list = []
-    ave_train_time_list = []
+    ave_res = [[] for i in xrange(3)]
     for algo, vals in res.iteritems():
         algo_list.append(algo)
-        ave_feat_num = np.average(vals[0], axis=0)
-        ave_test_accu = np.average(vals[1], axis=0)
-        ave_train_time = np.average(vals[2], axis=0)
-        ave_feat_num_list.append(ave_feat_num)
-        ave_test_accu_list.append(ave_test_accu)
-        ave_train_time_list.append(ave_train_time)
+        for i in xrange(3):
+            ave_res[i].append(np.average(vals[i], axis=0))
 
-    print ave_feat_num_list
-    print ave_test_accu_list
     #draw sparsity vs test accuracy
-    fig.plot(ave_feat_num_list,
+    fig.plot(ave_res[0],
              algo_list,
-             ave_test_accu_list,
+             ave_res[1],
              'Selected Features',
              'Test Accuracy',
-             dt_train.name + '-selected-feature-test-accuracy.pdf')
+             osp.join(dtrain.work_dir, dtrain.name + '-selected-feature-test-accuracy.pdf')
+            )
 
-    fig.plot(ave_feat_num_list,
+    fig.plot(ave_res[0],
              algo_list,
-             ave_train_time_list,
+             ave_res[2],
              'Selected Features',
              'Training Time',
-             dt_train.name + '-selected-feature-train-time.pdf')
+             osp.join(dtrain.work_dir, dtrain.name + '-selected-feature-train-time.pdf')
+            )
 
 
 def set_logging(args):
@@ -187,13 +192,10 @@ def getargs():
             argparse.RawTextHelpFormatter)
 
     #input output
-    parser.add_argument('--retrain', action='store_true',  help='whether retrain model, ignoring existing cache')
-    parser.add_argument('--shuffle', type=int,  default=1, help='number of times to shuffle the data')
+    parser.add_argument('--retrain', type=str, nargs='+',  help='retrian the algorithms')
+    parser.add_argument('--repeat', type=int,  default=1, help='number of times to shuffle and repeat training the  data')
     parser.add_argument('-f', '--fold_num', type=int, default=5, help='number of folds in cross validation')
-    parser.add_argument('-o', '--output', type=str, default=None,
-            help='output file to save the results')
-    parser.add_argument('-c', '--cache', type=str, default=None,
-            help='cache file of learning results')
+    parser.add_argument('-o', '--output', type=str, default=None, help='output file to save the results')
     parser.add_argument('dtname', type=str, help='dataset name')
     parser.add_argument('train_file', type=str, help='path to training data')
     parser.add_argument('test_file', type=str, help='path to test data')
@@ -210,8 +212,6 @@ def getargs():
 
 if __name__ == '__main__':
     args = getargs()
-    if args.output == None:
-        args.output = args.dtname + '-result.txt'
 
     try:
         dt_opts = importlib.import_module(args.dtname)
@@ -225,12 +225,17 @@ if __name__ == '__main__':
     dt_train = DataSet(args.dtname,args.train_file, args.dtype)
     dt_test = DataSet(args.dtname,args.test_file, args.dtype)
 
-    if args.cache == None:
-        args.cache = args.dtname + '-fs-cache.pkl'
+    if args.output == None:
+        args.output = osp.join(dt_train.work_dir, args.dtname + '-fs-cache.pkl')
 
     #remove liblinear if not svm format
     if args.dtype != 'svm':
         if 'fs_opts' in dt_opts.__dict__:
             dt_opts.fs_opts.pop('liblinear', None)
+            dt_opts.fs_opts.pop('fgm', None)
 
-    exp_fs(args, dt_train, dt_test, dt_opts.fs_opts, args.cache)
+    exp_fs(dt_train, dt_test,
+           dt_opts.fs_opts,
+           args.output,
+           repeat=args.repeat,
+           retrains=args.retrain)

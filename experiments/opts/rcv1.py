@@ -1,39 +1,45 @@
 #! /usr/bin/env python
 #################################################################################
-#     File Name           :     rcv1.py
+#     File Name           :     synthetic_100k.py
 #     Created By          :     yuewu
-#     Description         :     options for rcv1 dataset
+#     Creation Date       :     [2016-10-25 11:21]
+#     Last Modified       :     [2016-11-18 09:40]
+#     Description         :      
 #################################################################################
-import numpy as np
 
-ol_opts = {}
-ol_opts['ada-fobos'] = {'algo':'ada-fobos', 'cv':['eta=0.0625:2:128', 'delta=0.0625:2:16']}
-ol_opts['ada-rda'] = {'algo':'ada-rda', 'cv':['eta=0.0625:2:128', 'delta=0.0625:2:16']}
-ol_opts['alma2'] = {'algo':'alma2', 'cv':['alpha=0.1:+0.1:1']}
-ol_opts['arow'] = {'algo':'arow', 'cv':['r=0.0625:2:16']}
-ol_opts['cw'] = {'algo':'cw', 'cv':['a=0.0625:2:1', 'phi=0:+0.25:2']}
-ol_opts['eccw'] = {'algo':'eccw', 'cv':['a=0.0625:2:1', 'phi=0:+0.25:2']}
-ol_opts['ogd'] = {'algo':'ogd', 'cv':['eta=0.0625:2:128']}
-ol_opts['pa'] = {'algo':'pa'}
-ol_opts['pa1'] = {'algo':'pa1', 'cv':['C=0.0625:2:16']}
-ol_opts['pa2'] = {'algo':'pa2', 'cv':['C=0.0625:2:16']}
-ol_opts['perceptron'] = {'algo':'perceptron'}
-ol_opts['sop'] = {'algo':'sop', 'cv':['a=0.0625:2:16']}
-ol_opts['rda'] = {'algo':'rda'}
-ol_opts['erda'] = {'algo':'erda-l1'}
+import numpy as  np
 
-for k,v in ol_opts.iteritems():
-	ol_opts[k]['params'] = ['step_show=50000']
+const_eta_search = np.logspace(-5, 5, 11, base=2)
+eta_search = np.logspace(-2, 8, 11, base=2)
+delta_search = np.logspace(-5, 5,11, base=2)
+r_search = np.logspace(-2, 8, 11, base=2)
+delta_ofs_search = np.logspace(-5, 5, 11, base=2) / 100.0
 
-ol_opts['liblinear'] = {'algo':'liblinear', 'cv':np.logspace(-5,7,13, base=2)}
-ol_opts['vw'] = {'algo':'vw', 'cv':{'l':np.logspace(-4,7,12,base=2)}}
-
-sol_opts = {}
-sol_opts['stg'] = {'algo':'stg', 'cv':'ogd', 'params':['k=10'], 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['fobos-l1'] = {'algo':'fobos-l1', 'cv':'ogd', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['rda-l1'] = {'algo':'rda-l1', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['erda-l1'] = {'algo':'erda-l1', 'params':['rou=0.001'], 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['ada-fobos-l1'] = {'algo':'ada-fobos-l1', 'cv':'ada-fobos', 'lambda': np.logspace(-6,-1,10,base=10) }
-sol_opts['ada-rda-l1'] = {'algo':'ada-rda-l1', 'cv':'ada-rda', 'lambda': np.logspace(-7,-2,10,base=10) }
-sol_opts['liblinear'] = {'algo':'liblinear', 'params':{'penalty':'l1'}, 'lambda':np.logspace(-5,7,13, base=2)}
-sol_opts['vw'] = {'algo':'vw','cv':'vw', 'lambda':np.logspace(-6,-2,10, base=10)}
+fs_num = [100]
+fs_opts = {
+    'pet': {
+        'params':{'norm':'L2'},
+        'cv':{'eta':eta_search},
+        'lambda': fs_num
+    },
+    #'fofs': {
+    #    'params':{'norm':'L2'},
+    #    'cv':{'eta': const_eta_search, 'lambda': delta_ofs_search},
+    #    'lambda': fs_num
+    #},
+    'sofs': {
+        'params':{'norm':'L2'},
+        'cv':{'r': r_search},
+        'lambda': fs_num
+    }#,
+    #'FGM':  {
+    #    'lambda': fs_num
+    #},
+    #'mRMR': {
+    #    'params':{'t':0},
+    #    'lambda': fs_num
+    #},
+    #'liblinear': {
+    #    'lambda': [0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0008,0.0007,0.0009,0.001,0.01,0.012,0.013,0.014,0.015,0.016,0.018,0.02]
+    #}
+}

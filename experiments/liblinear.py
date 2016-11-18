@@ -6,98 +6,163 @@ import os.path as osp
 import logging
 import time
 from  sklearn import svm, datasets
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 import numpy as np
 
-def run(dtrain, dtest, opts, retrain=False, fold_num = 5):
-    if opts['algo'] != 'liblinear':
-        raise Exception('wrong method %s called for liblinear script' %(opts['algo']))
+def train_test_l2(dtrain, dtest, C,
+                  fold_num = 5,
+                  retrain = False,
+                  verbose=False):
+    """Train and Test L2-SVM with Liblinear
+
+    Parameters
+    ----------
+    dtrain: DatsSet
+        training dataset
+    dtest: DataSet
+        test dataset
+    C: float or list
+        l2 penalty, or list of values for cross validation
+    fold_num: int
+        number of folds to do cross validation
+    retrain: bool
+        whether to retrain the model and cross validation
+    verbose: bool
+        wheter to print the detailed information
+
+    Return
+    ------
+    tuple (test accuracy, test time, train accuracy, train time)
+    """
 
     if dtrain.dtype != 'svm':
         raise Exception("liblinear only supports svm type data")
 
-    penalty = 'l2'
-    C = 1.0
-    if 'params' in opts:
-        if 'C' in opts['params']:
-            C = float(opts['params']['C'])
-        if 'penalty' in opts['params']:
-            penalty = opts['params']['penalty']
+    dual = True if dtrain.data_num < dtrain.dim else False
 
-    if penalty == 'l1':
-        #l1-svm
-        test_accu_list = []
-        sparsity_list = []
-        train_time_list = []
-        x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
-        for l1 in opts['lambda']:
-            C = 1.0 / l1
-            clf = svm.LinearSVC(penalty=penalty, C=C, dual=False)
-
-            start_time = time.time()
-            x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
-            logging.info("train liblinear with C=%f..." %(C))
+    if isinstance(C, list):
+        cv_output_path  = osp.join(dtrain.work_dir, 'cv-liblinear.txt')
+        if os.path.exists(cv_output_path) and retrain == False:
+            with open(cv_output_path, 'r') as fh:
+                line = fh.readline()
+            C = float(line.split('=')[1])
+        else:
+            #cross validation
+            x_train, y_train = datasets.load_svmlight_file(dtrain.rand_path())
+            svc = svm.LinearSVC(penalty='l2', dual=dual)
+            clf = GridSearchCV(estimator=svc, param_grid=dict(C=C),
+                    n_jobs=4, cv=fold_num, verbose=verbose)
             clf.fit(x_train, y_train)
-            end_time = time.time()
+            C = clf.best_estimator_.C
 
-            train_time_list.append(end_time - start_time)
+            #write the cross validation results
+            with open(cv_output_path, 'w') as fh:
+                fh.write('Best Result: C=%f' %(C))
 
-            logging.info("test liblinear with C=%f..." %(C))
-            test_accu = clf.score(x_test, y_test)
-            sparsity = 1 - np.count_nonzero(clf.coef_) / float(clf.coef_.size)
+        logging.info('cross validation parameters: C=%f' %(C))
 
-            test_accu_list.append(test_accu)
-            sparsity_list.append(sparsity)
+    clf = svm.LinearSVC(penalty='l2', C=C, dual=dual)
 
-            logging.info("test accuracy: %.4f" %(test_accu))
-            logging.info("model sparsity: %.4f" %(sparsity))
+    start_time = time.time()
 
-        return sparsity_list, test_accu_list, train_time_list
-    else:
-        if 'cv' in opts:
-            cv_output_path  = osp.join(dtrain.work_dir, 'cv-liblinear.txt')
-            if os.path.exists(cv_output_path) and retrain == False:
-                with open(cv_output_path, 'r') as fh:
-                    line = fh.readline()
-                C = float(line.split('=')[1])
-            else:
-                #cross validation
-                x_train, y_train = datasets.load_svmlight_file(dtrain.rand_path())
-                cv_params = opts['cv']
-                svc = svm.LinearSVC(penalty=penalty)
-                clf = GridSearchCV(estimator=svc, param_grid=dict(C=opts['cv']),
-                        n_jobs=4, cv=fold_num, verbose=True)
-                clf.fit(x_train, y_train)
-                C = clf.best_estimator_.C
-                with open(cv_output_path, 'w') as fh:
-                    fh.write('Best Result: C=%f' %(C))
+    #load dataset
+    logging.info("loading training data %s..." %(dtrain.name))
+    x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
 
-            logging.info('cross validation parameters: C=%f' %(C))
+    logging.info("train liblinear with C=%f..." %(C))
+    clf.fit(x_train, y_train)
 
-        #l2-svm
-        clf = svm.LinearSVC(penalty=penalty, C=C)
+    train_time = time.time() - start_time
+    logging.info("training time of liblinear: %.4f sec" % (train_time))
 
-        logging.info("loading data...")
-        start_time = time.time()
-        x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
-        logging.info("train model...")
-        clf.fit(x_train, y_train)
-        end_time = time.time()
-        train_accu = clf.score(x_train, y_train)
-        train_time = end_time - start_time
+    start_time = time.time()
 
-        logging.info("training accuracy: %.4f" %(train_accu))
-        logging.info("training time: %.4f seconds" %(train_time))
+    train_accu = clf.score(x_train, y_train)
 
-        logging.info("loading data...")
-        start_time = time.time()
-        x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
-        logging.info("test model...")
-        test_accu = clf.score(x_test, y_test)
-        end_time = time.time()
-        test_time = end_time - start_time
+    #load dataset
+    logging.info("loading test data %s..." %(dtest.name))
+    x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
 
-        logging.info("test accuracy: %.4f" %(test_accu))
-        logging.info("test time: %.4f seconds" %(test_time))
+    logging.info("test liblinear with C=%f..." %(C))
+    test_accu = clf.score(x_test, y_test)
 
-        return train_accu, train_time, test_accu, test_time
+    test_time = time.time() - start_time
+
+    logging.info("test accuracy: %.4f" %(test_accu))
+    logging.info("test time: %.4f sec" %(test_time))
+
+    return test_accu, test_time, train_accu, train_time
+
+def train_test_l1(dtrain, dtest, C):
+    """Train and Test L1-SVM with Liblinear
+
+    Parameters
+    ----------
+    dtrain: DatsSet
+        training dataset
+    dtest: DataSet
+        test dataset
+    C: float
+        l1 penalty
+
+    Return
+    ------
+    tuple (feat_num, test accuracy, test time, train accuracy, train time)
+    """
+
+    if dtrain.dtype != 'svm':
+        raise Exception("liblinear only supports svm type data")
+
+    clf = svm.LinearSVC(penalty='l1', C=C, dual=False)
+
+    start_time = time.time()
+
+    #load dataset
+    logging.info("loading training data %s..." %(dtrain.name))
+    x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+
+    logging.info("train liblinear with C=%f..." %(C))
+    clf.fit(x_train, y_train)
+
+    train_time = time.time() - start_time
+    logging.info("training time of liblinear: %.4f sec" % (train_time))
+
+    start_time = time.time()
+
+    train_accu = clf.score(x_train, y_train)
+
+    #load dataset
+    logging.info("loading test data %s..." %(dtest.name))
+    x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
+
+    logging.info("test liblinear with C=%f..." %(C))
+    test_accu = clf.score(x_test, y_test)
+
+    test_time = time.time() - start_time
+
+    feat_num = np.count_nonzero(clf.coef_)
+
+    logging.info("test accuracy: %.4f" %(test_accu))
+    logging.info("test time: %.4f sec" %(test_time))
+
+    return feat_num, test_accu, test_time, train_accu, train_time
+
+if __name__ == '__main__':
+    if len(sys.argv) != 4:
+        print 'Usage dt_name train_file test_file'
+        sys.exit()
+
+    from sol.dataset import  DataSet
+
+    dtrain = DataSet(sys.argv[1], sys.argv[2], 'svm')
+    dtest = DataSet(sys.argv[1], sys.argv[3], 'svm')
+
+    C_list = [0.001, 0.01, 0.1, 1]
+
+    print 'train test l1-svm'
+    for C in C_list:
+        print train_test_l1(dtrain, dtest, C=C)
+
+    print 'train test l2-svm'
+    for C in C_list:
+        print train_test_l2(dtrain, dtest, C=C)

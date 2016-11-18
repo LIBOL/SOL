@@ -58,8 +58,8 @@ void FOFS::Update(const pario::DataPoint& dp, const float* predict,
   const auto& x = dp.data();
 
   for (int c = 0; c < this->clf_num_; ++c) {
-    w(c) *= this->momentum_;
     if (g(c) == 0) continue;
+    w(c) *= this->momentum_;
     w(c) -= this->eta_ * g(c) * x;
     // update bias
     w(c)[0] -= bias_eta() * g(c);

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import os.path as osp
 import sys
-import argparse
 import logging
+import argparse
 import time
+import ast
 
 from sol.dataset import DataSet
 from sol.cv import CV
@@ -12,6 +14,199 @@ from pysol import SOL
 
 DESCRIPTION = 'Large Scale Online Learning Training Scripts'
 
+def train(dt, model_name,
+          model_params={},
+          output_path = None,
+          fold_num = 5,
+          cv_params = None,
+          retrain = False,
+          passes = 1):
+    """
+    train a SOL model
+
+    Parameter
+    ---------
+    dt: DataSet
+        the dataset used to train the model
+    model_name: str
+        name of the algorithm to use
+    model_params: dict{param, val}
+        model parameters
+    output_path: str
+        path to save the model
+    fold_num: int
+        number of folds to do cross validation
+    cv_params: dict{param, range}
+        cross validation parameters
+    retrain: bool
+        whether to re-do the cross validation
+    passes: int
+        number of passes to go through the data
+
+    Return
+    ------
+    tuple(train accuracy, train time)
+    """
+
+    if cv_params != None:
+        cv_output_path = osp.join(dt.work_dir, 'cv-%s.txt' % (model_name))
+        if osp.exists(cv_output_path) and retrain == False:
+            best_params = CV.load_results(cv_output_path)
+        else:
+            #cross validation
+            param_B = None
+            param_lambda = None
+            if 'B' in model_params:
+                param_B  = model_params['B']
+                del model_params['B']
+            if 'lambda' in model_params:
+                param_lambda  = model_params['lambda']
+                del model_params['lambda']
+
+            cv = CV(dt, fold_num, cv_params, model_params)
+            cv.train_val(model_name)
+            best_params = cv.get_best_param()[0]
+            cv.save_results(cv_output_path)
+
+            if param_B is not None:
+                model_params['B'] = param_B
+            if param_lambda is not None:
+                model_params['lambda'] = param_lambda
+
+        logging.info('cross validation results: %s' % (str(best_params)))
+
+        model_params.update(best_params)
+
+    logging.info("learn model with %s algorithm on %s ..." % (model_name,
+                                                           dt.name))
+    logging.info("parameter settings: %s" % (model_params))
+
+    start_time = time.time()
+    m = SOL(model_name, dt.class_num, **model_params)
+    train_accu = m.fit(dt.data_path, dt.dtype, passes)
+    train_time = time.time() - start_time
+
+    logging.info("training accuracy of %s: %.4f" % (model_name, train_accu))
+    logging.info("training time of %s: %.4f sec" % (model_name, train_time))
+
+    if output_path != None:
+        logging.info("save model of %s to %s" % (model_name, output_path))
+        m.save(output_path)
+
+    return train_accu, train_time, m
+
+def train_test(dtrain, dtest,
+               model_name,
+               model_params={},
+               output_path = None,
+               fold_num = 5,
+               cv_params = None,
+               retrain = False,
+               passes = 1):
+    train_accu, train_time, m = train(dtrain, model_name, model_params,
+                                      output_path, fold_num, cv_params,
+                                      retrain, passes)
+
+    logging.info("test %s on %s..." % (model_name, dtrain.name))
+
+    start_time = time.time()
+    test_accu = m.score(dtest.data_path, dtest.dtype)
+    test_time = time.time() - start_time
+
+    logging.info("test accuracy: %.4f" %(test_accu))
+    logging.info("test time: %.4f sec" %(test_time))
+
+    return test_accu, test_time, train_accu, train_time, m
+
+def finetune(dt, model_path,
+             model_params = {},
+             output_path = None,
+             passes = 1):
+    """Finetune from an existing model
+
+    Parameter
+    --------
+    dt: DataSet
+        the dataset used to train the model
+    model_path: str
+        path to exisitng model
+    model_params: dict{param, val}
+        model parameters
+    output_path: str
+        path to save the model
+    passes: int
+        number of passes to go through the data
+
+    Return
+    ------
+    tuple(train accuracy, train time)
+    """
+
+    logging.info("finetnue model from %s ..." % (model_path))
+    logging.info("parameter settings: %s" % (model_params))
+
+    init_params = {}
+    if 'batch_size' in model_params:
+        init_params['batch_size'] = model_params['batch_size']
+        del model_params['batch_size']
+    if 'buf_size' in model_params:
+        init_params['buf_size'] = model_params['buf_size']
+        del model_params['buf_size']
+    if 'verbose' in model_params:
+        init_params['verbose'] = model_params['verbose']
+        del model_params['verbose']
+
+    m = SOL(**init_params)
+    m.load(model_path)
+    algo = m.name
+    m.set_params(**model_params)
+
+    start_time = time.time()
+    train_accu = m.fit(dt.data_path, dt.dtype, passes)
+    train_time = time.time() - start_time
+
+    logging.info("training accuracy of %s: %.4f" % (algo, train_accu))
+    logging.info("training time of %s: %.4f sec" % (algo, train_time))
+
+    if output_path != None:
+        logging.info("save model of %s to %s" % (algo, output_path))
+        m.save(output_path)
+
+    return train_accu, train_time, m
+
+def main(args):
+    dt_name = osp.basename(args.input)
+    dt = DataSet(dt_name, args.input, args.data_type)
+
+    model_params = {'verbose': args.verbose,
+                    'batch_size': args.batch_size,
+                    'buf_size': args.buf_size,
+                    'norm': args.norm}
+
+    if args.model == None and args.algo != None:
+        if args.params != None:
+            for item in args.params:
+                parts = item.split('=')
+                model_params[parts[0]] = parts[1]
+        cv_params = None
+        if args.cv != None:
+            cv_params = {}
+            for item in args.cv:
+                parts = item.split('=')
+                cv_params[parts[0]] = ast.literal_eval(parts[1])
+
+        train(dt, model_name = args.algo,
+              model_params = model_params,
+              output_path = args.output,
+              fold_num = args.fold_num,
+              cv_params = cv_params,
+              retrain = args.retrain,
+              passes = args.passes)
+    elif args.model != None and args.algo == None:
+        finetune(dt, model_path = args.model, model_params = model_params,
+                 output_path = args.output, passes = args.passes)
+    else:
+        raise Exception("either model or algo should be specified")
 
 def set_logging(args):
     logger = logging.getLogger('')
@@ -43,15 +238,23 @@ def getargs():
         description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter)
 
     #input output
-    parser.add_argument('input', type=str, help='path to training data')
+    parser.add_argument('input',
+                        type=str,
+                        help='path to training data')
+
     parser.add_argument(
-        'output', type=str, nargs='?', help='path to save the generated model')
+        'output',
+        type=str,
+        nargs='?',
+        help='path to save the generated model')
+
     parser.add_argument(
         '-a',
         '--algo',
         type=str,
-        default='ogd',
+        default=None,
         help='name of the algorithm to use')
+
     parser.add_argument(
         '-t',
         '--data_type',
@@ -59,8 +262,12 @@ def getargs():
         default='svm',
         choices=['svm', 'bin', 'csv'],
         help='training data type')
+
     parser.add_argument(
-        '-m', '--model', type=str, help='existing pre-trained model')
+        '-m',
+        '--model',
+        type=str,
+        help='existing pre-trained model')
 
     #data related settings
     parser.add_argument(
@@ -69,14 +276,21 @@ def getargs():
         type=int,
         default=1,
         help='number of passes to go through the training data')
+
     parser.add_argument(
         '--norm',
         type=str,
-        default='none',
-        choices=['none', 'L1', 'L2'],
+        default='None',
+        choices=['None', 'L1', 'L2'],
         help='normalization method of data')
+
     parser.add_argument(
-        '-b', '--batch_size', type=int, default=256, help='mini-batch size ')
+        '-b',
+        '--batch_size',
+        type=int,
+        default=256,
+        help='mini-batch size ')
+
     parser.add_argument(
         '--buf_size',
         type=int,
@@ -88,22 +302,26 @@ def getargs():
         '--cv',
         type=str,
         nargs='+',
-        help='parameters waiting for cross validation, in the format "param=start_val:step_val:end_val"')
+        help='parameters waiting for cross validation, in the format "param=[v1,..,vn]"')
+
     parser.add_argument(
         '-f',
         '--fold_num',
         type=int,
         default=5,
         help='number of folds in cross validation')
+
     parser.add_argument(
         '--params',
         type=str,
         nargs='+',
         help='parameters for the model, in the format "param=val"')
+
     parser.add_argument(
         '--retrain',
         action='store_true',
         help='whether retrain model, ignoring existing cross validation paramters')
+
     parser.add_argument(
         '-v',
         '--verbose',
@@ -112,60 +330,16 @@ def getargs():
 
     #log related settings
     parser.add_argument(
-        "--log_level", type=str, default="INFO", help="log level")
+        "--log_level",
+        type=str,
+        default="INFO",
+        help="log level")
     parser.add_argument("--log", type=str, default="log.log", help="log file")
 
     args = parser.parse_args()
     set_logging(args)
     return args
 
-def main():
-    args = getargs()
-    try:
-        dt_name = os.path.basename(args.input)
-        dt = DataSet(dt_name, args.input, args.data_type)
-        model_params = [('verbose', args.verbose)]
-        if args.params != None:
-            model_params = [item.split('=') for item in args.cv]
-
-        if args.cv != None:
-            cv_output_path = os.path.join(dt.work_dir,
-                                          'cv-%s.txt' % (args.algo))
-            if os.path.exists(cv_output_path) and args.retrain == False:
-                best_params = CV.load_results(cv_output_path)
-            else:
-                #cross validation
-                cv_params = [item.split('=') for item in args.cv]
-                cv = CV(dt, args.fold_num, cv_params, model_params)
-                cv.train_val(args.algo)
-                best_params = cv.get_best_param()[0]
-                cv.save_results(cv_output_path)
-            logging.info('cross validation parameters: %s' %
-                         (str(best_params)))
-            for k, v in best_params:
-                model_params.append((k, v))
-
-        model_params = dict(model_params)
-
-        start_time = time.time()
-        m = SOL(
-            args.algo,
-            dt.class_num,
-            batch_size=args.batch_size,
-            buf_size=args.buf_size,
-            **model_params)
-        logging.info("learn model with %s algorithm..." % (args.algo))
-        accu = m.fit(dt.data_path, dt.dtype, args.passes)
-        logging.info("training accuracy of %s: %.4f" % (args.algo, accu))
-        logging.info("training time of %s: %.4f seconds" %
-                     (args.algo, time.time() - start_time))
-
-        if args.output != None:
-            logging.info("save model of %s to %s" % (args.algo, args.output))
-            m.save(args.output)
-
-    except Exception as err:
-        print 'train failed: %s' % (err.message)
-
 if __name__ == '__main__':
-    main()
+    args = getargs()
+    main(args)

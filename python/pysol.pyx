@@ -72,6 +72,7 @@ cdef class SOL:
             self._c_model = sol_CreateModel(algo, class_num)
             self.algo = algo
             self.class_num = class_num
+            self.set_params(**params)
         else:
             self._c_model = NULL
             self.algo = 'none'
@@ -85,7 +86,6 @@ cdef class SOL:
         if verbose == False:
             self.inspect_learning(None)
         self.verbose = verbose
-        self.set_params(**params)
 
     def __dealloc__(self):
         """Release Memory"""

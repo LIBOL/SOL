@@ -3,7 +3,7 @@
 #     File Name           :     fgm.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-03 17:39]
-#     Last Modified       :     [2016-11-03 22:56]
+#     Last Modified       :     [2016-11-17 11:22]
 #     Description         :      helper script to run FGM
 #################################################################################
 
@@ -26,24 +26,14 @@ def fgm_predict_exe():
     else:
         return 'Predict'
 
-
-def parse_feature_num(path):
-    with open(path, 'r') as fh:
-        lines = fh.read()
-
-    pattern=re.compile('w (\d+)')
-    res = pattern.findall(lines)
-    assert len(res) == 1
-    return int(res[0])
-
 def parse_accuracy(path):
     with open(path, 'r') as fh:
         lines = fh.read()
 
-    pattern=re.compile('Accuracy = (\d+\.\d+)\s*\%.*')
+    pattern=re.compile('Accuracy = (\d+\.*\d*)\s*\%.*')
     res = pattern.findall(lines)
-    assert len(res) == 1
-    return float(res[0]) / 100.0
+    assert len(res) == 3
+    return float(res[-1]) / 100.0
 
 
 def test(dtest, model_path):
@@ -53,12 +43,12 @@ def test(dtest, model_path):
     predict_path = osp.join(dtest.work_dir, 'fgm.predict')
     out_path = osp.join(dtest.work_dir, 'fgm.out')
 
-    cmd = fgm_predict_exe() + ' \"%s\" \"%s\" \"%s\" > \"%s\" | type \"%s\"' %(dtest.data_path,
+    cmd = fgm_predict_exe() + ' \"%s\" \"%s\" \"%s\" > \"%s\" ' %(dtest.data_path,
                                                         model_path,
                                                         predict_path,
-                                                        out_path, out_path)
+                                                        out_path)
 
-    print cmd
+    logging.info(cmd)
     start_time = time.time()
     if os.system(cmd) != 0:
         logging.error('call fgm failed, fgm in path?')
@@ -66,53 +56,40 @@ def test(dtest, model_path):
     test_time = time.time() - start_time
     return parse_accuracy(out_path), test_time
 
-def train(dtrain, model_path, model_params = []):
-    """train FGM model"""
-    assert dtrain.dtype == 'svm'
+def train_test(dtrain, dtest, B, s = 12, c=10):
+
+    if dtrain.dtype != 'svm':
+        raise Exception("FGM only supports svm type data")
     if dtrain.class_num != 2:
         raise Exception("FGM only supports binary classification")
 
-    cmd = fgm_exe()
-    for k,v in model_params:
-        cmd += ' -%s %s' %(k,str(v))
-
+    #training
+    logging.info("train FGM with B=%d" %(B))
+    model_path = osp.join(dtrain.work_dir, 'fgm.model')
+    cmd = '%s -s %d -c %d -t 1 -B %d ' %(fgm_exe(), s, c, B)
     cmd += ' \"%s\" \"%s\"' %(dtrain.data_path, model_path)
 
-    print cmd
+    logging.info(cmd)
     start_time = time.time()
+
     if os.system(cmd) != 0:
         raise Exception('call fgm failed, fgm in path?')
+
     train_time = time.time() - start_time
-    return parse_feature_num(model_path), train_time
+    train_accu = test(dtrain, model_path)[0]
+    feat_num = B
+
+    logging.info("training accuracy of fgm: %.4f" % (train_accu))
+    logging.info("training time of fgm: %.4f sec" % (train_time))
+
+    logging.info("test FGM with B=%d" %(B))
+
+    test_accu, test_time = test(dtest, model_path)
+    logging.info("test accuracy: %.4f" %(test_accu))
+    logging.info("test time: %.4f sec" %(test_time))
 
 
-def run(dtrain, dtest, opts):
-    if dtrain.dtype != 'svm':
-        raise Exception("vw only supports svm type data")
-
-    feat_num_list = []
-    test_accu_list = []
-    train_time_list = []
-    for B in opts['B']:
-        model_path = osp.join(dtrain.work_dir, 'fgm.model')
-        logging.info("train FGM with B=%d" %(B))
-        feat_num, train_time = train(dtrain, model_path,
-                                     model_params=[('s', 12), ('c', 10), ('t',0), ('B', B)])
-
-        train_time_list.append(train_time)
-        logging.info("training time: %.4f seconds" %(train_time))
-
-        feat_num_list.append(feat_num)
-        logging.info("non-zero feature number : %d" %(feat_num))
-
-        logging.info("test FGM with B=%d" %(B))
-        test_accu, test_time = test(dtest, model_path)
-        logging.info("test accuracy: %.4f" %(test_accu))
-        logging.info("test time: %.4f seconds" %(test_time))
-        test_accu_list.append(test_accu)
-
-    return feat_num_list, test_accu_list, train_time_list
-
+    return feat_num, test_accu, test_time, train_accu, train_time
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
@@ -124,6 +101,8 @@ if __name__ == '__main__':
     dtrain = DataSet(sys.argv[1], sys.argv[2], 'svm')
     dtest = DataSet(sys.argv[1], sys.argv[3], 'svm')
 
-    opts={'B':[2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 32, 35, 38, 40, 42, 45, 48, 50, 55, 60]}
-    opts={'B':[2, 3]}
-    print run(dtrain, dtest, opts)
+    B_list = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 32, 35, 38, 40, 42, 45, 48, 50, 55, 60]
+    B_list = [2, 3]
+
+    for B in B_list:
+        print train_test(dtrain, dtest, B=B)

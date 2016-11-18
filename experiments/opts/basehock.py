@@ -3,7 +3,7 @@
 #     File Name           :     synthetic_100k.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-10-25 11:21]
-#     Last Modified       :     [2016-11-18 09:23]
+#     Last Modified       :     [2016-11-18 09:20]
 #     Description         :      
 #################################################################################
 
@@ -22,11 +22,11 @@ fs_opts = {
         'cv':{'eta':eta_search},
         'lambda': fs_num
     },
-    #'fofs': {
-    #    'params':{'norm':'L2'},
-    #    'cv':{'eta': const_eta_search, 'lambda': delta_ofs_search},
-    #    'lambda': fs_num
-    #},
+    'fofs': {
+        'params':{'norm':'L2'},
+        'cv':{'eta': const_eta_search, 'lambda': delta_ofs_search},
+        'lambda': fs_num
+    },
     'sofs': {
         'params':{'norm':'L2'},
         'cv':{'r': r_search},

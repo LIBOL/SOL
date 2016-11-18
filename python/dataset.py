@@ -88,6 +88,18 @@ class DataSet(object):
                 sys.exit()
             return cache_path
 
+    def convert(self, dtype):
+        if self.dtype == dtype:
+            return self.data_path
+        else:
+            dst_path = os.path.join(self.work_dir, self.data_name + '.' + dtype)
+            if os.path.exists(dst_path):
+                return dst_path
+            logging.info('convert data %s to %s' %(self.data_path, dst_path))
+            if pysol.convert_data(self.data_path, self.dtype, dst_path, dtype) != 0:
+                sys.exit()
+            return dst_path
+
     def rand_path(self, tgt_type = None, force=False):
         tgt_type = self.dtype if tgt_type == None else tgt_type
         output_path = os.path.join(self.work_dir, self.data_name + '.shuffle.' + tgt_type)
