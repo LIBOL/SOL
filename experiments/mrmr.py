@@ -3,7 +3,7 @@
 #     File Name           :     mrmr.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-06 20:53]
-#     Last Modified       :     [2016-11-18 09:13]
+#     Last Modified       :     [2016-11-25 14:11]
 #     Description         :
 #################################################################################
 
@@ -14,47 +14,29 @@ import logging
 import time
 import re
 from sol import sol_train
+import ipdb
 
 def mrmr_exe():
     if sys.platform == 'win32':
-        return 'mrmr_win32.exe'
+        return 'fast-mrmr.exe'
     else:
-        return 'mrmr'
+        return 'fast-mrmr'
 
 def convert_model_file(model_path, readable_path, train_time):
     logging.info('parse mRMR model file %s to %s\n' %(model_path,
                                                       readable_path))
     c_feat = []
-    pattern = re.compile(r'(\S*)\s*')
-    is_begin = False
-    try:
-        file_handler = open(model_path,'r')
-        while True:
-            line = file_handler.readline()
-            line = line.strip()
-            if is_begin == True and len(line) == 0:
-                break
-            if line == '*** mRMR features ***':
-                line = file_handler.readline()
-                is_begin = True
-                continue
-            if (is_begin == False):
-                continue
-            result_list = pattern.findall(line)
-            c_feat.append(int(result_list[1]))
-    except IOError as e:
-        logging.error("I/O error ({0}): {1}".format(e.errno,e.strerror))
-        sys.exit()
-    else:
-        file_handler.close()
-        logging.info('feature number %d' %(len(c_feat)))
+    with open(model_path, 'r') as fh:
+        c_feat = [int(v) for v in filter(None, fh.readline().strip().split(','))]
+
+    logging.info('feature number %d' %(len(c_feat)))
     #write c_feat into file
     try:
         file_handler = open(readable_path,'wb')
 
-        file_handler.write('#train time: %f' %train_time)
-        for k in range(0,len(c_feat)):
-            file_handler.write('%d\n' %c_feat[k])
+        file_handler.write('#train time: %f\n' %train_time)
+        for val in c_feat:
+            file_handler.write('%d\n' %val)
     except IOError as e:
         logging.error("I/O error ({0}): {1}".format(e.errno,e.strerror))
         sys.exit()
@@ -63,7 +45,7 @@ def convert_model_file(model_path, readable_path, train_time):
     return c_feat
 
 def train_test(dtrain, dtest, B,
-               t=0.5,
+               binary_thresh=None,
                ol_algo = 'ogd',
                ol_model_params = {},
                ol_cv_params = None):
@@ -97,21 +79,31 @@ def train_test(dtrain, dtest, B,
 
     if osp.exists(readable_path) == False:
         logging.info("train mrmr with B=%d" %(B))
+
+        mrmr_path = osp.join(dtrain.work_dir, '%s.mrmr' %(dtrain.name))
+
+        if osp.exists(mrmr_path) == False:
+            if binary_thresh == None:
+                csv_path = dtrain.convert('csv')
+            else:
+                csv_path = dtrain.binarize('csv', binary_thresh)
+
+            cmd = 'mrmr-reader \"%s\" \"%s\"' %(csv_path, mrmr_path)
+            logging.info("convert %s to %s" %(csv_path, mrmr_path))
+            if os.system(cmd) != 0:
+                raise Exception('call mrmr-reader failed, mrmr-reader in path?')
+            os.remove(csv_path)
+
         cmd = mrmr_exe()
-        cmd += ' -t %f -s %d -v %d -n %d -i \"%s\" > \"%s\"' %(
-            t,
-            dtrain.data_num,
-            dtrain.dim,
-            B,
-            dtrain.convert('csv'),
-            model_path)
+        cmd += ' -a %d -f \"%s\" > \"%s\"' %( B, mrmr_path, model_path)
 
         logging.info(cmd)
         start_time = time.time()
-        if os.system(cmd) != 0:
-            raise Exception('call mrmr failed, mrmr in path?')
+        #if os.system(cmd) != 0:
+        #    raise Exception('call mrmr failed, mrmr in path?')
         train_time1 = time.time() - start_time
 
+        ipdb.set_trace()
         convert_model_file(model_path, readable_path, train_time1)
     else:
         #load train time
@@ -152,7 +144,7 @@ if __name__ == '__main__':
     dtrain = DataSet(sys.argv[1], sys.argv[2], 'svm')
     dtest = DataSet(sys.argv[1], sys.argv[3], 'svm')
 
-    opts={'B':[20, 30, 200], 'params':{'t':0.5, 'ol_model_params':{'verbose':True},
+    opts={'B':[20, 30, 200], 'params':{'binary_thresh':0.5, 'ol_model_params':{'verbose':True},
                                   'ol_cv_params':{'eta':[0.01,0.1, 1]}}}
 
     for B in opts['B']:

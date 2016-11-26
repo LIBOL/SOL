@@ -3,7 +3,7 @@
 #     File Name           :     synthetic_100k.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-10-25 11:21]
-#     Last Modified       :     [2016-11-18 09:18]
+#     Last Modified       :     [2016-11-20 17:46]
 #     Description         :
 #################################################################################
 
@@ -18,7 +18,7 @@ delta_ofs_search = np.logspace(-5, 5, 11, base=2) / 100.0
 fs_num = [150,160,170,180,190,200, 220,240,260,280,300]
 fs_opts = {
     'pet': {
-        'params':{'norm':'L2'},
+        'params':{'norm':'L2', 'power_t':'0'},
         'cv':{'eta':eta_search},
         'lambda': fs_num
     },
@@ -36,11 +36,11 @@ fs_opts = {
         'lambda': fs_num
     },
     'mRMR': {
-        'params':{'t':0},
+        'params':{'binary_thresh':0},
         'lambda': fs_num
     },
     'liblinear': {
-        'lambda': [0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0008,0.0007,0.0009,0.001,0.01,0.012,0.013,0.014,0.015,0.016,0.018,0.02]
+        'lambda': [0.0002,0.0003,0.0004,0.0008,0.01,0.015,0.016,0.017,0.018,0.019,0.02]
     }
 }
 

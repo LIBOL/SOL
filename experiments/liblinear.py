@@ -8,6 +8,7 @@ import time
 from  sklearn import svm, datasets
 from sklearn.model_selection import GridSearchCV
 import numpy as np
+from scipy.sparse import csr_matrix
 
 def train_test_l2(dtrain, dtest, C,
                   fold_num = 5,
@@ -82,6 +83,13 @@ def train_test_l2(dtrain, dtest, C,
     #load dataset
     logging.info("loading test data %s..." %(dtest.name))
     x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
+    #check dimensions
+    if x_test.shape[1] < x_train.shape[1]:
+        x_test = x_test.toarray()
+        pad = np.zeros((x_test.shape[0],x_train.shape[1] - x_train.shape[1]))
+        x_test = csr_matrix(np.concatenate((x_test, pad), axis=1))
+    elif x_test.shape[1] > x_train.shape[1]:
+        x_test = x_test[:,0:x_train.shape[1]]
 
     logging.info("test liblinear with C=%f..." %(C))
     test_accu = clf.score(x_test, y_test)
@@ -127,7 +135,6 @@ def train_test_l1(dtrain, dtest, C):
     train_time = time.time() - start_time
     logging.info("training time of liblinear: %.4f sec" % (train_time))
 
-    start_time = time.time()
 
     train_accu = clf.score(x_train, y_train)
 
@@ -135,7 +142,17 @@ def train_test_l1(dtrain, dtest, C):
     logging.info("loading test data %s..." %(dtest.name))
     x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
 
+    #check dimensions
+    if x_test.shape[1] < x_train.shape[1]:
+        x_test = x_test.toarray()
+        pad = np.zeros((x_test.shape[0],x_train.shape[1] - x_test.shape[1]))
+        x_test = csr_matrix(np.concatenate((x_test, pad), axis=1))
+    elif x_test.shape[1] > x_train.shape[1]:
+        x_test = x_test[:,0:x_train.shape[1]]
+
+
     logging.info("test liblinear with C=%f..." %(C))
+    start_time = time.time()
     test_accu = clf.score(x_test, y_test)
 
     test_time = time.time() - start_time

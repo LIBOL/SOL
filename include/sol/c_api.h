@@ -203,10 +203,13 @@ SOL_EXPORTS int sol_analyze_data(const char* data_path, const char* data_type,
 /// \param src_type type of the source data
 /// \param dst_path path to the destination data
 /// \param dst_type type of the destination data
+/// \param binarize whether binarize the features
+/// \param binarize_thresh threshold to binarize the features
 ///
 /// \return status code, 0 if succeed
 SOL_EXPORTS int sol_convert_data(const char* src_path, const char* src_type,
-                                 const char* dst_path, const char* dst_type);
+                                 const char* dst_path, const char* dst_type,
+                                 bool binarize, float binarize_thresh);
 /// \brief  shuffle data
 ///
 /// \param src_path path to the source data

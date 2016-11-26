@@ -3,7 +3,7 @@
 #     File Name           :     a1a.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-17 18:26]
-#     Last Modified       :     [2016-11-17 22:36]
+#     Last Modified       :     [2016-11-19 19:00]
 #     Description         :
     #################################################################################
 
@@ -36,7 +36,7 @@ fs_opts = {
     'FGM':  {
         'lambda': fs_num},
     'mRMR': {
-        'params':{'t':0.5},
+        'params':{'binary_thresh':0.5},
         'lambda': fs_num
     },
     'liblinear': {

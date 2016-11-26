@@ -99,7 +99,8 @@ int analyze(const string& src_path, const string& src_type,
 }
 
 int convert(const string& src_path, const string& src_type,
-            const string& dst_path, const string& dst_type) {
+            const string& dst_path, const string& dst_type,
+            bool binaryize, float binaryize_thresh) {
   DataIter iter;
   int ret = iter.AddReader(src_path, src_type);
   if (ret != Status_OK) return ret;
@@ -147,6 +148,14 @@ int convert(const string& src_path, const string& src_type,
     if (data_num % 1000 > print_thresh) {
       cout << data_num << " examples converted\r";
       print_thresh += 1000;
+    }
+    if (binaryize == true) {
+      for (int i = 0; i < mb->size(); ++i) {
+        DataPoint& dp = (*mb)[i];
+        for (size_t i = 0; i < dp.size(); i++) {
+          dp.feature(i) = dp.feature(i) > binaryize_thresh ? 1 : -1;
+        }
+      }
     }
 
     for (int i = 0; i < mb->size(); ++i) {

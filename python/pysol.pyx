@@ -330,13 +330,19 @@ cdef class SOL:
         else:
             return None
 
-def analyze_data(const char* data_path, const char* data_type, const char* output_path):
+def analyze_data(const char* data_path, const char* data_type,
+                 const char* output_path):
   return sol_analyze_data(data_path, data_type, output_path)
 
-def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
-  return sol_convert_data(src_path, src_type, dst_path, dst_type)
+def convert_data(const char* src_path, const char* src_type,
+                 const char* dst_path, const char* dst_type,
+                 bint binarize = 0, float binarize_thresh = 0):
+  return sol_convert_data(src_path, src_type,
+                          dst_path, dst_type,
+                          binarize, binarize_thresh)
 
-def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+def shuffle_data(const char* src_path, const char* src_type,
+                 const char* dst_path, const char* dst_type):
   return sol_shuffle_data(src_path, src_type, dst_path, dst_type)
 
 def split_data(const char* src_path, const char* src_type,
