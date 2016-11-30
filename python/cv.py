@@ -129,12 +129,12 @@ class CV(object):
             m = SOL(algo=model_name, class_num=self.dataset.class_num,
                     **params)
 
-            for i in xrange(self.fold_num):
-                if i == val_fold_id:
-                    continue
-                train_accu = m.fit(self.dataset.split_path(i),
-                                   self.dataset.slice_type,
-                                   self.dataset.pass_num)
+            for p in xrange(self.dataset.pass_num):
+                for i in xrange(self.fold_num):
+                    if i == val_fold_id:
+                        continue
+                    train_accu = m.fit(self.dataset.split_path(i),
+                                       self.dataset.slice_type)
             val_accu = m.score(self.dataset.split_path(val_fold_id),
                                self.dataset.slice_type)
 

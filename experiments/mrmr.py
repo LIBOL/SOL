@@ -3,7 +3,7 @@
 #     File Name           :     mrmr.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-06 20:53]
-#     Last Modified       :     [2016-11-25 14:11]
+#     Last Modified       :     [2016-11-30 13:54]
 #     Description         :
 #################################################################################
 
@@ -14,13 +14,18 @@ import logging
 import time
 import re
 from sol import sol_train
-import ipdb
 
-def mrmr_exe():
-    if sys.platform == 'win32':
-        return 'fast-mrmr.exe'
+def mrmr_exe(use_gpu):
+    if use_gpu == False:
+        if sys.platform == 'win32':
+            return 'fast-mrmr.exe'
+        else:
+            return 'fast-mrmr'
     else:
-        return 'fast-mrmr'
+        if sys.platform == 'win32':
+            return 'gpu-mrmr.exe'
+        else:
+            return 'gpu-mrmr'
 
 def convert_model_file(model_path, readable_path, train_time):
     logging.info('parse mRMR model file %s to %s\n' %(model_path,
@@ -44,7 +49,7 @@ def convert_model_file(model_path, readable_path, train_time):
         file_handler.close()
     return c_feat
 
-def train_test(dtrain, dtest, B,
+def train_test(dtrain, dtest, use_gpu, B,
                binary_thresh=None,
                ol_algo = 'ogd',
                ol_model_params = {},
@@ -57,6 +62,8 @@ def train_test(dtrain, dtest, B,
         training dataset
     dtest: DataSet
         test dataset
+    use_gpu: bool
+        whether use gpu
     B: int
         number of features to select
     t: float
@@ -74,8 +81,12 @@ def train_test(dtrain, dtest, B,
 
     """
 
-    model_path = osp.join(dtrain.work_dir, 'mrmr-%d.model' %(B))
-    readable_path = osp.join(dtrain.work_dir, 'mrmr-%d.readable.model' %(B))
+    if use_gpu == True:
+        model_path = osp.join(dtrain.work_dir, 'mrmr-gpu-%d.model' %(B))
+        readable_path = osp.join(dtrain.work_dir, 'mrmr-gpu-%d.readable.model' %(B))
+    else:
+        model_path = osp.join(dtrain.work_dir, 'mrmr-%d.model' %(B))
+        readable_path = osp.join(dtrain.work_dir, 'mrmr-%d.readable.model' %(B))
 
     if osp.exists(readable_path) == False:
         logging.info("train mrmr with B=%d" %(B))
@@ -94,16 +105,15 @@ def train_test(dtrain, dtest, B,
                 raise Exception('call mrmr-reader failed, mrmr-reader in path?')
             os.remove(csv_path)
 
-        cmd = mrmr_exe()
+        cmd = mrmr_exe(use_gpu)
         cmd += ' -a %d -f \"%s\" > \"%s\"' %( B, mrmr_path, model_path)
 
         logging.info(cmd)
         start_time = time.time()
-        #if os.system(cmd) != 0:
-        #    raise Exception('call mrmr failed, mrmr in path?')
+        if os.system(cmd) != 0:
+            raise Exception('call mrmr failed, mrmr in path?')
         train_time1 = time.time() - start_time
 
-        ipdb.set_trace()
         convert_model_file(model_path, readable_path, train_time1)
     else:
         #load train time
@@ -117,6 +127,7 @@ def train_test(dtrain, dtest, B,
     feat_num =  B
 
     ol_model_params["filter"] = readable_path
+
     test_accu, test_time, train_accu, train_time, m = sol_train.train_test(
         dtrain, dtest,
         model_name = ol_algo,

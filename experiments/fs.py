@@ -43,7 +43,6 @@ def run_fs(dtrain, dtest, algo, opts):
 
     model_params = opts['params'] if 'params' in opts else {}
     cv_params = opts['cv'] if 'cv' in opts else None
-
     feat_num_list = []
     test_accu_list = []
     train_time_list = []
@@ -60,7 +59,11 @@ def run_fs(dtrain, dtest, algo, opts):
         elif algo == 'mrmr':
             model_params['B'] = val
             feat_num, test_accu, test_time, train_accu, train_time = \
-                    mrmr.train_test(dtrain, dtest, **model_params)
+                    mrmr.train_test(dtrain, dtest, False, **model_params)
+        elif algo == 'gpu-mrmr':
+            model_params['B'] = val
+            feat_num, test_accu, test_time, train_accu, train_time = \
+                    mrmr.train_test(dtrain, dtest, True, **model_params)
         else:
             model_params['B'] = val
             test_accu, test_time, train_accu, train_time, m = sol_train.train_test(
@@ -222,7 +225,11 @@ if __name__ == '__main__':
 
     assert ('fs_opts' in dt_opts.__dict__)
 
-    dt_train = DataSet(args.dtname,args.train_file, args.dtype)
+    passes = 1
+    if 'passes' in dt_opts.__dict__:
+        passes =  dt_opts.passes
+
+    dt_train = DataSet(args.dtname,args.train_file, args.dtype, passes)
     dt_test = DataSet(args.dtname,args.test_file, args.dtype)
 
     if args.output == None:

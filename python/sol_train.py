@@ -19,8 +19,7 @@ def train(dt, model_name,
           output_path = None,
           fold_num = 5,
           cv_params = None,
-          retrain = False,
-          passes = 1):
+          retrain = False):
     """
     train a SOL model
 
@@ -40,8 +39,6 @@ def train(dt, model_name,
         cross validation parameters
     retrain: bool
         whether to re-do the cross validation
-    passes: int
-        number of passes to go through the data
 
     Return
     ------
@@ -83,7 +80,7 @@ def train(dt, model_name,
 
     start_time = time.time()
     m = SOL(model_name, dt.class_num, **model_params)
-    train_accu = m.fit(dt.data_path, dt.dtype, passes)
+    train_accu = m.fit(dt.data_path, dt.dtype, dt.pass_num)
     train_time = time.time() - start_time
 
     logging.info("training accuracy of %s: %.4f" % (model_name, train_accu))
@@ -101,11 +98,10 @@ def train_test(dtrain, dtest,
                output_path = None,
                fold_num = 5,
                cv_params = None,
-               retrain = False,
-               passes = 1):
+               retrain = False):
     train_accu, train_time, m = train(dtrain, model_name, model_params,
                                       output_path, fold_num, cv_params,
-                                      retrain, passes)
+                                      retrain)
 
     logging.info("test %s on %s..." % (model_name, dtrain.name))
 
@@ -120,8 +116,7 @@ def train_test(dtrain, dtest,
 
 def finetune(dt, model_path,
              model_params = {},
-             output_path = None,
-             passes = 1):
+             output_path = None):
     """Finetune from an existing model
 
     Parameter
@@ -134,8 +129,6 @@ def finetune(dt, model_path,
         model parameters
     output_path: str
         path to save the model
-    passes: int
-        number of passes to go through the data
 
     Return
     ------
@@ -162,7 +155,7 @@ def finetune(dt, model_path,
     m.set_params(**model_params)
 
     start_time = time.time()
-    train_accu = m.fit(dt.data_path, dt.dtype, passes)
+    train_accu = m.fit(dt.data_path, dt.dtype, dt.pass_num)
     train_time = time.time() - start_time
 
     logging.info("training accuracy of %s: %.4f" % (algo, train_accu))
@@ -176,7 +169,7 @@ def finetune(dt, model_path,
 
 def main(args):
     dt_name = osp.basename(args.input)
-    dt = DataSet(dt_name, args.input, args.data_type)
+    dt = DataSet(dt_name, args.input, args.data_type, args.passes)
 
     model_params = {'verbose': args.verbose,
                     'batch_size': args.batch_size,
@@ -200,11 +193,10 @@ def main(args):
               output_path = args.output,
               fold_num = args.fold_num,
               cv_params = cv_params,
-              retrain = args.retrain,
-              passes = args.passes)
+              retrain = args.retrain)
     elif args.model != None and args.algo == None:
         finetune(dt, model_path = args.model, model_params = model_params,
-                 output_path = args.output, passes = args.passes)
+                 output_path = args.output)
     else:
         raise Exception("either model or algo should be specified")
 

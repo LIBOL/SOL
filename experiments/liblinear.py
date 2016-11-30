@@ -157,7 +157,10 @@ def train_test_l1(dtrain, dtest, C):
 
     test_time = time.time() - start_time
 
-    feat_num = np.count_nonzero(clf.coef_)
+    if len(clf.coef_.shape) == 2:
+        feat_num = np.count_nonzero(clf.coef_) / float(clf.coef_.shape[0])
+    else:
+        feat_num = np.count_nonzero(clf.coef_)
 
     logging.info("test accuracy: %.4f" %(test_accu))
     logging.info("test time: %.4f sec" %(test_time))
