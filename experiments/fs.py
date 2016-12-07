@@ -1,13 +1,10 @@
 #! /usr/bin/env python
 
-import os.path as osp
-import sys
-curr_path = osp.dirname(osp.abspath(osp.expanduser(__file__)))
-sys.path.append(osp.join(curr_path, 'opts'))
-
 import argparse
 import logging
-import time
+import os.path as osp
+import sys
+
 import importlib
 
 import cPickle
@@ -21,9 +18,10 @@ import fgm
 import fig
 import mrmr
 
-DESCRIPTION='Feature Selection  Experiment Scripts'
+sys.path.append(osp.join(osp.dirname(osp.abspath(osp.expanduser(__file__))), 'opts'))
+DESCRIPTION = 'Feature Selection  Experiment Scripts'
 
-def run_fs(dtrain, dtest, algo, opts):
+def run_fs(dtrain, dtest, algo, opts, cv_process_num):
     """
     Run Feature Selection Algorithm
 
@@ -37,9 +35,11 @@ def run_fs(dtrain, dtest, algo, opts):
         name of the algorithm to use
     opts: dict
         options to train the model
+    cv_process_num: int
+        number of processes to do cross validaton
     """
 
-    logging.info('run sol: %s' %(algo))
+    logging.info('run sol: %s', algo)
 
     model_params = opts['params'] if 'params' in opts else {}
     cv_params = opts['cv'] if 'cv' in opts else None
@@ -65,16 +65,18 @@ def run_fs(dtrain, dtest, algo, opts):
             feat_num, test_accu, test_time, train_accu, train_time = \
                     mrmr.train_test(dtrain, dtest, True, **model_params)
         else:
-            model_params['B'] = val
+            if val > 0:
+                model_params['B'] = val
             test_accu, test_time, train_accu, train_time, m = sol_train.train_test(
                 dtrain, dtest,
-                model_name = algo,
-                model_params = model_params,
-                cv_params = cv_params)
+                model_name=algo,
+                model_params=model_params,
+                cv_params=cv_params,
+                cv_process_num= cv_process_num)
 
             feat_num = int((1-m.sparsity) * dtrain.dim)
 
-        logging.info("non-zero feature number: %d" %(feat_num))
+        logging.info("non-zero feature number: %d", feat_num)
 
         feat_num_list.append(feat_num)
         test_accu_list.append(test_accu)
@@ -87,8 +89,10 @@ def run_fs(dtrain, dtest, algo, opts):
 def exp_fs(dtrain, dtest,
            opts,
            output_path,
-           repeat = 1,
-           retrains = None):
+           repeat=1,
+           retrains=None,
+           cv_process_num=1,
+           draw_opts = {}):
     """
     Experiment to run all algorithms
 
@@ -106,19 +110,27 @@ def exp_fs(dtrain, dtest,
         number of repeats to run the algorithms
     retrains: list[str]
         which algorithm should be retrained, even it has been trained before
+    cv_process_num: int
+        number of processes to do cross validaton
     """
 
-    if osp.exists(output_path) == True:
-        with open(output_path,'rb') as fh:
-            res = cPickle.load( fh)
+    if osp.exists(output_path) is True:
+        with open(output_path, 'rb') as rfh:
+            res = cPickle.load(rfh)
     else:
         res = {}
 
-    retrains = [] if retrains == None else retrains
+    retrains = [] if retrains is None else retrains
     if len(retrains) == 1 and retrains[0].lower() == 'all':
         retrains = opts.keys()
+    retrains = [v.lower() for v in retrains]
 
-    for algo, opt in opts.iteritems():
+    for algo_ori, opt in opts.iteritems():
+        algo = algo_ori.lower()
+        if algo_ori in res and algo_ori != algo:
+            res[algo] = res[algo_ori]
+            del res[algo_ori]
+
         if (algo in res) and (algo not in retrains):
             continue
 
@@ -127,43 +139,57 @@ def exp_fs(dtrain, dtest,
         res[algo] = [np.zeros((repeat, res_len)) for i in xrange(3)]
 
         for rid in xrange(repeat):
-            if rid > 0 and (algo.lower() == 'liblinear' or algo.lower() == 'fgm'):
+            if rid > 0 and (algo == 'liblinear' or algo == 'fgm'):
                 for i in xrange(3):
-                    res[algo][i][rid,:] = res[algo][i][rid - 1,:]
+                    res[algo][i][rid, :] = res[algo][i][rid - 1, :]
             else:
-                logging.info('random pass %d' %(rid))
-                rand_path = dtrain.rand_path(tgt_type='svm', force=True)
-                algo_res = run_fs(dtrain, dt_test, algo.lower(), opt)
+                logging.info('random pass %d', rid)
+                dtrain.rand_path(tgt_type='svm', force=True)
+                algo_res = run_fs(dtrain, dtest, algo.lower(), opt, cv_process_num)
                 for i in xrange(3):
-                    res[algo][i][rid,:] = algo_res[i]
+                    res[algo][i][rid, :] = algo_res[i]
 
     #save results
-    with open(output_path, 'wb') as fh:
-        cPickle.dump(res, fh)
+    with open(output_path, 'wb') as wfh:
+        cPickle.dump(res, wfh)
 
     algo_list = []
-    ave_res = [[] for i in xrange(3)]
-    for algo, vals in res.iteritems():
+    ave_feat_nums = []
+    ave_test_accuracy = []
+    for algo, opt in opts.iteritems():
+        if algo.lower() == 'gpu-mrmr':
+            continue
         algo_list.append(algo)
-        for i in xrange(3):
-            ave_res[i].append(np.average(vals[i], axis=0))
+        vals = res[algo.lower()]
+        ave_feat_nums.append(np.average(vals[0], axis=0))
+        ave_test_accuracy.append(np.average(vals[1], axis=0))
 
     #draw sparsity vs test accuracy
-    fig.plot(ave_res[0],
+    fig.plot(ave_feat_nums,
+             ave_test_accuracy,
+             '#Selected Features',
+             'Test Accuracy (%)',
              algo_list,
-             ave_res[1],
-             'Selected Features',
-             'Test Accuracy',
-             osp.join(dtrain.work_dir, dtrain.name + '-selected-feature-test-accuracy.pdf')
-            )
+             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-test-accuracy.pdf'),
+             **(draw_opts['accu']))
 
-    fig.plot(ave_res[0],
+    algo_list = []
+    ave_feat_nums = []
+    ave_train_time = []
+    for algo, opt in opts.iteritems():
+        algo_list.append(algo)
+        vals = res[algo.lower()]
+        ave_feat_nums.append(np.average(vals[0], axis=0))
+        ave_train_time.append(np.average(vals[2], axis=0))
+
+
+    fig.plot(ave_feat_nums,
+             ave_train_time,
+             '#Selected Features',
+             'Training Time (s)',
              algo_list,
-             ave_res[2],
-             'Selected Features',
-             'Training Time',
-             osp.join(dtrain.work_dir, dtrain.name + '-selected-feature-train-time.pdf')
-            )
+             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-train-time.pdf'),
+             **(draw_opts['time']))
 
 
 def set_logging(args):
@@ -199,6 +225,7 @@ def getargs():
     parser.add_argument('--repeat', type=int,  default=1, help='number of times to shuffle and repeat training the  data')
     parser.add_argument('-f', '--fold_num', type=int, default=5, help='number of folds in cross validation')
     parser.add_argument('-o', '--output', type=str, default=None, help='output file to save the results')
+    parser.add_argument('-p', '--process_num', type=int, default=1, help='number of processes to do cross validation')
     parser.add_argument('dtname', type=str, help='dataset name')
     parser.add_argument('train_file', type=str, help='path to training data')
     parser.add_argument('test_file', type=str, help='path to test data')
@@ -223,14 +250,14 @@ if __name__ == '__main__':
         print 'make sure that your have <dtname>.py, refer to rcv1.py for an example'
         sys.exit()
 
-    assert ('fs_opts' in dt_opts.__dict__)
+    assert 'fs_opts' in dt_opts.__dict__
 
     passes = 1
     if 'passes' in dt_opts.__dict__:
-        passes =  dt_opts.passes
+        passes = dt_opts.passes
 
-    dt_train = DataSet(args.dtname,args.train_file, args.dtype, passes)
-    dt_test = DataSet(args.dtname,args.test_file, args.dtype)
+    dt_train = DataSet(args.dtname, args.train_file, args.dtype, passes)
+    dt_test = DataSet(args.dtname, args.test_file, args.dtype)
 
     if args.output == None:
         args.output = osp.join(dt_train.work_dir, args.dtname + '-fs-cache.pkl')
@@ -241,8 +268,15 @@ if __name__ == '__main__':
             dt_opts.fs_opts.pop('liblinear', None)
             dt_opts.fs_opts.pop('fgm', None)
 
+    if 'draw_opts' not in dt_opts.__dict__:
+        draw_opts = {'accu':{}, 'time':{}}
+    else:
+        draw_opts = dt_opts.draw_opts
+
     exp_fs(dt_train, dt_test,
            dt_opts.fs_opts,
            args.output,
            repeat=args.repeat,
-           retrains=args.retrain)
+           retrains=args.retrain,
+           cv_process_num=args.process_num,
+           draw_opts=draw_opts)

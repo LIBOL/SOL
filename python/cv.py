@@ -7,6 +7,7 @@ import logging
 import re
 import numpy as np
 import ast
+from multiprocessing import Process, Queue
 
 from dataset import DataSet
 from pysol import SOL
@@ -45,7 +46,8 @@ class CV(object):
     """cross validation class
     """
 
-    def __init__(self, dataset, fold_num, cv_params, extra_params={}):
+    def __init__(self, dataset, fold_num, cv_params, extra_params={},
+                 process_num=1):
         """Create a new cross validation instance
 
         Parameters
@@ -58,6 +60,8 @@ class CV(object):
             parameter string, with format like "'{'a': [1,2,4],'b':[2,2,8]}'"
         extra_params: dict{param, val}
             extra param for training, with format {'a':'1'}
+        process_num: int
+            number of processes to do cross validation
         """
 
         self.dataset = dataset
@@ -71,6 +75,7 @@ class CV(object):
         self.train_scores = np.zeros((self.search_space.size, self.fold_num + 1))
         self.val_scores = np.zeros((self.search_space.size, self.fold_num + 1))
         self.extra_params = extra_params
+        self.process_num = process_num
 
     def train_val(self, model_name):
         """train and validate on the dataset
@@ -103,6 +108,8 @@ class CV(object):
         self.train_scores[:, self.fold_num] = np.sum(self.train_scores, axis=1) / self.fold_num
         self.val_scores[:, self.fold_num] = np.sum(self.val_scores, axis=1) / self.fold_num
 
+
+
     def __train_val_one_fold(self, model_name, val_fold_id):
         """ cross validation on one fold of data
 
@@ -118,34 +125,63 @@ class CV(object):
         ------
             list of (train accuracy, validation accuracy)
         """
-        train_accu_list = []
-        val_accu_list = []
+
+        fold_num = self.fold_num
+        dt = self.dataset
+
+        def train_val_executor(task_queue,
+                              result_queue):
+            while True:
+                task = task_queue.get()
+                if task == None:
+                    break
+                param_idx = task[0]
+                params = task[1]
+                m = SOL(algo=model_name, class_num=dt.class_num, **params)
+
+                for p in xrange(dt.pass_num):
+                    for i in xrange(fold_num):
+                        if i == val_fold_id:
+                            continue
+                        train_accu = m.fit(dt.split_path(i), dt.slice_type)
+                val_accu = m.score(dt.split_path(val_fold_id), dt.slice_type)
+
+                logging.info('Cross validation of %s on %s, Fold %d/%d: \n\t\
+                             params: %s\n\t\
+                             Training Accuracy: %f, Validation Accuracy: %f',
+                             model_name, dt.name, val_fold_id, self.fold_num,
+                             str(params), train_accu, val_accu)
+
+                result_queue.put((param_idx, train_accu, val_accu))
+
+            task_queue.put(None)
+
+        task_queue = Queue()
+        result_queue =Queue()
+
 
         for k in xrange(self.search_space.size):
             params = self.search_space.get_param(k).copy()
             params.update(self.extra_params)
-            logging.info("cross validaton parameters: %s" %(params))
+            task_queue.put((k, params))
 
-            m = SOL(algo=model_name, class_num=self.dataset.class_num,
-                    **params)
+        task_queue.put(None)
 
-            for p in xrange(self.dataset.pass_num):
-                for i in xrange(self.fold_num):
-                    if i == val_fold_id:
-                        continue
-                    train_accu = m.fit(self.dataset.split_path(i),
-                                       self.dataset.slice_type)
-            val_accu = m.score(self.dataset.split_path(val_fold_id),
-                               self.dataset.slice_type)
+        train_accu_list = [0 for k in xrange(self.search_space.size)]
+        val_accu_list = [0 for k in xrange(self.search_space.size)]
+        processes = []
+        for k in xrange(self.process_num):
+            p = Process(target=train_val_executor, args=(task_queue, result_queue,))
+            p.start()
+            processes.append(p)
 
-            train_accu_list.append(train_accu)
-            val_accu_list.append(val_accu)
+        for k in xrange(self.search_space.size):
+            param_idx, train_accu, val_accu = result_queue.get()
+            train_accu_list[param_idx] = train_accu
+            val_accu_list[param_idx] = val_accu
 
-            logging.info('Results of Cross Validation on Model %s with Data %s: Fold %d/%d'
-                         % (model_name, self.dataset.name, val_fold_id, self.fold_num))
-            logging.info('\tParameter Setting: %s' % (str(params)))
-            logging.info('\tTraining Accuracy: %f' % (train_accu))
-            logging.info('\tValidation Accuracy: %f' % (val_accu))
+        for p in processes:
+            p.join()
 
         return train_accu_list, val_accu_list
 
@@ -215,8 +251,23 @@ class CV(object):
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger('')
+
+    numeric_level = getattr(logging, "INFO", None)
+    logger.setLevel(numeric_level)
+    formatter = logging.Formatter(
+        "%(threadName)s: %(asctime)s- %(levelname)s: %(message)s")
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(formatter)
+    logger.addHandler(consoleHandler)
+
     a1a = DataSet('a1a', data_path='../data/a1a')
-    cv = CV(a1a, 5, {'eta': np.logspace(-2,2,5, base=2), 'delta': np.logspace(-2,2,5, base=2)})
+    cv = CV(a1a, 5,
+            { 'eta': np.logspace(-2,2,5, base=2),
+             'delta': np.logspace(-2,2,5, base=2)
+            },
+            process_num=4)
     cv.train_val('ada-fobos')
     best_param = cv.get_best_param()[0]
     print best_param

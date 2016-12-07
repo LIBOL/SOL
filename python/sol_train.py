@@ -16,10 +16,11 @@ DESCRIPTION = 'Large Scale Online Learning Training Scripts'
 
 def train(dt, model_name,
           model_params={},
-          output_path = None,
-          fold_num = 5,
-          cv_params = None,
-          retrain = False):
+          output_path= None,
+          fold_num= 5,
+          cv_params=None,
+          retrain=False,
+          cv_process_num=1):
     """
     train a SOL model
 
@@ -37,12 +38,14 @@ def train(dt, model_name,
         number of folds to do cross validation
     cv_params: dict{param, range}
         cross validation parameters
+        cv_process_num: int
+        number of processes to do cross validation
     retrain: bool
         whether to re-do the cross validation
 
     Return
     ------
-    tuple(train accuracy, train time)
+    tuple(train accuracy, train time, model)
     """
 
     if cv_params != None:
@@ -60,7 +63,7 @@ def train(dt, model_name,
                 param_lambda  = model_params['lambda']
                 del model_params['lambda']
 
-            cv = CV(dt, fold_num, cv_params, model_params)
+            cv = CV(dt, fold_num, cv_params, model_params, process_num=cv_process_num)
             cv.train_val(model_name)
             best_params = cv.get_best_param()[0]
             cv.save_results(cv_output_path)
@@ -95,13 +98,14 @@ def train(dt, model_name,
 def train_test(dtrain, dtest,
                model_name,
                model_params={},
-               output_path = None,
-               fold_num = 5,
-               cv_params = None,
-               retrain = False):
+               output_path=None,
+               fold_num=5,
+               cv_params=None,
+               retrain=False,
+               cv_process_num=1):
     train_accu, train_time, m = train(dtrain, model_name, model_params,
                                       output_path, fold_num, cv_params,
-                                      retrain)
+                                      retrain, cv_process_num)
 
     logging.info("test %s on %s..." % (model_name, dtrain.name))
 

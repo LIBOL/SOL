@@ -3,7 +3,7 @@
 #     File Name           :     mrmr.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-06 20:53]
-#     Last Modified       :     [2016-11-30 13:54]
+#     Last Modified       :     [2016-12-05 10:53]
 #     Description         :
 #################################################################################
 
@@ -15,7 +15,7 @@ import time
 import re
 from sol import sol_train
 
-def mrmr_exe(use_gpu):
+def mrmr_exe(use_gpu, device_id):
     if use_gpu == False:
         if sys.platform == 'win32':
             return 'fast-mrmr.exe'
@@ -23,9 +23,9 @@ def mrmr_exe(use_gpu):
             return 'fast-mrmr'
     else:
         if sys.platform == 'win32':
-            return 'gpu-mrmr.exe'
+            return 'gpu-mrmr.exe -g %d' %(device_id)
         else:
-            return 'gpu-mrmr'
+            return 'gpu-mrmr -g %d' %(device_id)
 
 def convert_model_file(model_path, readable_path, train_time):
     logging.info('parse mRMR model file %s to %s\n' %(model_path,
@@ -51,9 +51,10 @@ def convert_model_file(model_path, readable_path, train_time):
 
 def train_test(dtrain, dtest, use_gpu, B,
                binary_thresh=None,
-               ol_algo = 'ogd',
-               ol_model_params = {},
-               ol_cv_params = None):
+               device_id=0,
+               ol_algo='ogd',
+               ol_model_params={},
+               ol_cv_params=None):
     """train and test mrmr models
 
     Parameters
@@ -105,7 +106,7 @@ def train_test(dtrain, dtest, use_gpu, B,
                 raise Exception('call mrmr-reader failed, mrmr-reader in path?')
             os.remove(csv_path)
 
-        cmd = mrmr_exe(use_gpu)
+        cmd = mrmr_exe(use_gpu, device_id)
         cmd += ' -a %d -f \"%s\" > \"%s\"' %( B, mrmr_path, model_path)
 
         logging.info(cmd)
