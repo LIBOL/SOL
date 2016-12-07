@@ -42,6 +42,36 @@ class SearchSpace(object):
     def get_param(self, idx):
         return self.search_space[idx]
 
+def train_val_executor(task_queue,
+                      result_queue):
+    while True:
+        task = task_queue.get()
+        if task == None:
+            break
+        param_idx = task[0]
+        model_name = task[1]
+        dt = task[2]
+        params = task[3]
+        fold_num = task[4]
+        val_fold_id = task[5]
+        m = SOL(algo=model_name, class_num=dt.class_num, **params)
+
+        for p in xrange(dt.pass_num):
+            for i in xrange(fold_num):
+                if i == val_fold_id:
+                    continue
+                train_accu = m.fit(dt.split_path(i), dt.slice_type)
+        val_accu = m.score(dt.split_path(val_fold_id), dt.slice_type)
+
+        logging.info('Cross validation of %s on %s, Fold %d/%d: \n\t\
+                     params: %s\n\t\
+                     Training Accuracy: %f, Validation Accuracy: %f',
+                     model_name, dt.name, val_fold_id, fold_num,
+                     str(params), train_accu, val_accu)
+
+        result_queue.put((param_idx, train_accu, val_accu))
+    task_queue.put(None)
+
 class CV(object):
     """cross validation class
     """
@@ -108,8 +138,6 @@ class CV(object):
         self.train_scores[:, self.fold_num] = np.sum(self.train_scores, axis=1) / self.fold_num
         self.val_scores[:, self.fold_num] = np.sum(self.val_scores, axis=1) / self.fold_num
 
-
-
     def __train_val_one_fold(self, model_name, val_fold_id):
         """ cross validation on one fold of data
 
@@ -126,36 +154,6 @@ class CV(object):
             list of (train accuracy, validation accuracy)
         """
 
-        fold_num = self.fold_num
-        dt = self.dataset
-
-        def train_val_executor(task_queue,
-                              result_queue):
-            while True:
-                task = task_queue.get()
-                if task == None:
-                    break
-                param_idx = task[0]
-                params = task[1]
-                m = SOL(algo=model_name, class_num=dt.class_num, **params)
-
-                for p in xrange(dt.pass_num):
-                    for i in xrange(fold_num):
-                        if i == val_fold_id:
-                            continue
-                        train_accu = m.fit(dt.split_path(i), dt.slice_type)
-                val_accu = m.score(dt.split_path(val_fold_id), dt.slice_type)
-
-                logging.info('Cross validation of %s on %s, Fold %d/%d: \n\t\
-                             params: %s\n\t\
-                             Training Accuracy: %f, Validation Accuracy: %f',
-                             model_name, dt.name, val_fold_id, self.fold_num,
-                             str(params), train_accu, val_accu)
-
-                result_queue.put((param_idx, train_accu, val_accu))
-
-            task_queue.put(None)
-
         task_queue = Queue()
         result_queue =Queue()
 
@@ -163,7 +161,7 @@ class CV(object):
         for k in xrange(self.search_space.size):
             params = self.search_space.get_param(k).copy()
             params.update(self.extra_params)
-            task_queue.put((k, params))
+            task_queue.put((k, model_name, self.dataset, params, self.fold_num, val_fold_id))
 
         task_queue.put(None)
 
