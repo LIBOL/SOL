@@ -171,7 +171,8 @@ def finetune(dt, model_path,
 
     return train_accu, train_time, m
 
-def main(args):
+def main():
+    args = getargs()
     dt_name = osp.basename(args.input)
     dt = DataSet(dt_name, args.input, args.data_type, args.passes)
 
@@ -337,5 +338,4 @@ def getargs():
     return args
 
 if __name__ == '__main__':
-    args = getargs()
-    main(args)
+    main()

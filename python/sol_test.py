@@ -93,7 +93,8 @@ def getargs():
     return args
 
 
-def main(args):
+def main():
+    args = getargs()
     dt_name = osp.basename(args.input)
     dt = DataSet(dt_name, args.input, args.data_type)
 
@@ -124,5 +125,4 @@ def main(args):
                     fh.write('%d\t%d\t%s\n' %(int(labels[i]), int(predicts[i]), '\t'.join([str(v) for v in scores[i,:]])))
 
 if __name__ == '__main__':
-    args = getargs()
-    main(args)
+    main()
