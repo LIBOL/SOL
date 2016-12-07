@@ -3,7 +3,7 @@
 #     File Name           :     fgm.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-03 17:39]
-#     Last Modified       :     [2016-11-17 11:22]
+#     Last Modified       :     [2016-12-07 17:38]
 #     Description         :      helper script to run FGM
 #################################################################################
 
@@ -38,12 +38,10 @@ def parse_accuracy(path):
 
 def test(dtest, model_path):
     """test FGM model"""
-    assert dtest.dtype == 'svm'
-
     predict_path = osp.join(dtest.work_dir, 'fgm.predict')
     out_path = osp.join(dtest.work_dir, 'fgm.out')
 
-    cmd = fgm_predict_exe() + ' \"%s\" \"%s\" \"%s\" > \"%s\" ' %(dtest.data_path,
+    cmd = fgm_predict_exe() + ' \"%s\" \"%s\" \"%s\" > \"%s\" ' %(dtest.convert('svm'),
                                                         model_path,
                                                         predict_path,
                                                         out_path)
@@ -58,8 +56,6 @@ def test(dtest, model_path):
 
 def train_test(dtrain, dtest, B, s = 12, c=10):
 
-    if dtrain.dtype != 'svm':
-        raise Exception("FGM only supports svm type data")
     if dtrain.class_num != 2:
         raise Exception("FGM only supports binary classification")
 
@@ -67,7 +63,7 @@ def train_test(dtrain, dtest, B, s = 12, c=10):
     logging.info("train FGM with B=%d" %(B))
     model_path = osp.join(dtrain.work_dir, 'fgm.model')
     cmd = '%s -s %d -c %d -t 1 -B %d ' %(fgm_exe(), s, c, B)
-    cmd += ' \"%s\" \"%s\"' %(dtrain.data_path, model_path)
+    cmd += ' \"%s\" \"%s\"' %(dtrain.convert('svm'), model_path)
 
     logging.info(cmd)
     start_time = time.time()

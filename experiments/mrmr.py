@@ -3,7 +3,7 @@
 #     File Name           :     mrmr.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-11-06 20:53]
-#     Last Modified       :     [2016-12-05 10:53]
+#     Last Modified       :     [2016-12-07 15:42]
 #     Description         :
 #################################################################################
 
@@ -147,8 +147,6 @@ if __name__ == '__main__':
     logger = logging.getLogger('')
 
     numeric_level = getattr(logging, "INFO", None)
-    if not isinstance(numeric_level, int):
-        raise ValueError("Invalid log level: " + args.log)
     logger.setLevel(numeric_level)
 
     from sol.dataset import  DataSet

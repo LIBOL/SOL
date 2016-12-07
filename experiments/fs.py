@@ -11,17 +11,19 @@ import cPickle
 import numpy as np
 
 from sol.dataset import DataSet
-from sol.cv import CV
 from sol import sol_train
 import liblinear
 import fgm
 import fig
 import mrmr
+vw = None
 
 sys.path.append(osp.join(osp.dirname(osp.abspath(osp.expanduser(__file__))), 'opts'))
 DESCRIPTION = 'Feature Selection  Experiment Scripts'
 
-def run_fs(dtrain, dtest, algo, opts, cv_process_num):
+fs_task = 'fs' #'fs' or 'sol'
+
+def run_fs(dtrain, dtest, algo, opts, fold_num, cv_process_num):
     """
     Run Feature Selection Algorithm
 
@@ -35,6 +37,8 @@ def run_fs(dtrain, dtest, algo, opts, cv_process_num):
         name of the algorithm to use
     opts: dict
         options to train the model
+    fold_num: int
+        number of folds to do cross validation
     cv_process_num: int
         number of processes to do cross validaton
     """
@@ -56,6 +60,14 @@ def run_fs(dtrain, dtest, algo, opts, cv_process_num):
             model_params['B'] = val
             feat_num, test_accu, test_time, train_accu, train_time = \
                     fgm.train_test(dtrain, dtest, **model_params)
+        elif algo == 'vw':
+            model_params['l1'] = val
+            feat_num, test_accu, test_time, train_accu, train_time = \
+                    vw.train_test(dtrain, dtest,
+                                  model_params=model_params,
+                                  cv_params=cv_params,
+                                  fold_num=fold_num,
+                                  cv_process_num=cv_process_num)
         elif algo == 'mrmr':
             model_params['B'] = val
             feat_num, test_accu, test_time, train_accu, train_time = \
@@ -66,13 +78,17 @@ def run_fs(dtrain, dtest, algo, opts, cv_process_num):
                     mrmr.train_test(dtrain, dtest, True, **model_params)
         else:
             if val > 0:
-                model_params['B'] = val
+                if fs_task == 'sol':
+                    model_params['lambda'] = val
+                else:
+                    model_params['B'] = val
             test_accu, test_time, train_accu, train_time, m = sol_train.train_test(
                 dtrain, dtest,
                 model_name=algo,
                 model_params=model_params,
                 cv_params=cv_params,
-                cv_process_num= cv_process_num)
+                fold_num=fold_num,
+                cv_process_num=cv_process_num)
 
             feat_num = int((1-m.sparsity) * dtrain.dim)
 
@@ -91,6 +107,7 @@ def exp_fs(dtrain, dtest,
            output_path,
            repeat=1,
            retrains=None,
+           fold_num=5,
            cv_process_num=1,
            draw_opts = {}):
     """
@@ -110,6 +127,8 @@ def exp_fs(dtrain, dtest,
         number of repeats to run the algorithms
     retrains: list[str]
         which algorithm should be retrained, even it has been trained before
+    fold_num: int
+        number of folds to do cross validation
     cv_process_num: int
         number of processes to do cross validaton
     """
@@ -145,7 +164,7 @@ def exp_fs(dtrain, dtest,
             else:
                 logging.info('random pass %d', rid)
                 dtrain.rand_path(tgt_type='svm', force=True)
-                algo_res = run_fs(dtrain, dtest, algo.lower(), opt, cv_process_num)
+                algo_res = run_fs(dtrain, dtest, algo.lower(), opt, fold_num, cv_process_num)
                 for i in xrange(3):
                     res[algo][i][rid, :] = algo_res[i]
 
@@ -170,7 +189,7 @@ def exp_fs(dtrain, dtest,
              '#Selected Features',
              'Test Accuracy (%)',
              algo_list,
-             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-test-accuracy.pdf'),
+             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-%s-test-accuracy.pdf' %(fs_task)),
              **(draw_opts['accu']))
 
     algo_list = []
@@ -188,7 +207,7 @@ def exp_fs(dtrain, dtest,
              '#Selected Features',
              'Training Time (s)',
              algo_list,
-             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-train-time.pdf'),
+             osp.join(dtrain.work_dir, dtrain.name.replace('_', '-') + '-%s-train-time.pdf' %(fs_task)),
              **(draw_opts['time']))
 
 
@@ -262,21 +281,31 @@ if __name__ == '__main__':
     if args.output == None:
         args.output = osp.join(dt_train.work_dir, args.dtname + '-fs-cache.pkl')
 
-    #remove liblinear if not svm format
-    if args.dtype != 'svm':
-        if 'fs_opts' in dt_opts.__dict__:
-            dt_opts.fs_opts.pop('liblinear', None)
-            dt_opts.fs_opts.pop('fgm', None)
-
     if 'draw_opts' not in dt_opts.__dict__:
         draw_opts = {'accu':{}, 'time':{}}
     else:
         draw_opts = dt_opts.draw_opts
 
-    exp_fs(dt_train, dt_test,
-           dt_opts.fs_opts,
-           args.output,
-           repeat=args.repeat,
-           retrains=args.retrain,
-           cv_process_num=args.process_num,
-           draw_opts=draw_opts)
+    #remove liblinear if not svm format
+    if 'fs_opts' in dt_opts.__dict__:
+        fs_task = 'fs'
+        exp_fs(dt_train, dt_test,
+               dt_opts.fs_opts,
+               args.output,
+               repeat=args.repeat,
+               retrains=args.retrain,
+               fold_num=args.fold_num,
+               cv_process_num=args.process_num,
+               draw_opts=draw_opts)
+    if 'sol_opts' in dt_opts.__dict__:
+        if 'vw' in dt_opts.sol_opts:
+            vw = importlib.import_module('vw')
+        fs_task = 'sol'
+        exp_fs(dt_train, dt_test,
+               dt_opts.sol_opts,
+               args.output,
+               repeat=args.repeat,
+               retrains=args.retrain,
+               fold_num=args.fold_num,
+               cv_process_num=args.process_num,
+               draw_opts=draw_opts)

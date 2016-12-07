@@ -10,9 +10,10 @@ from sklearn.model_selection import GridSearchCV
 import numpy as np
 from scipy.sparse import csr_matrix
 
-def train_test_l2(dtrain, dtest, C,
-                  fold_num = 5,
-                  retrain = False,
+def train_test_l2(dtrain, dtest,
+                  C=1,
+                  fold_num=5,
+                  retrain=False,
                   verbose=False):
     """Train and Test L2-SVM with Liblinear
 
@@ -36,12 +37,9 @@ def train_test_l2(dtrain, dtest, C,
     tuple (test accuracy, test time, train accuracy, train time)
     """
 
-    if dtrain.dtype != 'svm':
-        raise Exception("liblinear only supports svm type data")
-
     dual = True if dtrain.data_num < dtrain.dim else False
 
-    if isinstance(C, list):
+    if isinstance(C, list) or isinstance(C, np.ndarray):
         cv_output_path  = osp.join(dtrain.work_dir, 'cv-liblinear.txt')
         if os.path.exists(cv_output_path) and retrain == False:
             with open(cv_output_path, 'r') as fh:
@@ -49,7 +47,7 @@ def train_test_l2(dtrain, dtest, C,
             C = float(line.split('=')[1])
         else:
             #cross validation
-            x_train, y_train = datasets.load_svmlight_file(dtrain.rand_path())
+            x_train, y_train = datasets.load_svmlight_file(dtrain.rand_path('svm'))
             svc = svm.LinearSVC(penalty='l2', dual=dual)
             clf = GridSearchCV(estimator=svc, param_grid=dict(C=C),
                     n_jobs=4, cv=fold_num, verbose=verbose)
@@ -68,7 +66,7 @@ def train_test_l2(dtrain, dtest, C,
 
     #load dataset
     logging.info("loading training data %s..." %(dtrain.name))
-    x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+    x_train, y_train = datasets.load_svmlight_file(dtrain.convert('svm'))
 
     logging.info("train liblinear with C=%f..." %(C))
     clf.fit(x_train, y_train)
@@ -82,7 +80,7 @@ def train_test_l2(dtrain, dtest, C,
 
     #load dataset
     logging.info("loading test data %s..." %(dtest.name))
-    x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
+    x_test, y_test = datasets.load_svmlight_file(dtest.convert('svm'))
     #check dimensions
     if x_test.shape[1] < x_train.shape[1]:
         x_test = x_test.toarray()
@@ -118,16 +116,13 @@ def train_test_l1(dtrain, dtest, C):
     tuple (feat_num, test accuracy, test time, train accuracy, train time)
     """
 
-    if dtrain.dtype != 'svm':
-        raise Exception("liblinear only supports svm type data")
-
     clf = svm.LinearSVC(penalty='l1', C=C, dual=False)
 
     start_time = time.time()
 
     #load dataset
     logging.info("loading training data %s..." %(dtrain.name))
-    x_train, y_train = datasets.load_svmlight_file(dtrain.data_path)
+    x_train, y_train = datasets.load_svmlight_file(dtrain.convert('svm'))
 
     logging.info("train liblinear with C=%f..." %(C))
     clf.fit(x_train, y_train)
@@ -140,7 +135,7 @@ def train_test_l1(dtrain, dtest, C):
 
     #load dataset
     logging.info("loading test data %s..." %(dtest.name))
-    x_test, y_test = datasets.load_svmlight_file(dtest.data_path)
+    x_test, y_test = datasets.load_svmlight_file(dtest.convert('svm'))
 
     #check dimensions
     if x_test.shape[1] < x_train.shape[1]:
