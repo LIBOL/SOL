@@ -6,79 +6,216 @@ import os
 import logging
 import re
 import numpy as np
+import ast
+from multiprocessing import Process, Queue
 
 from dataset import DataSet
-import search_space
 from pysol import SOL
+
+class SearchSpace(object):
+    """Search space of all parameters
+    """
+
+    def __init__(self, params):
+        """Create a search space with the given parameter ranges
+
+        Parameters
+        ----------
+        params: dict{param, range}
+            parameter string, with format like {'a': [1,2,8],'b': [2, 2,16]}
+        """
+
+        params = params.items()
+        self.dim = len(params)
+        param_nums = [len(v[1]) for v in params]
+        self.size = np.prod(param_nums)
+
+        self.search_space = []
+        for param_id in xrange(self.size):
+            param = {}
+            for d in xrange(self.dim):
+                idx = param_id % param_nums[d]
+                param_id /= param_nums[d]
+                param[params[d][0]] = params[d][1][idx]
+            self.search_space.append(param)
+
+    def get_param(self, idx):
+        return self.search_space[idx]
 
 class CV(object):
     """cross validation class
     """
 
-    def __init__(self, dataset, fold_num, cv_params, extra_param=[]):
+    def __init__(self, dataset, fold_num, cv_params, extra_params={},
+                 process_num=1):
         """Create a new cross validation instance
-        Parameters:
-        dataset: dataset
-            data to be used for cross validation
+
+        Parameters
+        ----------
+        dataset: DataSet
+            dataset to be used for cross validation
         fold_num: int
             number of folds to conduct cross validation
-        cv_params: list[(name, range)]
-            parameter string, with format like '[('a', '1:2:8'),(b, '2:2:16')]'
-        extra_param: list, [(string, string)]
-            extra string for training, with format [('a','1')]
+        cv_params: dict{param, range}
+            parameter string, with format like "'{'a': [1,2,4],'b':[2,2,8]}'"
+        extra_params: dict{param, val}
+            extra param for training, with format {'a':'1'}
+        process_num: int
+            number of processes to do cross validation
         """
+
         self.dataset = dataset
         self.fold_num = int(fold_num)
         if self.fold_num < 2:
             raise ValueError('fold number must bigger than 2!')
 
         self.cv_params = cv_params
-        self.search_space = search_space.SearchSpace(cv_params)
+        self.search_space = SearchSpace(cv_params)
         #the last column is for average
-        self.train_scores = np.zeros(
-            (self.search_space.size, self.fold_num + 1))
+        self.train_scores = np.zeros((self.search_space.size, self.fold_num + 1))
         self.val_scores = np.zeros((self.search_space.size, self.fold_num + 1))
-        self.extra_param = extra_param
-
-#    #cross validation
+        self.extra_params = extra_params
+        self.process_num = process_num
 
     def train_val(self, model_name):
         """train and validate on the dataset
+
+        Parameters
+        ----------
+        model_name: str
+            name of the algorithm to use
+
+        Return
+            None
+        ------
+
         """
+
         #split the dataset
         self.dataset.split_file(self.fold_num, "bin")
 
         #cross validation
         for val_fold_id in range(0, self.fold_num):
-            print '---------------------------'
-            print 'Cross Validation on Model %s with Data %s: Fold %d/%d' % (
-                model_name, self.dataset.name, val_fold_id, self.fold_num)
-            print '---------------------------'
-            train_accu_list, val_accu_list = self.__train_val_one_fold(
-                model_name, val_fold_id)
+
+            logging.info('Cross Validation on Model %s with Data %s: Fold %d/%d'
+                         % (model_name, self.dataset.name, val_fold_id, self.fold_num))
+
+            train_accu_list, val_accu_list = self.__train_val_one_fold( model_name, val_fold_id)
             self.train_scores[:, val_fold_id] = train_accu_list
             self.val_scores[:, val_fold_id] = val_accu_list
 
-        self.train_scores[:, self.fold_num] = np.sum(self.train_scores,
-                                                     axis=1) / self.fold_num
-        self.val_scores[:, self.fold_num] = np.sum(self.val_scores,
-                                                   axis=1) / self.fold_num
+        #calculate the average
+        self.train_scores[:, self.fold_num] = np.sum(self.train_scores, axis=1) / self.fold_num
+        self.val_scores[:, self.fold_num] = np.sum(self.val_scores, axis=1) / self.fold_num
+
+
+
+    def __train_val_one_fold(self, model_name, val_fold_id):
+        """ cross validation on one fold of data
+
+        Parameters
+        ----------
+
+        model_name: str
+            name of the algorithm to use
+        val_fold_id: int
+            fold id that is used as val data
+
+        Return
+        ------
+            list of (train accuracy, validation accuracy)
+        """
+
+        fold_num = self.fold_num
+        dt = self.dataset
+
+        def train_val_executor(task_queue,
+                              result_queue):
+            while True:
+                task = task_queue.get()
+                if task == None:
+                    break
+                param_idx = task[0]
+                params = task[1]
+                m = SOL(algo=model_name, class_num=dt.class_num, **params)
+
+                for p in xrange(dt.pass_num):
+                    for i in xrange(fold_num):
+                        if i == val_fold_id:
+                            continue
+                        train_accu = m.fit(dt.split_path(i), dt.slice_type)
+                val_accu = m.score(dt.split_path(val_fold_id), dt.slice_type)
+
+                logging.info('Cross validation of %s on %s, Fold %d/%d: \n\t\
+                             params: %s\n\t\
+                             Training Accuracy: %f, Validation Accuracy: %f',
+                             model_name, dt.name, val_fold_id, self.fold_num,
+                             str(params), train_accu, val_accu)
+
+                result_queue.put((param_idx, train_accu, val_accu))
+
+            task_queue.put(None)
+
+        task_queue = Queue()
+        result_queue =Queue()
+
+
+        for k in xrange(self.search_space.size):
+            params = self.search_space.get_param(k).copy()
+            params.update(self.extra_params)
+            task_queue.put((k, params))
+
+        task_queue.put(None)
+
+        train_accu_list = [0 for k in xrange(self.search_space.size)]
+        val_accu_list = [0 for k in xrange(self.search_space.size)]
+        processes = []
+        for k in xrange(self.process_num):
+            p = Process(target=train_val_executor, args=(task_queue, result_queue,))
+            p.start()
+            processes.append(p)
+
+        for k in xrange(self.search_space.size):
+            param_idx, train_accu, val_accu = result_queue.get()
+            train_accu_list[param_idx] = train_accu
+            val_accu_list[param_idx] = val_accu
+
+        for p in processes:
+            p.join()
+
+        return train_accu_list, val_accu_list
 
     def get_best_param(self):
         """Get the best parameters
+
+        Return
+        ------
+            dict: best parameters and the parameter id
         """
-        max_param_id = np.argmax(self.val_scores[:, self.fold_num])
-        return self.search_space.get_param(max_param_id), max_param_id
+
+        best_param_id = np.argmax(self.val_scores[:, self.fold_num])
+        return self.search_space.get_param(best_param_id), best_param_id
 
     def save_results(self, output_path):
-        max_param, max_parma_id = self.get_best_param()
+        """Save the cross validation results to a file
+
+        Parameter
+        ---------
+        output_path: str
+            path to the file to save the results
+
+        """
+
+        best_param, best_parma_id = self.get_best_param()
+
         with open(output_path, 'w') as wfh:
             wfh.write('Cross Validation Parameters: %s\n' %
                       (str(self.cv_params)))
-            wfh.write('Extra Model Parameters: %s\n' % (str(self.extra_param)))
+            wfh.write('Extra Model Parameters: %s\n' % (str(self.extra_params)))
             wfh.write('Best Result: %s:\t%.4f\t%.4f\n' % (
-                str(max_param), self.train_scores[max_parma_id, self.fold_num],
-                self.val_scores[max_parma_id, self.fold_num]))
+                str(best_param),
+                self.train_scores[best_parma_id, self.fold_num],
+                self.val_scores[best_parma_id, self.fold_num]))
 
             wfh.write("Validation Accuracies\n")
             for y in xrange(self.val_scores.shape[0]):
@@ -98,62 +235,43 @@ class CV(object):
 
     @staticmethod
     def load_results(result_path):
-        """load the result file of cross validation to get the best parameters"""
+        """load the result file of cross validation to get the best parameters
+
+        Return
+        ------
+        dict: cross validation parameters
+        """
+
         logging.info('loading cross validation  results from %s' % result_path)
         with open(result_path, 'r') as fh:
-            pattern = re.compile(r'Best Result: \[(.*)\]:.*')
+            pattern = re.compile(r'Best Result: (\{.*\}):.*')
             result_list = pattern.findall(fh.read())
-            if len(result_list) != 1:
-                raise Exception('parsing cross validation file %s failed' %
-                                (result_path))
-            pattern = re.compile(r'\(\'(\w*)\',\s+(\d+\.\d+)\)')
-            return pattern.findall(result_list[0])
+            assert len(result_list) == 1
+            return ast.literal_eval(result_list[0])
 
-    def __train_val_one_fold(self, model_name, val_fold_id):
-        """ cross validation on one fold of data
-        Parameters:
-        model_name: string
-            name of the model to be tuned
-        val_fold_id: int
-            fold id that is used as val data
-        Return:
-            list of (train accuracy, validation accuracy)
-        """
-        train_accu_list = []
-        val_accu_list = []
-        #parameters
-        for k in range(0, self.search_space.size):
-            params = self.search_space.get_param(k)
-            for param in self.extra_param:
-                params.append(param)
-            params = dict(params)
-            m = SOL(
-                algo=model_name, class_num=self.dataset.class_num, **params)
-
-            for train_path in [self.dataset.split_path(i)
-                               for i in xrange(self.fold_num)
-                               if i != val_fold_id]:
-                train_accu = m.fit(train_path, self.dataset.slice_type,
-                                    self.dataset.pass_num)
-            val_accu = m.score(
-                self.dataset.split_path(val_fold_id), self.dataset.slice_type)
-
-            print 'Results of Cross Validation on Model %s with Data %s: Fold %d/%d' % (
-                model_name, self.dataset.name, val_fold_id, self.fold_num)
-            print '\tParameter Setting: %s' % (str(params))
-            print '\tTraining Accuracy: %f' % (train_accu)
-            print '\tValidation Accuracy: %f' % (val_accu)
-            train_accu_list.append(train_accu)
-            val_accu_list.append(val_accu)
-        return train_accu_list, val_accu_list
 
 if __name__ == '__main__':
+    logger = logging.getLogger('')
+
+    numeric_level = getattr(logging, "INFO", None)
+    logger.setLevel(numeric_level)
+    formatter = logging.Formatter(
+        "%(threadName)s: %(asctime)s- %(levelname)s: %(message)s")
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(formatter)
+    logger.addHandler(consoleHandler)
+
     a1a = DataSet('a1a', data_path='../data/a1a')
-    cv = CV(a1a, 5, [('eta', '0.5:10:12')])
-    cv.train_val('ogd')
+    cv = CV(a1a, 5,
+            { 'eta': np.logspace(-2,2,5, base=2),
+             'delta': np.logspace(-2,2,5, base=2)
+            },
+            process_num=4)
+    cv.train_val('ada-fobos')
     best_param = cv.get_best_param()[0]
     print best_param
-    cv_output_path = os.path.join(cv.dataset.work_dir, 'cv-sgd.txt')
+    cv_output_path = os.path.join(cv.dataset.work_dir, 'cv.txt')
     cv.save_results(cv_output_path)
     best_param = cv.load_results(cv_output_path)
     print best_param

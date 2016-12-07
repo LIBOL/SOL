@@ -22,6 +22,6 @@ cdef extern from "sol/c_api.h":
     int sol_loadArray(void* data_iter, char* X, char* Y, np.npy_intp* dims, np.npy_intp* strides, int pass_num)
     int sol_loadCsrMatrix(void* data_iter, char* indices, char* indptr, char* features, char* Y, int n_samples, int pass_num)
     int sol_analyze_data(const char* data_path, const char* data_type, const char* output_path)
-    int sol_convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type)
+    int sol_convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type, bint binarize, float binarize_thresh)
     int sol_shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type)
     int sol_split_data(const char* src_path, const char* src_type, int fold, const char* output_prefix, const char* dst_type, bint shuffle)

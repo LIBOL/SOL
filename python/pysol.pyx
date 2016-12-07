@@ -72,6 +72,7 @@ cdef class SOL:
             self._c_model = sol_CreateModel(algo, class_num)
             self.algo = algo
             self.class_num = class_num
+            self.set_params(**params)
         else:
             self._c_model = NULL
             self.algo = 'none'
@@ -85,7 +86,6 @@ cdef class SOL:
         if verbose == False:
             self.inspect_learning(None)
         self.verbose = verbose
-        self.set_params(**params)
 
     def __dealloc__(self):
         """Release Memory"""
@@ -330,13 +330,19 @@ cdef class SOL:
         else:
             return None
 
-def analyze_data(const char* data_path, const char* data_type, const char* output_path):
+def analyze_data(const char* data_path, const char* data_type,
+                 const char* output_path):
   return sol_analyze_data(data_path, data_type, output_path)
 
-def convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
-  return sol_convert_data(src_path, src_type, dst_path, dst_type)
+def convert_data(const char* src_path, const char* src_type,
+                 const char* dst_path, const char* dst_type,
+                 bint binarize = 0, float binarize_thresh = 0):
+  return sol_convert_data(src_path, src_type,
+                          dst_path, dst_type,
+                          binarize, binarize_thresh)
 
-def shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type):
+def shuffle_data(const char* src_path, const char* src_type,
+                 const char* dst_path, const char* dst_type):
   return sol_shuffle_data(src_path, src_type, dst_path, dst_type)
 
 def split_data(const char* src_path, const char* src_type,

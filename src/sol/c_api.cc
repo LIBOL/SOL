@@ -174,8 +174,10 @@ int sol_analyze_data(const char* data_path, const char* data_type,
 }
 
 int sol_convert_data(const char* src_path, const char* src_type,
-                     const char* dst_path, const char* dst_type) {
-  return convert(src_path, src_type, dst_path, dst_type);
+                     const char* dst_path, const char* dst_type,
+                     bool binarize, float binarize_thresh) {
+  return convert(src_path, src_type, dst_path, dst_type,
+      binarize, binarize_thresh);
 }
 
 int sol_shuffle_data(const char* src_path, const char* src_type,

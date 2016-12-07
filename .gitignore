@@ -55,3 +55,7 @@ cache/
 data/
 *.wiki/
 *.egg-info/
+/build_cyg
+/pyenv
+/python/pysol.cpp
+/log

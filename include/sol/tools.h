@@ -17,7 +17,9 @@ SOL_EXPORTS int analyze(const std::string& src_path,
 SOL_EXPORTS int convert(const std::string& src_path,
                         const std::string& src_type,
                         const std::string& dst_path,
-                        const std::string& dst_type);
+                        const std::string& dst_type,
+                        bool binaryize=false,
+                        float binaryize_thresh=0);
 
 SOL_EXPORTS int shuffle(const std::string& src_path,
                         const std::string& src_type,

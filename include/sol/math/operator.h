@@ -14,11 +14,7 @@ namespace math {
 namespace expr {
 namespace op {
 
-enum OpType {
-  kNone = 0,
-  kL1 = 1,
-  kL2 = 2
-};
+enum OpType { kNone = 0, kL1 = 1, kL2 = 2 };
 
 //---------------
 // binary operators
@@ -124,6 +120,20 @@ struct right {
   template <typename DType>
   inline static const DType& map(const DType& a, const DType& b) {
     return b;
+  }
+};
+
+struct smaller {
+  template <typename DType>
+  inline static bool map(const DType& a, const DType& b) {
+    return a < b;
+  }
+};
+
+struct larger {
+  template <typename DType>
+  inline static bool map(const DType& a, const DType& b) {
+    return a > b;
   }
 };
 

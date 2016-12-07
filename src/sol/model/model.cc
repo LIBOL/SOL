@@ -2,7 +2,7 @@
 *     File Name           :     model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-16 22:54]
-*     Last Modified       :     [2016-03-09 19:22]
+*     Last Modified       :     [2016-12-04 18:04]
 *     Description         :     base class for model
 **********************************************************************************/
 
@@ -302,13 +302,14 @@ void Model::PreProcess(DataPoint& x) {
     switch (this->norm_type_) {
       case op::OpType::kL1:
         norm = reduce<op::plus>(L1(x.data()));
+        x.data() /= norm;
         break;
       case op::OpType::kL2:
         norm = reduce<op::plus>(L2(x.data()));
+        x.data() /= sqrt(norm);
       default:
         break;
     }
-    x.data() /= norm;
   }
 }
 

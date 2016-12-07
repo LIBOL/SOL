@@ -46,9 +46,9 @@ namespace sol {
 /// \brief  only float or double type are allowed for features
 template <typename T>
 struct feat_type_traits {
-  typedef typename std::enable_if < std::is_same<T, float>::value ||
-      std::is_same<T, double>::value,
-      T > ::type type;
+  typedef typename std::enable_if<std::is_same<T, float>::value ||
+                                      std::is_same<T, double>::value,
+                                  T>::type type;
 };
 
 typedef feat_type_traits<FeatType>::type real_t;
@@ -56,20 +56,22 @@ typedef feat_type_traits<FeatType>::type real_t;
 /// \brief  only uint16_t, uint32_t or uint64_t type are allowed for features
 template <typename T>
 struct index_type_traits {
-  typedef typename std::enable_if < std::is_same<T, uint16_t>::value ||
-      std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value,
-      T > ::type type;
+  typedef typename std::enable_if<std::is_same<T, uint16_t>::value ||
+                                      std::is_same<T, uint32_t>::value ||
+                                      std::is_same<T, uint64_t>::value,
+                                  T>::type type;
 };
 
 typedef index_type_traits<IndexType>::type index_t;
+static const index_t invalid_index = static_cast<index_t>(-1);
 
 /// \brief  only char, short, int32, int64 are allowed for features
 template <typename T>
 struct label_type_traits {
-  typedef typename std::enable_if < std::is_same<T, char>::value ||
-      std::is_same<T, short>::value || std::is_same<T, int32_t>::value ||
-      std::is_same<T, int64_t>::value,
-      T > ::type type;
+  typedef typename std::enable_if<
+      std::is_same<T, char>::value || std::is_same<T, short>::value ||
+          std::is_same<T, int32_t>::value || std::is_same<T, int64_t>::value,
+      T>::type type;
 };
 
 typedef label_type_traits<LabelType>::type label_t;

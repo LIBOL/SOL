@@ -2,15 +2,15 @@
 *     File Name           :     online_linear_model.h
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 16:38]
-*     Last Modified       :     [2016-03-09 19:22]
+*     Last Modified       :     [2016-11-03 16:27]
 *     Description         :     online linear model
 **********************************************************************************/
 
 #ifndef SOL_MODEL_ONLINE_LINEAR_MODEL_H__
 #define SOL_MODEL_ONLINE_LINEAR_MODEL_H__
 
-#include <sol/model/online_model.h>
 #include <sol/math/vector.h>
+#include <sol/model/online_model.h>
 
 namespace sol {
 namespace model {
@@ -61,8 +61,8 @@ class OnlineLinearModel : public OnlineModel {
   }
   math::Vector<real_t>& w(int cls_id) { return this->weights_[cls_id]; }
 
-  real_t g(int cls_id) const { return this->gradients_[cls_id]; }
-  real_t& g(int cls_id) { return this->gradients_[cls_id]; }
+  inline real_t g(int cls_id) const { return this->gradients_[cls_id]; }
+  inline real_t& g(int cls_id) { return this->gradients_[cls_id]; }
 
  private:
   // the first element is zero
