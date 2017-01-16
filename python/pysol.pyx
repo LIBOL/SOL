@@ -124,8 +124,9 @@ cdef class SOL:
             assert self._c_model is not NULL, "model is not initialized"
 
             for k,v in params.iteritems():
-                if sol_SetModelParameter(self._c_model, k, str(v)) != 0:
-                    raise RuntimeError("set parameter %s=%s failed" %(k,str(v)))
+                str_v = str(v)
+                if sol_SetModelParameter(self._c_model, k, str_v) != 0:
+                    raise RuntimeError("set parameter %s=%s failed" %(k,str_v))
 
     def get_params(self):
         """Get Model Parameters
