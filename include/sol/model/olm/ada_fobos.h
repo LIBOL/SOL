@@ -8,6 +8,7 @@
 #define SOL_MODEL_OLM_ADA_FOBOS_H__
 
 #include <sol/model/online_linear_model.h>
+#include <sol/util/heap.h>
 
 namespace sol {
 namespace model {
@@ -46,6 +47,25 @@ class AdaFOBOS_L1 : public AdaFOBOS {
 
  protected:
   LazyOnlineL1Regularizer l1_;
+};
+
+class AdaFOBOS_OFS: public AdaFOBOS {
+ public:
+  AdaFOBOS_OFS(int class_num);
+  virtual ~AdaFOBOS_OFS();
+
+  virtual void SetParameter(const std::string& name, const std::string& value);
+  virtual void BeginTrain();
+
+ protected:
+  virtual void Update(const pario::DataPoint& dp, const float* predict,
+                      float loss);
+  virtual void update_dim(index_t dim);
+
+ protected:
+  math::Vector<real_t>* H_sum_;
+  OnlineRegularizer l0_;
+  MinHeap min_heap_;
 };
 
 }  // namespace model

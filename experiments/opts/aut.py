@@ -3,7 +3,7 @@
 #     File Name           :     aut.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-10-25 11:21]
-#     Last Modified       :     [2016-12-05 19:56]
+#     Last Modified       :     [2017-01-18 14:15]
 #     Description         :
 #################################################################################
 
@@ -26,7 +26,14 @@ fs_opts['SOFS'] =  {
     'cv':{'r': r_search, 'norm':norm_search},
     'lambda': fs_num
 }
-
+fs_opts['AdaFOBOS-OFS'] =  {
+    'cv':{'eta':const_eta_search, 'delta':delta_search, 'norm':norm_search},
+    'lambda': fs_num
+}
+fs_opts['AdaRDA-OFS'] =  {
+    'cv':{'eta':const_eta_search, 'delta':delta_search, 'norm':norm_search},
+    'lambda': fs_num
+}
 fs_opts['PET'] =  {
     'params':{'power_t':'0'},
     'cv':{'eta':eta_search, 'norm':norm_search},
