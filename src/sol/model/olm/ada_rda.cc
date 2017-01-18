@@ -278,16 +278,17 @@ void AdaRDA_OFS::EndTrain() {
   }
 
   //truncate weights
-  //for (size_t i = 2; i < this->dim_; ++i) {
-  for (size_t i = 2; i < 3; ++i) {
-    printf("%d\n", i);
-    index_t ret_idx = this->min_heap_.UpdateHeap(i);
-    //if (ret_idx != invalid_index) {
-    //  ++ret_idx;
-    //  for (int c = 0; c < this->clf_num_; ++c) {
-    //    w(c)[ret_idx] = 0;
-    //  }
-    //}
+  index_t B = static_cast<index_t>(this->l0_.lambda());
+  if (B > 0) {
+    for (size_t i = 1; i < this->dim_; ++i) {
+      index_t ret_idx = this->min_heap_.UpdateHeap(i - 1);
+      if (ret_idx != invalid_index) {
+        ++ret_idx;
+        for (int c = 0; c < this->clf_num_; ++c) {
+          w(c)[ret_idx] = 0;
+        }
+      }
+    }
   }
 
   OnlineLinearModel::EndTrain();
