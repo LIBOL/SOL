@@ -33,9 +33,9 @@ The python scripts in this folder are for the following paper:
 
 # Experiments
 
-The configuarions for each dataset is in the **"opts"** folder.
+The configuarions for the datasets are in the **"opts"** folder.
 For example, to compare performance on the 'aut' dataset, you can simpy run:
 
     python fs.py aut /data/sol/aut/aut_train /data/sol/aut/aut_test
 
-The figures will be saved to the folder **"cache/aut"**.
+The results and figures will be saved to the folder **"cache/aut"**.
