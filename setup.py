@@ -52,8 +52,10 @@ if os.name == 'nt':
 else:
     extra_flags = ['-std=c++11','-pthread']
     dependencies = [
-        "numpy      >= 1.7.0",
-        "scipy      >= 0.13.0"
+        "numpy          >= 1.7.0",
+        "scipy          >= 0.13.0",
+        "scikit-learn   >= 0.18.1",
+        "matplotlib     >= 1.5.1"
     ]
 
 

@@ -24,6 +24,7 @@ def plot(xs, ys,
          logx=False,
          logy=False,
          clip_on=False,
+         fontsize=18,
          legend_cols=2,
          legend_order=201,
          legend_loc='best',
@@ -90,8 +91,8 @@ def plot(xs, ys,
       if bbox_to_anchor != None:
         l.set_bbox_to_anchor(bbox_to_anchor)
 
-    plt.xlabel(x_label,fontsize=18)
-    plt.ylabel(y_label,fontsize=18)
+    plt.xlabel(x_label,fontsize=fontsize)
+    plt.ylabel(y_label,fontsize=fontsize)
     #plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
 
     plt.savefig(output_path,bbox_inches='tight')

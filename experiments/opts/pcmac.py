@@ -3,7 +3,7 @@
 #     File Name           :     synthetic_100k.py
 #     Created By          :     yuewu
 #     Creation Date       :     [2016-10-25 11:21]
-#     Last Modified       :     [2017-01-18 14:09]
+#     Last Modified       :     [2017-03-14 10:31]
 #     Description         :
 #################################################################################
 
@@ -24,14 +24,6 @@ fs_opts = collections.OrderedDict()
 
 fs_opts['SOFS'] = {
     'cv':{'r': r_search, 'norm':norm_search},
-    'lambda': fs_num
-}
-fs_opts['AdaFOBOS-OFS'] =  {
-    'cv':{'eta':const_eta_search, 'delta':delta_search, 'norm':norm_search},
-    'lambda': fs_num
-}
-fs_opts['AdaRDA-OFS'] =  {
-    'cv':{'eta':const_eta_search, 'delta':delta_search, 'norm':norm_search},
     'lambda': fs_num
 }
 fs_opts['PET'] = {
