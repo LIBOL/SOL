@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <cstring>
 
 #ifdef HAS_NUMPY_DEV
 #include <numpy/arrayobject.h>
@@ -35,10 +36,54 @@ void sol_ReleaseDataIter(void** data_iter) {
   DeletePointer(*iter);
 }
 
+void* sol_CreateDataWriter(const char* path, const char* format, int feat_dim) {
+  DataWriter* writer = DataWriter::Create(format);
+  if (writer == nullptr) {
+    return nullptr;
+  }
+  if (writer->Open(path) != Status_OK) {
+    delete writer;
+    return nullptr;
+  }
+  if (strcmp(format, "csv") == 0) {
+    // for csv, get extra info
+    if (feat_dim == 0) {
+      fprintf(stderr, "figuring out feature dimension failed\n");
+      delete writer;
+      return nullptr;
+    }
+    index_t feat_dim2 = (index_t)feat_dim;
+    writer->SetExtraInfo((char*)(&feat_dim2));
+  }
+
+  return (void*)writer;
+}
+
+void sol_ReleaseDataWriter(void** data_writer) {
+  DataWriter** writer = (DataWriter**)(data_writer);
+  (*writer)->Close();
+  DeletePointer(*writer);
+}
+
 int sol_LoadData(void* data_iter, const char* path, const char* format,
                  int pass_num) {
   DataIter* iter = (DataIter*)(data_iter);
   return iter->AddReader(path, format, pass_num);
+}
+
+int sol_WriteData(void* data_writer, void* data_iter) {
+  DataWriter* writer = (DataWriter*)(data_writer);
+  DataIter* iter = (DataIter*)(data_iter);
+  MiniBatch* mb = nullptr;
+  while (true) {
+    mb = iter->Next(mb);
+    if (mb == nullptr) break;
+
+    for (int i = 0; i < mb->size(); ++i) {
+      writer->Write((*mb)[i]);
+    }
+  }
+  return Status_OK;
 }
 
 void* sol_CreateModel(const char* name, int class_num) {

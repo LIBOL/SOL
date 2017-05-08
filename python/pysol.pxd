@@ -3,7 +3,10 @@ cimport numpy as np
 cdef extern from "sol/c_api.h":
     void* sol_CreateDataIter(int batch_size, int buf_size)
     void sol_ReleaseDataIter(void** data_iter)
+    void* sol_CreateDataWriter(const char* path, const char* format, int feat_dim)
+    void sol_ReleaseDataWriter(void** data_writer)
     int sol_LoadData(void* data_iter, const char* path, const char* format, int pass_num)
+    int sol_WriteData(void* data_writer, void* data_iter)
     void* sol_CreateModel(const char* name, int class_num)
     void* sol_RestoreModel(const char* model_path)
     int sol_SaveModel(void* model, const char* model_path)

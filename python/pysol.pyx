@@ -331,6 +331,94 @@ cdef class SOL:
         else:
             return None
 
+cdef class SOLDataWriter:
+    cdef void* _c_data_iter
+    cdef void* _c_data_writer
+    cdef const char* format
+
+    def  __cinit__(self, const char* path, const char* format, int feat_dim=-1,
+                   batch_size=256, int buf_size = 2):
+        """Create a new Handle for SOL C Library
+
+        Parameters
+        ----------
+        path: str
+            path to save the data
+        format: str
+            format of writer (svm, bin, csv, etc.)
+        feat_dim; int
+            feature dimension, currently for csv only
+
+        Returns
+        -------
+        (SOLDataWriter): Returns self
+        """
+        self._c_data_iter = sol_CreateDataIter(batch_size, buf_size)
+        if self._c_data_iter is NULL:
+            raise MemoryError()
+
+        self._c_data_writer = sol_CreateDataWriter(path, format, feat_dim)
+        if self._c_data_writer is NULL:
+            raise MemoryError()
+
+        self.format = format
+
+    def __dealloc__(self):
+        """Release Memory"""
+        if self._c_data_iter is not NULL:
+            sol_ReleaseDataIter(&self._c_data_iter)
+
+        if self._c_data_writer is not NULL:
+            sol_ReleaseDataWriter(&self._c_data_writer)
+
+    @property
+    def format(self):
+        return <bytes>self.format
+
+    def write(self, param1, param2):
+        """write data
+
+        Parameters
+        ----------
+        param1: string, data path or {array-like or sparse matrix}, shape = [n_samples, n_features]
+            Training vector, where n_samples is the number of samples and n_features is the number of features
+        param2: string, data type or array-like, shape=[n_samples]
+            Target label vector relative to X
+        """
+        cdef int ret = 0
+
+        if isinstance(param1, str):
+            ret = sol_LoadData(self._c_data_iter, <const char*>param1, <const char*>param2, 1)
+        else:
+            if param2 is None:
+                param2 = np.zeros(param1.shape[0], dtype=np.float64)
+            assert param1.dtype == np.float64, "only float64 data are allowed"
+            assert param2.dtype == np.float64, "only float64 labels are allowed"
+            X = param1
+            y = param2
+
+            if isinstance(param1, np.ndarray):
+                ret = sol_loadArray(self._c_data_iter,
+                        (<np.ndarray[np.float64_t, ndim=2, mode='c']>X).data,
+                        (<np.ndarray[np.float64_t, ndim=1, mode='c']>y).data,
+                        (<np.ndarray[np.float64_t, ndim=2, mode='c']>X).shape,
+                        (<np.ndarray[np.float64_t, ndim=2, mode='c']>X).strides,
+                        1)
+            elif isinstance(param1, csr_matrix):
+                ret= sol_loadCsrMatrix(self._c_data_iter,
+                        (<np.ndarray[np.int32_t,   ndim=1, mode='c']>X.indices).data,
+                        (<np.ndarray[np.int32_t,   ndim=1, mode='c']>X.indptr).data,
+                        (<np.ndarray[np.float64_t, ndim=1, mode='c']>X.data).data,
+                        (<np.ndarray[np.float64_t, ndim=1, mode='c']>y).data,
+                        (<np.ndarray[np.int32_t,   ndim=1, mode='c']>X.indptr).shape[0] - 1,
+                        1)
+            else:
+                raise TypeError("only data path or numpy.ndarray or csr_matrix are allowed")
+
+        if ret != 0:
+            raise RuntimeError('load data failed')
+        return sol_WriteData(self._c_data_writer, self._c_data_iter)
+
 def analyze_data(const char* data_path, const char* data_type,
                  const char* output_path):
   return sol_analyze_data(data_path, data_type, output_path)

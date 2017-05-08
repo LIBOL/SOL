@@ -40,6 +40,20 @@ SOL_EXPORTS void* sol_CreateDataIter(int batch_size, int buf_size);
 /// \param data_iter pointer to data iterator pointer
 SOL_EXPORTS void sol_ReleaseDataIter(void** data_iter);
 
+/// \brief  create a data writer
+///
+/// \param path path to save the data
+/// \param format format of the data, like 'svm', 'bin', 'csv', etc.
+/// \param feat_dim feature dimension
+///
+/// \return pointer to the created instance
+SOL_EXPORTS void* sol_CreateDataWriter(const char* path, const char* format, int feat_dim);
+
+/// \brief  release the data writer
+///
+/// \param data_writer pointer to data iterator pointer
+SOL_EXPORTS void sol_ReleaseDataWriter(void** data_writer);
+
 /// \brief  load a data
 ///
 /// \param data_iter data iteration instance
@@ -50,6 +64,14 @@ SOL_EXPORTS void sol_ReleaseDataIter(void** data_iter);
 /// \return status code, 0 if succeed
 SOL_EXPORTS int sol_LoadData(void* data_iter, const char* path,
                              const char* format, int pass_num);
+
+/// \brief  write data
+///
+/// \param data_writer pointer to data writer
+/// \param data_iter pointer to data iterator
+///
+/// \return status code, 0 if succeed
+SOL_EXPORTS int sol_WriteData(void* data_writer, void* data_iter);
 
 /// \brief  create a new model for learning or prediction
 ///
