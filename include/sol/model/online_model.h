@@ -2,7 +2,7 @@
 *     File Name           :     online_model.h
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 12:52]
-*     Last Modified       :     [2016-02-19 00:06]
+*     Last Modified       :     [2017-05-08 22:59]
 *     Description         :     online model
 **********************************************************************************/
 #ifndef SOL_MODEL_ONLINE_MODEL_H__
@@ -111,37 +111,6 @@ class OnlineModel : public Model {
   // cost sensitive
   bool cost_sensitive_learning_;
   float cost_margin_;
-  //////////show iteration info related settings/////////////////
- public:
-  class IterDisplayer {
-   public:
-    virtual ~IterDisplayer() {}
-
-    virtual size_t next_show_time() { return size_t(-1); }
-    virtual void next() {}
-  };
-
-  /// \brief  C type to inspect iteration callback
-  ///
-  /// \param user_context flexible place to handle iteration status
-  /// \param data_num number of data processed currently
-  /// \param iter_num number of iterations currently
-  /// \param update_num number of updates currently
-  /// \param err_rate training error rate currently
-  typedef void (*InspectIterateCallback)(void* user_context, long long data_num,
-                                         long long iter_num,
-                                         long long update_num, double err_rate);
-
-  void set_iterate_callback(InspectIterateCallback callback,
-                            void* user_context) {
-    this->iter_callback_ = callback;
-    this->iter_callback_user_context_ = user_context;
-  }
-
- protected:
-  IterDisplayer* iter_displayer_;
-  InspectIterateCallback iter_callback_;
-  void* iter_callback_user_context_;
 };  // class Online Model
 
 }  // namespace model

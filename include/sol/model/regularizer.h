@@ -83,6 +83,13 @@ class SOL_EXPORTS LazyOnlineL1Regularizer : public OnlineL1Regularizer {
   math::Vector<real_t> last_update_time_;
 };
 
+class SOL_EXPORTS StochasticRegularizer : public Regularizer {
+ public:
+  virtual void BeginIterate(const pario::DataPoint &dp) {}
+  virtual void EndIterate(const pario::DataPoint &dp, int cur_iter_num) {}
+};
+
+
 }  // namespace model
 }  // namespace sol
 

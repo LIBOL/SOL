@@ -2,7 +2,7 @@
 *     File Name           :     online_model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 15:37]
-*     Last Modified       :     [2016-02-18 23:26]
+*     Last Modified       :     [2017-05-09 14:57]
 *     Description         :     online model
 **********************************************************************************/
 
@@ -10,10 +10,9 @@
 #include "sol/util/str_util.h"
 #include "sol/util/util.h"
 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
 #include <cmath>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 using namespace sol::pario;
@@ -21,55 +20,12 @@ using namespace sol::pario;
 namespace sol {
 namespace model {
 
-class ExpIterDisplayer : public OnlineModel::IterDisplayer {
- public:
-  ExpIterDisplayer(size_t base = 2)
-      : next_show_time_(base), base_(base), show_step_(1) {}
-
-  virtual inline size_t next_show_time() { return next_show_time_; }
-  virtual inline void next() {
-    ++show_step_;
-    next_show_time_ = size_t(pow(double(this->base_), this->show_step_));
-  }
-
- protected:
-  size_t next_show_time_;
-  size_t base_;
-  size_t show_step_;
-};
-
-class StepIterDisplayer : public OnlineModel::IterDisplayer {
- public:
-  StepIterDisplayer(size_t step = 2) : next_show_time_(step), step_(step) {}
-
-  virtual size_t next_show_time() { return next_show_time_; }
-  virtual void next() { this->next_show_time_ += this->step_; }
-
- protected:
-  size_t next_show_time_;
-  size_t step_;
-};
-
-void DefaultIterateFunction(void* user_context, long long data_num,
-                            long long iter_num, long long update_num,
-                            double err_rate) {
-  cout << data_num << "\t\t" << iter_num << "\t\t" << std::fixed
-       << setprecision(6) << err_rate << "\t" << update_num << "\n";
-}
-
 OnlineModel::OnlineModel(int class_num, const std::string& type)
-    : Model(class_num, type),
-      bias_eta0_(0),
-      dim_(1),
-      eta_(1.f),
-      iter_displayer_(nullptr),
-      iter_callback_(nullptr) {
+    : Model(class_num, type), bias_eta0_(0), dim_(1), eta_(1.f) {
   this->cur_data_num_ = 0;
   this->cur_err_num_ = 0;
   this->set_initial_t(0);
   this->lazy_update_ = false;
-  this->iter_displayer_ = new ExpIterDisplayer(2);
-  this->iter_callback_ = DefaultIterateFunction;
   // active learning
   this->active_smoothness_ = 0;
   // cost sensitive learning
@@ -134,8 +90,7 @@ float OnlineModel::Train(DataIter& data_iter) {
     // re-init the model
     try {
       this->BeginTrain();
-    }
-    catch (invalid_argument& err) {
+    } catch (invalid_argument& err) {
       fprintf(stderr, "%s\n", err.what());
       return 0;
     }
@@ -224,8 +179,7 @@ int OnlineModel::SetModelInfo(const Json::Value& root) {
          iter != online_settings.end(); ++iter) {
       this->SetParameter(iter.name(), iter->asString());
     }
-  }
-  catch (std::invalid_argument& err) {
+  } catch (std::invalid_argument& err) {
     cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }

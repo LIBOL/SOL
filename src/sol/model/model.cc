@@ -2,19 +2,19 @@
 *     File Name           :     model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-16 22:54]
-*     Last Modified       :     [2016-12-04 18:04]
+*     Last Modified       :     [2017-05-09 14:56]
 *     Description         :     base class for model
 **********************************************************************************/
 
 #include "sol/model/model.h"
 
 #include <algorithm>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
-#include "sol/util/util.h"
 #include "sol/util/error_code.h"
+#include "sol/util/util.h"
 
 using namespace std;
 using namespace sol::math::expr;
@@ -28,8 +28,7 @@ Model* Model::Create(const std::string& name, int class_num) {
   Model* ins = nullptr;
   try {
     if (create_func != nullptr) ins = create_func(class_num);
-  }
-  catch (invalid_argument& err) {
+  } catch (invalid_argument& err) {
     cerr << "create model failed: " << err.what() << "\n";
     ins = nullptr;
   }
@@ -43,17 +42,21 @@ Model::Model(int class_num, const std::string& type)
       type_(type),
       norm_type_(op::OpType::kNone),
       regularizer_(nullptr),
-      max_index_(0) {
+      max_index_(0),
+      iter_displayer_(nullptr),
+      iter_callback_(nullptr) {
   Check(class_num > 1);
   this->update_num_ = 0;
   this->require_reinit_ = true;
   this->model_updated_ = false;
+  this->iter_displayer_ = new ExpIterDisplayer(2);
+  this->iter_callback_ = DefaultIterateFunction;
+  this->iter_callback_user_context_ = nullptr;
 }
 
 Model::~Model() { DeletePointer(this->loss_); }
 
 void Model::SetParameter(const std::string& name, const std::string& value) {
-
   if (name == "model") {
     Check(value == this->name());
   } else if (name == "cls_num") {
@@ -83,8 +86,7 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
       if (value[sz] != '\0') {
         norm_val = -1;
       }
-    }
-    catch (invalid_argument&) {
+    } catch (invalid_argument&) {
       norm_val = -1;
     }
     if (value == "None" || norm_val == op::OpType::kNone) {
@@ -157,7 +159,9 @@ void Model::BeginTrain() {
   this->require_reinit_ = false;
 }
 
-int Model::Save(const string& path) const {
+int Model::Save(const string& path) {
+  if (this->model_updated_) this->EndTrain();
+
   ofstream out_file(path.c_str(), ios::out);
   if (!out_file) {
     cerr << "open file " << path << " failed\n";
@@ -213,8 +217,7 @@ Model* Model::Load(const string& path) {
       } else {
         try {
           ret = model->SetModelInfo(root);
-        }
-        catch (invalid_argument& err) {
+        } catch (invalid_argument& err) {
           cerr << "set model parameter failed: " << err.what() << "\n";
           ret = Status_Invalid_Argument;
         }
@@ -251,8 +254,7 @@ int Model::SetModelInfo(const Json::Value& root) {
     Check(root.get("model", "").asString() == this->name());
     Check(root.get("cls_num", "").asInt() == this->class_num());
     Check(root.get("clf_num", "").asInt() == this->clf_num());
-  }
-  catch (invalid_argument& err) {
+  } catch (invalid_argument& err) {
     cerr << "set model info failed: " << err.what() << "\n";
     return Status_Invalid_Argument;
   }

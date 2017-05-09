@@ -2,28 +2,29 @@
 *     File Name           :     model.h
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-16 22:47]
-*     Last Modified       :     [2016-03-09 19:21]
+*     Last Modified       :     [2017-05-09 14:55]
 *     Description         :     base class for model
 **********************************************************************************/
 
 #ifndef SOL_MODEL_MODEL_H__
 #define SOL_MODEL_MODEL_H__
 
-#include <map>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
 
 #include <json/json.h>
 
-#include <sol/util/types.h>
-#include <sol/util/reflector.h>
-#include <sol/util/error_code.h>
 #include <sol/loss/loss.h>
-#include <sol/pario/data_point.h>
-#include <sol/pario/data_iter.h>
 #include <sol/math/operator.h>
+#include <sol/model/iter_displayer.h>
 #include <sol/model/regularizer.h>
+#include <sol/pario/data_iter.h>
+#include <sol/pario/data_point.h>
+#include <sol/util/error_code.h>
+#include <sol/util/reflector.h>
+#include <sol/util/types.h>
 
 namespace sol {
 namespace model {
@@ -82,7 +83,7 @@ class SOL_EXPORTS Model {
   /// \param path path to save the model
   ///
   /// \return status code, 0 if saved successfully
-  int Save(const std::string &path) const;
+  int Save(const std::string &path);
 
   /// \brief  load model from file
   ///
@@ -196,6 +197,19 @@ class SOL_EXPORTS Model {
  protected:
   bool require_reinit_;  // whether need to call BeginTrain before Train
   bool model_updated_;   // wheter need to call EndTrain before Test or Predict
+
+  //////////show iteration info related settings/////////////////
+ protected:
+  IterDisplayer *iter_displayer_;
+  InspectIterateCallback iter_callback_;
+  void *iter_callback_user_context_;
+
+ public:
+  void set_iterate_callback(InspectIterateCallback callback,
+                            void *user_context) {
+    this->iter_callback_ = callback;
+    this->iter_callback_user_context_ = user_context;
+  }
 };
 
 #define RegisterModel(type, name, descr)                                  \

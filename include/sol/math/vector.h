@@ -25,8 +25,7 @@ class Vector : public Matrix<DType> {
   /// \tparam etype <++>
   /// \param exp <++>
   template <typename EType, int etype>
-  Vector(const expr::Exp<EType, DType, etype>& exp)
-      : Matrix<DType>(exp) {}
+  Vector(const expr::Exp<EType, DType, etype>& exp) : Matrix<DType>(exp) {}
 
   /// \brief  copy constructors
   Vector(const Vector<DType>& src_vec) : Matrix<DType>(src_vec) {}
@@ -91,14 +90,16 @@ class Vector : public Matrix<DType> {
   inline void slice_op(const std::function<void(DType&)>& op, size_t start = 0,
                        size_t end = -1) {
     DType* start_iter = this->begin() + start;
-    DType* end_iter = end == -1 ? this->end() : this->begin() + end;
+    DType* end_iter =
+        end == static_cast<size_t>(-1) ? this->end() : this->begin() + end;
     for (DType* iter = start_iter; iter != end_iter; ++iter) op(*iter);
   }
 
   inline void slice_op(const std::function<void(const DType&)>& op,
                        size_t start = 0, size_t end = -1) const {
     const DType* start_iter = this->begin() + start;
-    const DType* end_iter = end == -1 ? this->end() : this->begin() + end;
+    const DType* end_iter =
+        end == static_cast<size_t>(-1) ? this->end() : this->begin() + end;
     for (const DType* iter = start_iter; iter != end_iter; ++iter) op(*iter);
   }
 
