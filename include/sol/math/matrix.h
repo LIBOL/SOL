@@ -8,9 +8,9 @@
 
 #include <limits>
 
-#include <sol/math/shape.h>
-#include <sol/math/matrix_storage.h>
 #include <sol/math/matrix_expression.h>
+#include <sol/math/matrix_storage.h>
+#include <sol/math/shape.h>
 
 namespace sol {
 namespace math {
@@ -34,8 +34,8 @@ class Matrix
   /// \tparam EType <++>
   /// \tparam etype <++>
   /// \param exp <++>
-  template <typename EType, int etype>
-  Matrix(const expr::Exp<EType, DType, etype>& exp)
+  template <typename EType, int etype, int continuous>
+  Matrix(const expr::Exp<EType, DType, etype, continuous>& exp)
       : storage_(nullptr), shape_(nullptr), count_(nullptr) {
     this->init();
     this->assign(exp);
@@ -56,8 +56,9 @@ class Matrix
   virtual ~Matrix() { this->release(); }
 
   /// \brief assignment from an expression template
-  template <typename EType, int etype>
-  Matrix<DType>& operator=(const expr::Exp<EType, DType, etype>& exp) {
+  template <typename EType, int etype, int continuous>
+  Matrix<DType>& operator=(
+      const expr::Exp<EType, DType, etype, continuous>& exp) {
     this->init();
     this->assign(exp);
     return *this;

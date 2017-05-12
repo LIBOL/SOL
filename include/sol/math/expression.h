@@ -6,12 +6,12 @@
 #ifndef SOL_MATH_EXPRESSION_H__
 #define SOL_MATH_EXPRESSION_H__
 
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
-#include <sol/util/types.h>
 #include <sol/math/operator.h>
 #include <sol/math/shape.h>
+#include <sol/util/types.h>
 
 namespace sol {
 namespace math {
@@ -32,7 +32,8 @@ const int kSparse = 3;
 /// \tparam SubType inherited class type
 /// \tparam DType data type of each element in the expression
 /// \tparam expr_type expression type
-template <typename SubType, typename DType, int expr_type>
+/// \tparam continuous wheter the exprssion is a continuous object
+template <typename SubType, typename DType, int expr_type, int continous = 1>
 struct Exp {
   /// \brief  pointer to the current class instance
   inline SubType *selfptr() { return static_cast<SubType *>(this); }
@@ -69,8 +70,9 @@ void CalcExp(MatrixBaseExp<CType, DType> &dst,
 /// \tparam DType element data type of CType
 template <typename OP, typename CType, typename DType>
 struct ExpEngine {
-  template <typename EType, int expr_type>
-  inline static void Calc(CType &dst, const Exp<EType, DType, expr_type> &exp) {
+  template <typename EType, int expr_type, int continuous>
+  inline static void Calc(CType &dst,
+                          const Exp<EType, DType, expr_type, continuous> &exp) {
     CalcExp<OP>(dst, exp);
   }
 };
@@ -155,11 +157,11 @@ struct BinaryMapExp
 
 template <typename OP, int exptype, typename EType1, typename EType2,
           int exptype2, typename DType>
-struct BinaryMapExp<
-    OP, exptype, EType1, ExprType::kSparse, EType2, exptype2,
-    DType> : public Exp<BinaryMapExp<OP, exptype, EType1, ExprType::kSparse,
-                                     EType2, exptype2, DType>,
-                        DType, exptype> {
+struct BinaryMapExp<OP, exptype, EType1, ExprType::kSparse, EType2, exptype2,
+                    DType>
+    : public Exp<BinaryMapExp<OP, exptype, EType1, ExprType::kSparse, EType2,
+                              exptype2, DType>,
+                 DType, exptype> {
   /// \brief  left operand
   const EType1 &lhs;
   /// \brief  right operand
@@ -181,11 +183,11 @@ struct BinaryMapExp<
 
 template <typename OP, int exptype, typename EType1, int exptype1,
           typename EType2, typename DType>
-struct BinaryMapExp<
-    OP, exptype, EType1, exptype1, EType2, ExprType::kSparse,
-    DType> : public Exp<BinaryMapExp<OP, exptype, EType1, exptype1, EType2,
-                                     ExprType::kSparse, DType>,
-                        DType, exptype> {
+struct BinaryMapExp<OP, exptype, EType1, exptype1, EType2, ExprType::kSparse,
+                    DType>
+    : public Exp<BinaryMapExp<OP, exptype, EType1, exptype1, EType2,
+                              ExprType::kSparse, DType>,
+                 DType, exptype> {
   /// \brief  left operand
   const EType1 &lhs;
   /// \brief  right operand
@@ -427,6 +429,59 @@ template <typename EType, typename DType, int exptype>
 inline UnaryMapExp<op::square, EType, DType, exptype> L2(
     const Exp<EType, DType, exptype> &src) {
   return UnaryMapExp<op::square, EType, DType, exptype>(src.self());
+}
+
+//---------------
+// OuterMapExp
+// --------------
+/// \brief  outer vecotr product expression
+///
+/// \tparam EType1 expression type of lhs
+/// \tparam EType2 expression type of rhs
+/// \tparam DType data element type
+template <typename EType1, typename EType2, typename DType>
+struct OuterMapExp : public Exp<OuterMapExp<EType1, EType2, DType>, DType,
+                                ExprType::kDense, 0> {
+  /// \brief  left operand
+  const EType1 &lhs;
+  /// \brief  right operand
+  const EType2 &rhs;
+  /// \brief coefficient
+  const DType a;
+  /*! \brief constructor */
+  OuterMapExp(const Exp<EType1, DType, ExprType::kDense, 1> &_lhs,
+              const Exp<EType2, DType, ExprType::kDense, 1> &_rhs, DType _a)
+      : lhs(_lhs.self()), rhs(_rhs.self()), a(_a) {}
+
+  /// accessing elements
+  inline DType operator()(size_t y, size_t x) const {
+    return a * lhs[y] * rhs[x];
+  }
+
+  inline Shape<2> shape() const {
+    const Shape<2> &shape1 = lhs.shape();
+    const Shape<2> &shape2 = rhs.shape();
+    if (shape1[0] != 1 || shape2[0] != 1) {
+      std::ostringstream oss;
+      oss << "OuterMapExp: only vectors are allowed for outer product, shapes "
+             "of operands are invalid("
+          << shape1 << " vs " << shape2 << ")";
+      throw std::runtime_error(oss.str());
+    }
+    Shape<2> s;
+    s[0] = shape1[1];
+    s[1] = shape2[1];
+    return s;
+  }
+};
+
+/***vector outer operations***/
+template <typename EType1, typename EType2, typename DType, int exptype1,
+          int exptype2>
+inline OuterMapExp<EType1, EType2, DType> outer(
+    const Exp<EType1, DType, exptype1, 1> &lhs,
+    const Exp<EType2, DType, exptype2, 1> &rhs, DType a = DType(1)) {
+  return OuterMapExp<EType1, EType2, DType>(lhs.self(), rhs.self(), a);
 }
 
 }  // namespace expr

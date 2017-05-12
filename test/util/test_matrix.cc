@@ -8,8 +8,8 @@
 #include <vector>
 
 #include <sol/math/matrix.h>
-#include <sol/math/vector.h>
 #include <sol/math/sparse_vector.h>
+#include <sol/math/vector.h>
 
 using namespace sol::math;
 using namespace sol::math::expr;
@@ -51,6 +51,8 @@ int main() {
   cout << "mul 2: " << endl << m2 << endl;
   m2 = truncate(m2, 0.1f);
   cout << "trucnate 0.1: " << endl << m2 << endl;
+  m2 = truncate(m2, m2);
+  cout << "trucnate m2: " << endl << m2 << endl;
 
   cout << "original matrix:" << endl << m << endl;
 
@@ -118,6 +120,20 @@ int main() {
   cout << "v2 * 0.1f * sv2 : " << endl << v2 << endl;
   cout << "original sparse vector:" << endl << sv2 << endl;
   cout << "v2 .* sv2: " << endl << dotmul(v2, sv2) << endl;
+
+  cout << "Test outer product" << endl;
+  Vector<float> v1(0);
+  v1.push_back(1);
+  v1.push_back(2);
+  v1.push_back(3);
+  v1.copyto(v2);
+  v2 += 1.f;
+  cout << "v1: " << endl << v1 << endl;
+  cout << "v2: " << endl << v2 << endl;
+
+  Matrix<float> m12({3, 3});
+  m12 = outer(v1, v2);
+  cout << "outer product: " << endl << m12 << endl;
 
   return 0;
 }

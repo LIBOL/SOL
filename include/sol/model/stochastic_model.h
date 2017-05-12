@@ -1,12 +1,13 @@
 /*********************************************************************************
-*     File Name           :     online_model.h
+*     File Name           :     stochastic_model.h
 *     Created By          :     yuewu
-*     Creation Date       :     [2016-02-18 12:52]
-*     Last Modified       :     [2017-05-09 16:14]
-*     Description         :     online model
+*     Creation Date       :     [2017-05-08 22:39]
+*     Last Modified       :     [2017-05-09 17:35]
+*     Description         :     stochastic model
 **********************************************************************************/
-#ifndef SOL_MODEL_ONLINE_MODEL_H__
-#define SOL_MODEL_ONLINE_MODEL_H__
+
+#ifndef SOL_MODEL_STOCHASTIC_MODEL_H__
+#define SOL_MODEL_STOCHASTIC_MODEL_H__
 
 #include <sol/model/model.h>
 
@@ -17,11 +18,11 @@
 namespace sol {
 namespace model {
 
-class OnlineModel : public Model {
+class StochasticModel : public Model {
  public:
-  OnlineModel(int class_num, const std::string& type);
+  StochasticModel(int class_num, const std::string& type);
 
-  virtual ~OnlineModel() {}
+  virtual ~StochasticModel() {}
 
   /// \brief  set model parameters
   ///
@@ -30,8 +31,6 @@ class OnlineModel : public Model {
   virtual void SetParameter(const std::string& name, const std::string& value);
 
  public:
-  virtual void BeginTrain();
-
   /// \brief  Train from a data set
   //
   /// \param data_iter data iterator
@@ -41,20 +40,13 @@ class OnlineModel : public Model {
 
   /// \brief  iterate the model with one new instance
   ///
-  /// \param dp training instance
-  /// \param predicts predicted scores over classes
+  /// \param mb training mini-batch
+  /// \param predicts predicted labels over classes
+  /// \param scores predicted scores over classes
   ///
-  /// \return predicted label
-  virtual label_t Iterate(const pario::DataPoint& dp, float* predicts);
-
- protected:
-  /// \brief  predict the label of data in the trainig phase
-  ///
-  /// \param dp input data
-  /// \param predicts predicted scores on the data
-  ///
-  /// \return predicted class label
-  virtual label_t TrainPredict(const pario::DataPoint& dp, float* predicts) = 0;
+  /// \return error or loss
+  virtual float Iterate(const pario::MiniBatch& mb, label_t* predicts,
+                        float* scores);
 
  protected:
   /// \brief  Get Model Information
@@ -70,19 +62,13 @@ class OnlineModel : public Model {
   /// \return status code, Status_OK if load successfully
   virtual int SetModelInfo(const Json::Value& root);
 
- protected:
-  void set_initial_t(int initial_t);
-  virtual void update_dim(index_t dim) { this->dim_ = dim; }
+ public:
+  int cur_iter_num() const { return this->cur_iter_num_; }
 
  protected:
   inline float bias_eta() const { return this->bias_eta0_ * this->eta_; }
-
-  OnlineRegularizer* online_regularizer() {
-    return static_cast<OnlineRegularizer*>(this->regularizer_);
-  }
-
- public:
-  int cur_iter_num() const { return this->cur_iter_num_; }
+  void set_initial_t(int initial_t);
+  virtual void update_dim(index_t dim) { this->dim_ = dim; }
 
  protected:
   // initial learning rate for bias
@@ -92,7 +78,7 @@ class OnlineModel : public Model {
   // current iteration number
   int cur_iter_num_;
   // current data number
-  size_t cur_data_num_;
+  size_t cur_batch_num_;
   // current error number
   size_t cur_err_num_;
 
@@ -101,16 +87,7 @@ class OnlineModel : public Model {
   index_t dim_;
   // learning rate
   float eta_;
-
-  // whether only update when predicted lables are different
-  bool lazy_update_;
-
-  // active learning
-  float active_smoothness_;
-  // cost sensitive
-  bool cost_sensitive_learning_;
-  float cost_margin_;
-};  // class Online Model
+};  // class  StochasticModel
 
 }  // namespace model
 }  // namespace sol

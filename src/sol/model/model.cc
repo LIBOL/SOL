@@ -2,7 +2,7 @@
 *     File Name           :     model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-16 22:54]
-*     Last Modified       :     [2017-05-09 14:56]
+*     Last Modified       :     [2017-05-10 22:32]
 *     Description         :     base class for model
 **********************************************************************************/
 
@@ -45,7 +45,7 @@ Model::Model(int class_num, const std::string& type)
       max_index_(0),
       iter_displayer_(nullptr),
       iter_callback_(nullptr) {
-  Check(class_num > 1);
+  Check(class_num > 0);
   this->update_num_ = 0;
   this->require_reinit_ = true;
   this->model_updated_ = false;
@@ -54,7 +54,10 @@ Model::Model(int class_num, const std::string& type)
   this->iter_callback_user_context_ = nullptr;
 }
 
-Model::~Model() { DeletePointer(this->loss_); }
+Model::~Model() {
+  DeletePointer(this->loss_);
+  DeletePointer(this->iter_displayer_);
+}
 
 void Model::SetParameter(const std::string& name, const std::string& value) {
   if (name == "model") {
@@ -106,6 +109,12 @@ void Model::SetParameter(const std::string& name, const std::string& value) {
       oss << "load pre-selected features failed!";
       throw invalid_argument(oss.str());
     }
+  } else if (name == "exp_show") {
+    DeletePointer(this->iter_displayer_);
+    this->iter_displayer_ = new ExpIterDisplayer(stoi(value));
+  } else if (name == "step_show") {
+    DeletePointer(this->iter_displayer_);
+    this->iter_displayer_ = new StepIterDisplayer(stoi(value));
   } else {
     if (this->regularizer_ == nullptr ||
         this->regularizer_->SetParameter(name, value) != Status_OK) {

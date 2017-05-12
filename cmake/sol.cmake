@@ -1,4 +1,4 @@
-set(src_dirs util math pario loss model model/olm)
+set(src_dirs util math pario loss model model/olm model/stochastic_regression)
 foreach (src_dir ${src_dirs})
     file(GLOB ${src_dir}_headers
         "${PROJECT_SOURCE_DIR}/include/sol/${src_dir}/*.h"

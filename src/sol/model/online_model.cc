@@ -2,7 +2,7 @@
 *     File Name           :     online_model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2016-02-18 15:37]
-*     Last Modified       :     [2017-05-09 14:57]
+*     Last Modified       :     [2017-05-09 16:29]
 *     Description         :     online model
 **********************************************************************************/
 
@@ -32,8 +32,6 @@ OnlineModel::OnlineModel(int class_num, const std::string& type)
   this->cost_sensitive_learning_ = false;
 }
 
-OnlineModel::~OnlineModel() { DeletePointer(this->iter_displayer_); }
-
 void OnlineModel::SetParameter(const std::string& name,
                                const std::string& value) {
   if (name == "bias_eta") {
@@ -61,12 +59,6 @@ void OnlineModel::SetParameter(const std::string& name,
     Check(cost_margin_ > 0);
     this->cost_sensitive_learning_ = true;
     this->require_reinit_ = true;
-  } else if (name == "exp_show") {
-    DeletePointer(this->iter_displayer_);
-    this->iter_displayer_ = new ExpIterDisplayer(stoi(value));
-  } else if (name == "step_show") {
-    DeletePointer(this->iter_displayer_);
-    this->iter_displayer_ = new StepIterDisplayer(stoi(value));
   } else {
     Model::SetParameter(name, value);
   }
@@ -99,12 +91,12 @@ float OnlineModel::Train(DataIter& data_iter) {
   size_t next_show_time = size_t(-1);
 
   if (this->iter_displayer_ != nullptr) {
-    next_show_time = this->iter_displayer_->next_show_time();
     if (this->iter_callback_ == DefaultIterateFunction &&
         this->cur_data_num_ == 0) {
       cout << "Training Process....\nData No.\tIterate No.\tError Rate\tUpdate "
               "No.\n";
     }
+    next_show_time = this->iter_displayer_->next();
   }
 
   float* predicts = new float[this->clf_num()];
@@ -119,26 +111,21 @@ float OnlineModel::Train(DataIter& data_iter) {
       // predict
       if (this->Iterate(x, predicts) != x.label()) ++this->cur_err_num_;
 
-      if (this->cur_data_num_ >= next_show_time) {
+      if (this->cur_data_num_ >= next_show_time &&
+          this->iter_callback_ != nullptr) {
         float err_rate = float(this->cur_err_num_) / this->cur_data_num_;
-        if (this->iter_callback_ != nullptr) {
-          this->iter_callback_(this->iter_callback_user_context_,
-                               this->cur_data_num_, this->cur_iter_num(),
-                               this->update_num(), err_rate);
-        }
-        this->iter_displayer_->next();
-        next_show_time = this->iter_displayer_->next_show_time();
+        this->iter_callback_(this->iter_callback_user_context_,
+                             this->cur_data_num_, this->cur_iter_num(),
+                             this->update_num(), err_rate);
+        next_show_time = this->iter_displayer_->next();
       }
     }
   }
 
   float err_rate = float(this->cur_err_num_) / this->cur_data_num_;
-  if (this->iter_displayer_ != nullptr) {
-    if (this->iter_callback_ != nullptr) {
-      this->iter_callback_(this->iter_callback_user_context_,
-                           this->cur_data_num_, this->cur_iter_num(),
-                           this->update_num(), err_rate);
-    }
+  if (this->iter_displayer_ != nullptr && this->iter_callback_ != nullptr) {
+    this->iter_callback_(this->iter_callback_user_context_, this->cur_data_num_,
+                         this->cur_iter_num(), this->update_num(), err_rate);
   }
   delete[] predicts;
   this->model_updated_ = true;

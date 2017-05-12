@@ -2,7 +2,7 @@
  *     File Name           :     iter_displayer.h
  *     Created By          :     yuewu
  *     Creation Date       :     [2017-05-08 22:56]
- *     Last Modified       :     [2017-05-09 14:59]
+ *     Last Modified       :     [2017-05-09 16:28]
  *     Description         :     show iteration info related classes
  **********************************************************************************/
 #ifndef SOL_MODEL_ITER_DISPLAYER_H__
@@ -13,13 +13,6 @@
 
 namespace sol {
 namespace model {
-class IterDisplayer {
- public:
-  virtual ~IterDisplayer() {}
-
-  virtual size_t next_show_time() { return size_t(-1); }
-  virtual void next() {}
-};
 
 /// \brief  C type to inspect iteration callback
 ///
@@ -32,15 +25,22 @@ typedef void (*InspectIterateCallback)(void* user_context, long long data_num,
                                        long long iter_num, long long update_num,
                                        double err_rate);
 
+class IterDisplayer {
+ public:
+  virtual ~IterDisplayer() {}
+
+  virtual size_t next() { return size_t(-1); }
+};
+
 class ExpIterDisplayer : public IterDisplayer {
  public:
   ExpIterDisplayer(size_t base = 2)
-      : next_show_time_(base), base_(base), show_step_(1) {}
+      : next_show_time_(base), base_(base), show_step_(0) {}
 
-  virtual inline size_t next_show_time() { return next_show_time_; }
-  virtual inline void next() {
+  virtual inline size_t next() {
     ++show_step_;
     next_show_time_ = size_t(pow(double(this->base_), this->show_step_));
+    return next_show_time_;
   }
 
  protected:
@@ -51,10 +51,12 @@ class ExpIterDisplayer : public IterDisplayer {
 
 class StepIterDisplayer : public IterDisplayer {
  public:
-  StepIterDisplayer(size_t step = 2) : next_show_time_(step), step_(step) {}
+  StepIterDisplayer(size_t step = 2) : next_show_time_(0), step_(step) {}
 
-  virtual size_t next_show_time() { return next_show_time_; }
-  virtual void next() { this->next_show_time_ += this->step_; }
+  virtual size_t next() {
+    this->next_show_time_ += this->step_;
+    return next_show_time_;
+  }
 
  protected:
   size_t next_show_time_;

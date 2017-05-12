@@ -253,5 +253,4 @@ void SOFS::update_dim(index_t dim) {
 RegisterModel(SOFS, "sofs", "Second Order Online Feature Selection");
 
 }  // namespace model
-
 }  // namespace sol

@@ -52,29 +52,29 @@ struct MatrixExp : public Exp<CType, DType, exptype> {
   }
 
   /*! Arithmetic operations with expressions*/
-  template <typename CType2, typename DType2, int etype>
-  inline CType &operator+=(const Exp<CType2, DType2, etype> &exp) {
+  template <typename CType2, typename DType2, int etype, int continuous>
+  inline CType &operator+=(const Exp<CType2, DType2, etype, continuous> &exp) {
     ExpEngine<op::plusto, CType, DType>::Calc(this->self(), exp.self());
     return this->self();
   }
-  template <typename CType2, typename DType2, int etype>
-  inline CType &operator-=(const Exp<CType2, DType2, etype> &exp) {
+  template <typename CType2, typename DType2, int etype, int continuous>
+  inline CType &operator-=(const Exp<CType2, DType2, etype, continuous> &exp) {
     ExpEngine<op::minusto, CType, DType>::Calc(this->self(), exp.self());
     return this->self();
   }
-  template <typename CType2, typename DType2, int etype>
-  inline CType &operator*=(const Exp<CType2, DType2, etype> &exp) {
+  template <typename CType2, typename DType2, int etype, int continuous>
+  inline CType &operator*=(const Exp<CType2, DType2, etype, continuous> &exp) {
     ExpEngine<op::multo, CType, DType>::Calc(this->self(), exp.self());
     return this->self();
   }
-  template <typename CType2, typename DType2, int etype>
-  inline CType &operator/=(const Exp<CType2, DType2, etype> &exp) {
+  template <typename CType2, typename DType2, int etype, int continuous>
+  inline CType &operator/=(const Exp<CType2, DType2, etype, continuous> &exp) {
     ExpEngine<op::divto, CType, DType>::Calc(this->self(), exp.self());
     return this->self();
   }
 
-  template <typename CType2, typename DType2, int etype>
-  inline CType &assign(const Exp<CType2, DType2, etype> &exp) {
+  template <typename CType2, typename DType2, int etype, int continuous>
+  inline CType &assign(const Exp<CType2, DType2, etype, continuous> &exp) {
     ExpEngine<op::assign, CType, DType>::Calc(this->self(), exp.self());
     return this->self();
   }
@@ -112,6 +112,28 @@ void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
   DType *pdata = mat.data();
   for (size_t idx = 0; idx < sz; ++idx) {
     OP::template map<DType>(*pdata++, exp_val[idx]);
+  }
+}
+
+template <typename OP, typename CType, typename DType, typename EType,
+          int exptype>
+void CalcExp(MatrixExp<CType, DType, ExprType::kDense> &dst,
+             const Exp<EType, DType, exptype, 0> &exp) {
+  CType &mat = dst.self();
+  const EType &exp_val = exp.self();
+  // shape check
+  const Shape<2> s = mat.shape();
+  const Shape<2> s1 = exp_val.shape();
+  if (s1.size() != 0 && s != s1) {
+    throw std::runtime_error("matrix operation on different shape");
+  }
+  size_t rows = s[0];
+  size_t cols = s[1];
+  DType *pdata = mat.data();
+  for (size_t y = 0; y < rows; ++y) {
+    for (size_t x = 0; x < cols; ++x) {
+      OP::template map<DType>(*pdata++, exp_val(y, x));
+    }
   }
 }
 

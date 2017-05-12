@@ -2,7 +2,7 @@
 *     File Name           : /home/yuewu/work/sol/src/sol/pario/svm_reader.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2015-11-11 22:26]
-*     Last Modified       :     [2015-11-14 17:16]
+*     Last Modified       :     [2017-05-12 13:15]
 *     Description         :     reader of lilbsvm format data
 **********************************************************************************/
 
@@ -16,8 +16,13 @@ namespace sol {
 namespace pario {
 
 int SVMReader::Next(DataPoint &dst_data) {
-  int ret = this->file_reader_.ReadLine(this->read_buf_, this->read_buf_size_);
-  if (ret != Status_OK) return ret;
+  int ret = Status_OK;
+
+  while (true) {
+    ret = this->file_reader_.ReadLine(this->read_buf_, this->read_buf_size_);
+    if (ret != Status_OK) return ret;
+    if (this->read_buf_[0] != '#') break;  // comment line
+  }
 
   char *iter = this->read_buf_, *endptr = nullptr;
   if (*iter == '\0') {
