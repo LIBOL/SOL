@@ -2,7 +2,7 @@
 *     File Name           :     stochastic_regression/ssguassian.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2017-05-09 17:51]
-*     Last Modified       :     [2017-05-12 00:37]
+*     Last Modified       :     [2017-05-15 10:08]
 *     Description         :     stochastic gaussian
 **********************************************************************************/
 #include "sol/model/stochastic_linear_model.h"
@@ -20,13 +20,7 @@ class SGaussian : public StochasticLinearModel {
   SGaussian(int class_num);
   virtual ~SGaussian();
 
- public:
-  virtual float Iterate(const pario::MiniBatch& mb, label_t* predicts,
-                        float* scores);
-
  protected:
-  virtual void Update(const pario::MiniBatch& mb, const label_t* predicts,
-                      const float* scores, float loss) {}
   virtual void update_dim(index_t dim);
 
  protected:
@@ -51,32 +45,6 @@ SGaussian::SGaussian(int class_num) : StochasticLinearModel(class_num) {
 }
 
 SGaussian::~SGaussian() { DeleteArray(this->Sigmas_); }
-
-float SGaussian::Iterate(const pario::MiniBatch& mb, label_t* predicts,
-                         float* scores) {
-  StochasticModel::Iterate(mb, predicts, scores);
-  ++this->update_num_;
-  float decay = float(this->cur_iter_num_ - 1) / this->cur_iter_num_;
-
-  // update sigma
-  this->eta_ = decay / (mb.size() * this->cur_iter_num_);
-  Sigma(0) *= decay;
-  for (int i = 0; i < mb.size(); ++i) {
-    const auto& x = mb[i].data();
-    w(0) -= x;
-    Sigma(0) += outer(w(0), w(0), this->eta_);
-    w(0) += x;
-  }
-
-  // update mean
-  this->eta_ = float(1.0 / (mb.size() * this->cur_iter_num_));
-  w(0) *= decay;
-  for (int i = 0; i < mb.size(); ++i) {
-    const auto& x = mb[i].data();
-    w(0) += this->eta_ * x;
-  }
-  return 0;
-}
 
 void SGaussian::update_dim(index_t dim) {
   if (dim > this->dim_) {
@@ -114,7 +82,44 @@ int SGaussian::SetModelParam(std::istream& is) {
   return Status_OK;
 }
 
-RegisterModel(SGaussian, "sgaussian", "Stochastic Gaussian");
+/// \brief  passive-aggressive stochastic gaussian
+class MASGaussian : public SGaussian {
+ public:
+  using SGaussian::SGaussian;
+  virtual ~MASGaussian(){};
+
+ public:
+  virtual float Iterate(const pario::MiniBatch& mb, label_t* predicts,
+                        float* scores);
+};  // class MASGaussian
+
+float MASGaussian::Iterate(const pario::MiniBatch& mb, label_t* predicts,
+                           float* scores) {
+  SGaussian::Iterate(mb, predicts, scores);
+  ++this->update_num_;
+  float decay = float(this->cur_iter_num_ - 1) / this->cur_iter_num_;
+  this->eta_ = decay / (mb.size() * this->cur_iter_num_);
+
+  // update sigma
+  Sigma(0) *= decay;
+  for (int i = 0; i < mb.size(); ++i) {
+    const auto& x = mb[i].data();
+    w(0) -= x;
+    Sigma(0) += outer(w(0), w(0), this->eta_);
+    w(0) += x;
+  }
+
+  // update mean
+  this->eta_ = float(1.0 / (mb.size() * this->cur_iter_num_));
+  w(0) *= decay;
+  for (int i = 0; i < mb.size(); ++i) {
+    const auto& x = mb[i].data();
+    w(0) += this->eta_ * x;
+  }
+  return 0;
+}
+
+RegisterModel(MASGaussian, "masg", "Moving Average Stochastic Gaussian");
 
 /// \brief  passive-aggressive stochastic gaussian
 class PASGaussian : public SGaussian {
@@ -129,22 +134,12 @@ class PASGaussian : public SGaussian {
 
 float PASGaussian::Iterate(const pario::MiniBatch& mb, label_t* predicts,
                            float* scores) {
-  StochasticModel::Iterate(mb, predicts, scores);
+  SGaussian::Iterate(mb, predicts, scores);
   ++this->update_num_;
   float decay = (this->cur_iter_num_ - 1.f) / this->cur_iter_num_;
   this->eta_ = float(1.0 / (mb.size() * this->cur_iter_num_));
 
-  // update mean
-  w(0) *= decay;
-  for (int i = 0; i < mb.size(); ++i) {
-    const auto& x = mb[i].data();
-    w(0) += this->eta_ * x;
-  }
-
   // update sigma
-  decay = (this->cur_iter_num_ - 1.f) * (this->cur_iter_num_ - 1.f);
-  decay /= (1 + decay);
-  this->eta_ = (1.f - decay) / mb.size();
   Sigma(0) *= decay;
   for (int i = 0; i < mb.size(); ++i) {
     const auto& x = mb[i].data();
@@ -153,11 +148,17 @@ float PASGaussian::Iterate(const pario::MiniBatch& mb, label_t* predicts,
     w(0) += x;
   }
 
+  // update mean
+  w(0) *= decay;
+  for (int i = 0; i < mb.size(); ++i) {
+    const auto& x = mb[i].data();
+    w(0) += this->eta_ * x;
+  }
+
   return 0;
 }
 
-RegisterModel(PASGaussian, "pasgaussian",
-              "Passive Aggressive Stochastic Gaussian");
+RegisterModel(PASGaussian, "pasg", "Passive Aggressive Stochastic Gaussian");
 
 }  // namespace model
 }  // namespace sol

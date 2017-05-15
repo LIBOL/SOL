@@ -2,7 +2,7 @@
 *     File Name           :     stochastic_linear_model.h
 *     Created By          :     yuewu
 *     Creation Date       :     [2017-05-09 16:32]
-*     Last Modified       :     [2017-05-09 18:34]
+*     Last Modified       :     [2017-05-15 09:58]
 *     Description         :     stochastic linear model
 **********************************************************************************/
 
@@ -27,13 +27,6 @@ class StochasticLinearModel : public StochasticModel {
                         float* scores);
 
  protected:
-  /// \brief  update model
-  ///
-  /// \param dp training instance
-  /// \param predict predicted values
-  /// \param loss prediction loss
-  virtual void Update(const pario::MiniBatch& mb, const label_t* predicts,
-                      const float* scores, float loss) = 0;
   virtual void update_dim(index_t dim);
 
  public:

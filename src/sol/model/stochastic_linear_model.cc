@@ -2,7 +2,7 @@
 *     File Name           :     stochastic_linear_model.cc
 *     Created By          :     yuewu
 *     Creation Date       :     [2017-05-09 16:41]
-*     Last Modified       :     [2017-05-10 22:33]
+*     Last Modified       :     [2017-05-15 09:57]
 *     Description         :
 **********************************************************************************/
 
@@ -60,10 +60,7 @@ label_t StochasticLinearModel::Predict(const pario::DataPoint& dp,
 }
 float StochasticLinearModel::Iterate(const MiniBatch& mb, label_t* predicts,
                                      float* scores) {
-  StochasticModel::Iterate(mb, predicts, scores);
-  ++this->update_num_;
-
-  return 0;
+  return StochasticModel::Iterate(mb, predicts, scores);
 }
 
 void StochasticLinearModel::update_dim(index_t dim) {
