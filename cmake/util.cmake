@@ -5,8 +5,8 @@ file(GLOB util_headers
 	)
 
 file(GLOB util_src
-	"${PROJECT_SOURCE_DIR}/src/sol/util/*.cc"
-	"${PROJECT_SOURCE_DIR}/src/sol/util/*.cpp"
+	"${PROJECT_SOURCE_DIR}/src/util/*.cc"
+	"${PROJECT_SOURCE_DIR}/src/util/*.cpp"
 	"${PROJECT_SOURCE_DIR}/external/json/*.cpp"
 	)
 

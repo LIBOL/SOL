@@ -4,8 +4,8 @@ file(GLOB pario_headers
 	)
 
 file(GLOB pario_src
-	"${PROJECT_SOURCE_DIR}/src/sol/pario/*.cpp"
-	"${PROJECT_SOURCE_DIR}/src/sol/pario/*.cc"
+	"${PROJECT_SOURCE_DIR}/src/pario/*.cpp"
+	"${PROJECT_SOURCE_DIR}/src/pario/*.cc"
 	)
 
 source_group("Header Files" FILES ${pario_headers})
