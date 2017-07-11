@@ -123,7 +123,7 @@ void Heap<comparator>::Init(index_t N, index_t K, const index_t* indexes,
 
   this->N_ = N;
   this->id2pos_map_.resize(N);
-  for (index_t i = 0; i != N; i) {
+  for (index_t i = 0; i != N; ++i) {
     this->id2pos_map_[i] = K;
   }
 
