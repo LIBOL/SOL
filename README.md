@@ -1,4 +1,4 @@
-============================================
+
 SOL - A Library for Scalable Online Learning Algorithms
 ============================================
 
