@@ -1,10 +1,10 @@
-==========================================================
+====================================================
 SOL - A Library for Scalable Online Learning Algorithms
-=========================================================
+====================================================
 
 
 About SOL
-===========================================================================
+====================================================
 SOL is an open-source library for scalable online learning with high-dimensional data. The library provides a family of regular and sparse online learning algorithms for large-scale binary and multi-class classification tasks with high efficiency, scalability, portability, and extensibility. We provide easy-to-use command-line tools, python wrappers and library calls for users and developers, and comprehensive documents for both beginners and advanced users. SOL is not only a machine learning toolbox, but also a comprehensive experimental platform for online learning research. Experiments demonstrate that SOL is highly efficient and scalable for large-scale learning with high-dimensional data.
 
 Specifically, SOL consists of a family of:
