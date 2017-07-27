@@ -309,14 +309,23 @@ License and Citation
 
 SOL is released under the Apache 2.0 open source license.
 
-Please cite SOL in your publications if it helps your research:
+Please cite SOL in your publications if it helps as follows:
 
+Original Software Publication in
+Neurocomputing
+Volume 260, 18 October 2017
+SOL: A library for scalable online learning algorithms
+Yue Wu, Steven C.H. Hoi, Chenghao Liu , Jing Lu, Doyen Sahoo, Nenghai Yu,
+https://doi.org/10.1016/j.neucom.2017.03.077
+ 
 ```
-@article{libsol2016,
+@article{sol2017,
   title={SOL: A Library for Scalable Online Learning Algorithms},
   author={Yue Wu, Steven C.H. Hoi, Chenghao Liu, Jing Lu, Doyen Sahoo, Nenghai Yu},
-  journal={SMU Technical Report (SMU-TR-2016-10-27)},
-  year={2016}
+  journal={Neurocomputing},
+  vol = {260},
+  pages = {9--12},
+  year={2017}
 }
 ```
 
