@@ -43,11 +43,6 @@ cdef void inspect_iteration(void* user_context,
         handler(data_num, iter_num, update_num, err_rate)
 
 cdef class SOL:
-    cdef void* _c_model
-    cdef void* _c_data_iter
-    cdef const char* algo
-    cdef int class_num
-    cdef bint verbose
 
     def  __cinit__(self, const char* algo = NULL, int class_num = -1, int
             batch_size=256, int buf_size = 2, verbose=False, **params):
