@@ -130,6 +130,7 @@ We highly recommend users to install python packages in a virtual enviroment.
 
     + Build and install the python scripts
 
+            $ pip install -r requirements.txt
             $ python setup.py build
             $ python setup.py install
 

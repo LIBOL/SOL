@@ -25,3 +25,10 @@ cdef extern from "sol/c_api.h":
     int sol_convert_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type, bint binarize, float binarize_thresh)
     int sol_shuffle_data(const char* src_path, const char* src_type, const char* dst_path, const char* dst_type)
     int sol_split_data(const char* src_path, const char* src_type, int fold, const char* output_prefix, const char* dst_type, bint shuffle)
+
+cdef class SOL:
+    cdef void* _c_model
+    cdef void* _c_data_iter
+    cdef const char* algo
+    cdef int class_num
+    cdef bint verbose
