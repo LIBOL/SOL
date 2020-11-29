@@ -245,11 +245,11 @@ and LIBLINEAR. To quikly get a comparison on the small dataset ``a1a`` as
 provided in the data folder:
 
     $ cd experiments
-    $ python experiment.py --shufle 10 a1a ../data/a1a ../data/a1a.t
+    $ python experiment.py --repeat 10 a1a ../data/a1a ../data/a1a.t
 
 The script will conduct cross validation to select best parameters for each
-algorithm. Then the script will shuffle the training 10 times. For each
-shuffled data, the script will train and test for each algorithm. The final
+algorithm. Then the script will repeat the training 10 times. For each
+repeatd data, the script will train and test for each algorithm. The final
 output is the average of all results. And a final table report will be shown as follows.
 
     algorithm   train           train           test            test
@@ -274,7 +274,7 @@ output is the average of all results. And a final table report will be shown as 
 There will also be three pdf figures displaying the update number, training error rate, and test error rate over model sparsity.
 
 Users can also compare on the multi-class dataset
-[``mnist``](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#mnist) with the follow command (Note that we only shuffle the training data once in this example, so the standard deviation is zero):
+[``mnist``](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#mnist) with the follow command (Note that we only repeat the training data once in this example, so the standard deviation is zero):
 
     $ python experiment.py mnist ../data/mnist.scale ../data/mnist.scale.t
 
@@ -302,7 +302,7 @@ The output is:
 The tables and figures in our paper description are obtained with the following
 command:
 
-    $ python experiment.py --shuffle 10 rcv1 ../data/rcv1_train ../data/rcv1_test
+    $ python experiment.py --repeat 10 rcv1 ../data/rcv1_train ../data/rcv1_test
 
 
 License and Citation
