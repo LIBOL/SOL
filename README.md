@@ -39,9 +39,13 @@ To get started, please read the ``Quick Start'' section first.
 
 Table of Contents
 =================
-- Installation
-- Quick Start
-- Additional Information
++ [Installation](#installation)
+    + [Install from source](#install-from-source)
+    + [Known Issues of Python Wrappers](#known-issues-of-python-wrappers)
++ [Quick Start](#quick-start)
++ [Comparison of Online Learning Algorithms](#comparison-of-online-learning-algorithms)
++ [License and Citation](#licence-and-citation)
++ [Additional Information](#additional-information)
 
 Installation
 ======================
@@ -62,7 +66,7 @@ Both the python scripts and C++ executables & Libraries are dependent on the sam
 SOL features a very simple installation procedure. The project is managed by `CMake` for C++ and `setuptools` for python.
 
 
-###Getting the code
+### Getting the code
 
  There exists a `CMakeLists.txt` in the root directory.
 The latest version of SOL is always available via 'github' by invoking one
@@ -74,7 +78,7 @@ of the following:
     ## For HTTP-based Git interaction
     $ git clone https://github.com/LIBOL/SOL.git
 
-###Build C++ Executables and Dynamic Libraries
+### Build C++ Executables and Dynamic Libraries
 
 1. Prerequisites
 
