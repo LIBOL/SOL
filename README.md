@@ -39,9 +39,13 @@ To get started, please read the ``Quick Start'' section first.
 
 Table of Contents
 =================
-- Installation
-- Quick Start
-- Additional Information
++ [Installation](#installation)
+    + [Install from source](#install-from-source)
+    + [Known Issues of Python Wrappers](#known-issues-of-python-wrappers)
++ [Quick Start](#quick-start)
++ [Comparison of Online Learning Algorithms](#comparison-of-online-learning-algorithms)
++ [License and Citation](#licence-and-citation)
++ [Additional Information](#additional-information)
 
 Installation
 ======================
@@ -62,7 +66,7 @@ Both the python scripts and C++ executables & Libraries are dependent on the sam
 SOL features a very simple installation procedure. The project is managed by `CMake` for C++ and `setuptools` for python.
 
 
-###Getting the code
+### Getting the code
 
  There exists a `CMakeLists.txt` in the root directory.
 The latest version of SOL is always available via 'github' by invoking one
@@ -74,7 +78,7 @@ of the following:
     ## For HTTP-based Git interaction
     $ git clone https://github.com/LIBOL/SOL.git
 
-###Build C++ Executables and Dynamic Libraries
+### Build C++ Executables and Dynamic Libraries
 
 1. Prerequisites
 
@@ -130,6 +134,7 @@ We highly recommend users to install python packages in a virtual enviroment.
 
     + Build and install the python scripts
 
+            $ pip install -r requirements.txt
             $ python setup.py build
             $ python setup.py install
 
@@ -244,11 +249,11 @@ and LIBLINEAR. To quikly get a comparison on the small dataset ``a1a`` as
 provided in the data folder:
 
     $ cd experiments
-    $ python experiment.py --shufle 10 a1a ../data/a1a ../data/a1a.t
+    $ python experiment.py --repeat 10 a1a ../data/a1a ../data/a1a.t
 
 The script will conduct cross validation to select best parameters for each
-algorithm. Then the script will shuffle the training 10 times. For each
-shuffled data, the script will train and test for each algorithm. The final
+algorithm. Then the script will repeat the training 10 times. For each
+repeatd data, the script will train and test for each algorithm. The final
 output is the average of all results. And a final table report will be shown as follows.
 
     algorithm   train           train           test            test
@@ -273,7 +278,7 @@ output is the average of all results. And a final table report will be shown as 
 There will also be three pdf figures displaying the update number, training error rate, and test error rate over model sparsity.
 
 Users can also compare on the multi-class dataset
-[``mnist``](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#mnist) with the follow command (Note that we only shuffle the training data once in this example, so the standard deviation is zero):
+[``mnist``](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#mnist) with the follow command (Note that we only repeat the training data once in this example, so the standard deviation is zero):
 
     $ python experiment.py mnist ../data/mnist.scale ../data/mnist.scale.t
 
@@ -301,7 +306,7 @@ The output is:
 The tables and figures in our paper description are obtained with the following
 command:
 
-    $ python experiment.py --shuffle 10 rcv1 ../data/rcv1_train ../data/rcv1_test
+    $ python experiment.py --repeat 10 rcv1 ../data/rcv1_train ../data/rcv1_test
 
 
 License and Citation
